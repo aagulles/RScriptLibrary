@@ -1,0 +1,177 @@
+# -------------------------------------------------------------------------------------
+# designAugmentedRCB: Generate randomization for augmented design in RCBD.
+# Created by: Alaine A. Gulles 09.21.2010 for International Rice Research Institute
+# Modified by: Alaine A. Gulles 04.10.2013
+# -------------------------------------------------------------------------------------
+
+designAugmentedRCB <- function(checkTrmt, newTrmt, r = 2, trial = 1, numFieldRow = 2, serpentine = FALSE, factorName = NULL, 
+                               display = TRUE, file = NULL) UseMethod("designAugmentedRCB")
+
+designAugmentedRCB.default <- function(checkTrmt, newTrmt, r = 2, trial = 1, numFieldRow = 2, serpentine = FALSE, factorName = NULL, 
+                                       display = TRUE, file = NULL) {
+     
+     if (length(checkTrmt) == 1) { checkTrmt <- paste("check",1:checkTrmt, sep = "") }
+     if (length(newTrmt) == 1)   { newTrmt <- paste("new",1:newTrmt, sep = "") }
+     
+     # CHECK
+     if (r > numFieldRow) { stop("Too few rows for blocking.") }
+     totalNumPlots <- (r * length(checkTrmt)) + length(newTrmt)
+     if (totalNumPlots%%numFieldRow != 0) { stop("Number of field rows must divide number of plots.") }
+     errorDf <- (r - 1)*(length(checkTrmt) - 1)
+     
+     numPlotsWithinBlk <- totalNumPlots/r
+     numRowsWithinBlk <- floor(numFieldRow/r)
+     numPlotsWithinRow <- totalNumPlots/numFieldRow
+     blkWithAddlRow <- numFieldRow - (r * numRowsWithinBlk)
+     
+     if ((numRowsWithinBlk * numPlotsWithinRow) < length(checkTrmt)) { stop("One or more blocks cannot accommodate the number of replicated treatments.") } 
+     
+     plan <- list()
+     plotNum <- list()
+     
+     randomize <- NULL
+     if (r == numFieldRow || blkWithAddlRow == 0) {
+          tempTrmt <- c(checkTrmt, newTrmt[1:(numPlotsWithinBlk - length(checkTrmt))])
+          capture.output(randomize <- designRCBD(list(temp = tempTrmt), r, trial, numFieldRow = r, rowPerBlk = 1, display = FALSE)$fieldbook)
+          
+          randomNewTrmt <- NULL
+          for (i in (1:trial)) { randomNewTrmt <- c(randomNewTrmt, sample(newTrmt, length(newTrmt), replace = FALSE)) }
+          randomize[,"temp"] <- as.character(randomize[,"temp"])
+          randomize[randomize[,"temp"]%in%as.character(newTrmt), "temp"] <- randomNewTrmt
+          randomize[,"temp"] <- factor(randomize[,"temp"])
+          randomize[,"FieldRow"] <- rep((1:numFieldRow), each = numPlotsWithinRow)
+          randomize[,"FieldCol"] <- 1:numPlotsWithinRow
+     } else {
+          tempTrmt <- c(checkTrmt, newTrmt[1:(((numRowsWithinBlk + 1) * numPlotsWithinRow) - length(checkTrmt))])
+          if (blkWithAddlRow >= 2) { capture.output(randomize <- designRCBD(list(temp = tempTrmt), blkWithAddlRow, trial, numFieldRow = blkWithAddlRow, rowPerBlk = 1, display = FALSE)$fieldbook)
+          } else {
+               capture.output(randomize <- designRCBD(list(temp = tempTrmt), r = 2, trial, numFieldRow = 2, rowPerBlk = 1, display = FALSE)$fieldbook)
+               randomize <- randomize[randomize[,"Block"] == 1,]
+          }
+          randomize[,"FieldRow"] <- rep(1:((numRowsWithinBlk+1)*blkWithAddlRow), each = numPlotsWithinRow)
+          randomize[,"FieldCol"] <- 1:numPlotsWithinRow
+          
+          if ((numRowsWithinBlk * numPlotsWithinRow) == length(checkTrmt)) { tempTrmt <- checkTrmt
+          } else { tempTrmt <- c(checkTrmt, newTrmt[1:((numRowsWithinBlk * numPlotsWithinRow) - length(checkTrmt))]) }
+          #tempTrmt <- c(checkTrmt, newTrmt[1:((numRowsWithinBlk * numPlotsWithinRow) - length(checkTrmt))])
+          if ((r - blkWithAddlRow) >= 2) { capture.output(tempDesign <- designRCBD(list(temp = tempTrmt), (r-blkWithAddlRow), trial, numFieldRow = (r-blkWithAddlRow), rowPerBlk = 1, display = FALSE)$fieldbook)
+          } else {
+               capture.output(tempDesign <- designRCBD(list(temp = tempTrmt), r = 2, trial, numFieldRow = 2, rowPerBlk = 1, display = FALSE)$fieldbook)
+               tempDesign <- tempDesign[tempDesign[,"Block"] == 1,]
+          }
+          tempDesign[,2] <- factor(as.numeric(tempDesign[,2]) + blkWithAddlRow)
+          tempDesign[,"FieldRow"] <- rep(((numRowsWithinBlk+1)*blkWithAddlRow+1):numFieldRow, each = numPlotsWithinRow)
+          tempDesign[,"FieldCol"] <- 1:numPlotsWithinRow
+          tempDesign[,"PlotNum"] <- as.numeric(paste(tempDesign$Block, paste(c(rep(0, max(nchar(1:length(tempTrmt))))), collapse = ""), sep = ""))+1:length(tempTrmt)          
+          randomize <- rbind(randomize, tempDesign)
+          
+          randomize <- randomize[order(randomize$Trial, randomize$Block),]
+          rownames(randomize) <- 1:nrow(randomize)
+          
+          randomNewTrmt <- NULL
+          for (i in (1:trial)) { randomNewTrmt <- c(randomNewTrmt, sample(newTrmt, length(newTrmt), replace = FALSE)) }
+          
+          randomize[,"temp"] <- as.character(randomize[,"temp"])
+          randomize[randomize[,"temp"]%in%as.character(newTrmt), "temp"] <- randomNewTrmt
+          randomize[,"temp"] <- factor(randomize[,"temp"])
+     }
+     
+     tempPlan <- NULL
+     for (i in (1:trial)) {
+          plan[[i]] <- matrix(randomize[randomize[,1] == i,3], nrow = numFieldRow, ncol = numPlotsWithinRow, byrow = TRUE)
+          plotNum[[i]] <- matrix(randomize[randomize[,1] == i,"PlotNum"], nrow = numFieldRow, ncol = numPlotsWithinRow, byrow = TRUE)
+          
+          if (serpentine && r != numFieldRow) {
+               tempPlotNum <- plotNum[[i]]
+               if (r == numFieldRow || blkWithAddlRow == 0) {
+                    for (j in seq(1, numFieldRow, numRowsWithinBlk)) {
+                         indexUp <- j + numRowsWithinBlk - 1
+                         for (k in seq(j+1, indexUp, 2)) { 
+                              #plan[[i]][k, ] <- plan[[i]][k,] <- rev(plan[[i]][k,]) 
+                              plotNum[[i]][k,] <- rev(plotNum[[i]][k,]) 
+                         }
+                    }
+                    
+               } else {
+                    for (j in seq(1, ((numRowsWithinBlk+1)*blkWithAddlRow), numRowsWithinBlk+1)) {
+                         indexUp <- j + numRowsWithinBlk
+                         for (k in seq(j+1, indexUp, 2)) { 
+                              #plan[[i]][k, ] <- plan[[i]][k,] <- rev(plan[[i]][k,]) 
+                              plotNum[[i]][k,] <- rev(plotNum[[i]][k,]) 
+                         }
+                    } 
+                    if (numRowsWithinBlk > 1) {
+                         for (j in seq(((numRowsWithinBlk+1)*blkWithAddlRow)+1, numFieldRow, numRowsWithinBlk)) {
+                              if (numRowsWithinBlk%%2 == 0) { indexUp <- j + numRowsWithinBlk
+                              } else { indexUp <- j + numRowsWithinBlk - 1 }
+                              for (k in seq(j+1, indexUp, 2)) { 
+                                   #plan[[i]][k, ] <- plan[[i]][k,] <- rev(plan[[i]][k,])
+                                   plotNum[[i]][k,] <- rev(plotNum[[i]][k,]) 
+                              }
+                         } 
+                    }
+               }
+               tempPlan <- rbind(tempPlan, cbind(Trial = i, 
+                                                 merge(merge(as.data.frame.table(plan[[i]]), 
+                                                             as.data.frame.table(plotNum[[i]]), by.x = c("Var1", "Var2"), by.y = c("Var1", "Var2")),
+                                                       as.data.frame.table(tempPlotNum), by.x = c("Var1", "Var2"), by.y = c("Var1", "Var2"))))
+          } ## end if-else stmt (if (serpentine && r != numFieldRow))
+          dimnames(plan[[i]]) <- list(paste("FieldRow", 1:numFieldRow, sep =""), paste("FieldCol", 1:numPlotsWithinRow, sep = ""))
+          dimnames(plotNum[[i]]) <- dimnames(plan[[i]])
+     } ## end for stmt
+     
+     if (serpentine && r != numFieldRow && !is.null(tempPlan)) {
+          tempPlan[,"Var1"] <- as.numeric(tempPlan[,"Var1"])
+          tempPlan[,"Var2"] <- as.numeric(tempPlan[,"Var2"])
+          randomize <- merge(randomize, tempPlan, by.x = c("Trial", "PlotNum", "FieldRow", "FieldCol", "temp"), by.y = c("Trial","Freq", "Var1", "Var2", "Freq.x"))
+          randomize <- randomize[, c("Trial", "Block", "temp", "Freq.y", "FieldRow", "FieldCol")]
+     }
+     
+     if (!is.null(factorName) && is.valid.name(trimStrings(factorName[1]))) {
+          colnames(randomize) <- c("Trial", "Block", factorName, "PlotNum", "FieldRow", "FieldCol")     
+     } else { colnames(randomize) <- c("Trial", "Block", "Treatment", "PlotNum", "FieldRow", "FieldCol") }
+     names(plan) <- paste("Trial", 1:trial, sep = "")
+     names(plotNum) <- paste("Trial", 1:trial, sep = "")
+     
+     if (display) {
+          cat(toupper("Design Properties:"),"\n",sep = "")
+          cat("\t","Augmented Randomized Complete Block Design (Augmented RCBD)","\n\n",sep = "") 
+          cat(toupper("Design Parameters:"),"\n",sep = "")
+          cat("\t","Number of Trials = ", trial, "\n",sep = "")
+          cat("\t","Number of Replicated Treatments = ", length(checkTrmt), "\n",sep = "")
+          cat("\t","Levels of Replicated Treatments = ", sep = "")
+          if (length(checkTrmt) <= 5) { cat(paste(checkTrmt, collapse = ", ", sep = ""), "\n", sep = "")
+          } else {
+               cat(paste(checkTrmt[1:3],collapse = ", ", sep = ""), sep = "")
+               cat(", ..., ",checkTrmt[length(checkTrmt)], "\n",sep = "")
+          }
+          cat("\t","Number of Replicates = ", r, "\n",sep = "")
+          cat("\t","Number of Unreplicated Treatments = ", length(newTrmt), "\n",sep = "")
+          cat("\t","Levels of UnReplicated Treatments = ", sep = "")
+          if (length(newTrmt) <= 5) { cat(paste(newTrmt, collapse = ", ", sep = ""), "\n", sep = "")
+          } else {
+               cat(paste(newTrmt[1:3],collapse = ", ", sep = ""), sep = "")
+               cat(", ..., ",newTrmt[length(newTrmt)], "\n",sep = "")
+          }
+          cat("\t","Number of Field Row = ", numFieldRow,"\n\n")
+          if (errorDf < 12) {
+               cat("WARNING: Too few error df.","\n\n")
+          }
+          #cat("Results of Randomization:\n")
+          #printDataFrame(randomize)
+     }
+     
+     if (!is.null(file)) {
+          tempFile <- strsplit(file, split = "\\.")[[1]]
+          tempExt <- tolower(tempFile[length(tempFile)])
+          if (tempExt != "csv"){ if(tempExt != "rda") tempExt <- "csv" } 
+          newFile <- paste(tempFile[1:length(tempFile)-1], collapse = ".", sep = "")
+          newFile <- paste(newFile, tempExt, sep = ".")
+          if (tempExt == "csv") { write.csv(randomize, file = newFile, row.names = FALSE)
+          } else { save(randomize, file = newFile) }
+     } else {
+          cat("Results of Randomization:\n")
+          printDataFrame(randomize)
+     }
+     return(invisible(list(fieldbook = randomize, layout = plan, plotNum = plotNum)))
+}

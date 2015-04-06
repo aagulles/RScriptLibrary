@@ -1,0 +1,86 @@
+#-------------------------------------------------
+# This function runs backward regression
+#
+# ARGUMENTS:
+# selectedGen -
+# myFormula -
+# alphaValue -
+# set - 
+#
+# Author: Nellwyn L. Sales
+#-------------------------------------------------
+
+runBackwardRegression<-function(selectedGen, myFormula, alphaValue, set=NULL) UseMethod("runBackwardRegression")
+
+runBackwardRegression.default<-function(selectedGen, myFormula, alphaValue, set=NULL) {
+	iterationNumber<-1
+	repeat{
+		model <- lm(formula(myFormula), weights=weights, data=selectedGen)
+		coefficients<-coefficients(summary(model))
+		residSE<-round(summary(model)$sigma,digits=4)
+		multiRsquare<-round(summary(model)$r.squared,digits=4)
+		adjRsquare<-round(summary(model)$adj.r.squared,digits=4)
+		fvalue<-round(summary(model)$fstatistic[1],digits=4)
+		df1<-summary(model)$fstatistic[2]
+		df2<-summary(model)$fstatistic[3]
+		pvalue<-formatC(as.numeric(format(pf(summary(model)$fstatistic[1], df1=summary(model)$fstatistic[2], df2=summary(model)$fstatistic[3] , lower.tail = FALSE, log.p = FALSE), scientific=FALSE)), format="f")
+	
+		regStatsNames<-c("Residual Standard Error:", "Multiple R-square:", "Adjusted R-square:", "F-value:","p-value:")
+		regStatsValues<-format(rbind(residSE, multiRsquare, adjRsquare, fvalue, pvalue), justify="right")
+		regStats<-noquote(cbind(regStatsNames,regStatsValues))
+		colnames(regStats)<-rep("",ncol(regStats))
+		rownames(regStats)<-rep("",nrow(regStats))
+		
+		if (!is.null(set)) {
+      cat("\n\nSET",set,"MODEL", iterationNumber, ":\n\n")
+		} else {
+		  cat("\n\nMODEL", iterationNumber, ":\n\n")
+		}
+		cat("Regression Model: ", myFormula,"\n\n")
+		cat("Regression Coefficients:\n")
+		print(round(coefficients,digits=4))
+		print(regStats)
+		
+		#chi-square goodness-of-fit test
+		selectedGen$predictedMean<-coefficients[1,1]*selectedGen[,match(rownames(coefficients)[1],names(selectedGen))]
+		if (nrow(coefficients)>1) {
+			for (i in 2:nrow(coefficients)) {
+				selectedGen$predictedMean<-selectedGen$predictedMean + coefficients[i,1]*selectedGen[,match(rownames(coefficients)[i],names(selectedGen))]
+			}		
+		}
+		cat("\nObserved and Predicted Values of Generation Means:\n")
+		predictedMeans<-data.frame(Generation=selectedGen$generation, Observed=selectedGen$mean, Predicted=selectedGen$predictedMean)
+		print(predictedMeans)
+		
+		chiSquareValue<-0
+		for (i in 1:nrow(selectedGen)) {
+			chiSquareValue<-chiSquareValue + ((((selectedGen$mean[i]-selectedGen$predictedMean[i])^2))*selectedGen$weights[i]) 
+		}
+		chiSquarePvalue<-pchisq(q=chiSquareValue, df=nrow(selectedGen)-nrow(coefficients), lower.tail = FALSE, log.p = FALSE)
+
+		cat("\nGoodness-of-fit Test\n")
+		cat("Chi-square value: ", chiSquareValue,"\n")
+		cat("p-value:          ", chiSquarePvalue,"\n")
+		cat("\n-------------------------------------------------")
+
+		#checking the significance of the regression coefficients
+		maxPvalue<-max(coefficients[,"Pr(>|t|)"])
+			
+		if (maxPvalue>alphaValue) {
+			for (i in 1:nrow(coefficients)) {
+				if (maxPvalue == coefficients[i,"Pr(>|t|)"]) index<-i
+			}
+			index
+			excludeVar<-rownames(coefficients)[index]
+			deleteChars<-paste("","[+]",excludeVar)			
+			myFormula<-sub(deleteChars, "", myFormula)
+			iterationNumber<-iterationNumber + 1
+
+			if (myFormula == "mean ~ 0") {
+				break
+			}
+		} else {
+			break
+		}
+	} #end of repeat statement
+}

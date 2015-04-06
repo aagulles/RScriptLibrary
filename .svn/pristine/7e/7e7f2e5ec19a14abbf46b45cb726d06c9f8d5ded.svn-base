@@ -1,0 +1,36 @@
+#----------------------------------------------------------------
+# This function adjusts the error df of the anova table.                      
+# PBTools uses this if the anova table is obtained using raw data    
+# and estimates of missing values.
+#
+# ARGUMENTS:
+# anova.table - the table that will be modified
+# newDfColumn - the correct df column
+#
+# Script Created by: Nellwyn L. Sales
+#----------------------------------------------------------------
+
+adjustAnovaDf<-function(anova.table, newDfColumn) UseMethod("adjustAnovaDf")
+  
+adjustAnovaDf.default<-function(anova.table, newDfColumn) {
+  if (attr(anova.table, "class")[[1]]=="summary.aov") {
+    df<-as.data.frame(anova.table[[1]])
+  }
+  if (attr(anova.table, "class")[[1]]=="anova") {
+    df<-as.data.frame(anova.table)
+  }
+  if (attr(anova.table, "class")[[1]]=="data.frame") {
+    df<-anova.table
+  }
+  colnames(df) <- c("Df", "Sum Sq", "Mean Sq", "F value", "Pr(>F)")
+  rownames(df) <- trimStrings(rownames(df))
+  
+  df["Residuals", "Df"]<-newDfColumn[length(newDfColumn)]
+  df[, "Mean Sq"] <- df[, "Sum Sq"]/df[, "Df"]
+  df[, "F value"] <- df[, "Mean Sq"]/df["Residuals", "Mean Sq"]
+  df[, "Pr(>F)"] <- pf(df[, "F value"],df[, "Df"],df["Residuals", "Df"],lower.tail = F)
+  df["Residuals", "F value"] <- NA
+  df["Residuals", "Pr(>F)"] <- NA
+  
+  return(df)
+}

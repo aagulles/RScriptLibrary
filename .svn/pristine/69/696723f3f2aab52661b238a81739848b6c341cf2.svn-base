@@ -1,0 +1,26 @@
+\name{QTL.analysis}
+\alias{QTL.analysis}
+\title{QTL.analysis}
+\description{
+a
+}
+\usage{
+QTL.analysis(crossobj = cross.data, QTL.path, env.label = NULL, env = NULL, trait = "pred", step, method, threshold, distance, cofactors, window.size)
+}
+\arguments{
+  \item{crossobj}{a}
+  \item{QTL.path}{a}
+  \item{env.label}{a}
+  \item{env}{a}
+  \item{trait}{a}
+  \item{step}{a}
+  \item{method}{a}
+  \item{threshold}{a}
+  \item{distance}{a}
+  \item{cofactors}{a}
+  \item{window.size}{a}
+}
+\author{
+a
+}
+\keyword{qtl}

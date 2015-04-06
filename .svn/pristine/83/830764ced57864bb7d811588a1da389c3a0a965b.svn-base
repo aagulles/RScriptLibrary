@@ -1,0 +1,17 @@
+\name{modelComparisonTable}
+\alias{modelComparisonTable}
+\title{Model Comparison Table}
+\description{
+A function that contructs model comparison table when model1 and model2 are fitted using REML=TRUE.
+}
+\usage{
+modelComparisonTable(model1, model2)
+}
+\arguments{
+  \item{model1}{lmer object}
+  \item{model2}{lmer object}
+}
+\author{
+Nellwyn L.Sales
+}
+\keyword{modelComparison}

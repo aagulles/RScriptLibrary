@@ -1,0 +1,13 @@
+Package: pbtgs
+Type: Package
+Title: PBTools - Genomic Selection
+Version: 0.1
+Date: 2014-12-11
+Author: Rose Imee Zhella A. Morantte of International Rice Research Institute
+Maintainer: Rose Imee Zhella A. Morantte <r.morantte@irri.org>
+Description: Functions for performing genomic selection in PBTools
+Depends: R (>= 3.0.2), synbreed, Matrix, pedigreemm, PBTools
+License: GPL (>= 2)
+LazyLoad: yes
+Packaged: 2014-12-12 03:39:00 UTC; RMorantte
+Built: R 3.0.2; ; 2014-12-12 03:39:40 UTC; windows

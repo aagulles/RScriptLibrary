@@ -1,0 +1,20 @@
+\name{QTL.dataprep}
+\alias{QTL.dataprep}
+\alias{QTL.dataprep.default}
+\title{QTL.dataprep}
+\description{
+checks if all genotypes and markers are the same for the three input files in QTL analysis
+}
+\usage{
+QTL.dataprep(P_data, Gdatafile, Mdatafile, P_geno)
+}
+\arguments{
+  \item{P_data}{object corresponding to phenotypic file}
+  \item{Gdatafile}{path of genotypic file}
+  \item{Mdatafile}{path of map file}
+  \item{P_geno}{column name of genotype in phenotypic file}
+}
+\author{
+Rose Imee Zhella A. Morantte
+}
+\keyword{datacheck}

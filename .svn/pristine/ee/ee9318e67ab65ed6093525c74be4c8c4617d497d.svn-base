@@ -1,0 +1,47 @@
+# checkMarkerOrder - function for checking placement of markers
+#
+# REQUIRED input: 
+# crossData - R object of class cross
+# lodThreshold - minimum increase in maximum 2-point LOD that will be flagged
+#
+# OUTPUT: a list with the following elements:
+#  crossObj - an R object of class "cross"
+
+##########################################################
+# crossData = ch3c3
+# winSize = 7
+checkMarkerOrder <- function(crossData, lodThreshold) {
+#                              , winSize) {
+  crossData2 <- crossData
+  crossData2 <- est.rf(crossData)
+  chkAllOut <- checkAlleles(crossData2, threshold = lodThreshold)
+
+#   print(chkAllOut)
+#   chromProb <- unique(chkAllOut$chr)
+#   if (!is.null(chromProb))
+#     for (i in 1:length(chromProb)) {
+#       a <- pull.map(crossData2, chromProb[i])
+#       if (!is.null(a)) b <- names(a$"1")
+#       for (j in 1:length(b))
+#         for (k in (j+1):length(b))
+#           jkout <- geno.crosstab(crossData2, b[j], b[k])
+#           djkout <- NULL
+#           for (l in (1:dim(jkout)[1])) djkout[l] <- jkout[l,l]
+#     }  
+#   #switch orders..
+# 
+#   #check 
+#   for (i in names(crossData))
+#     rip[[i]] <- ripple(crossData2, i, winSize, verbose = FALSE)  # 7 - window size?
+#   dif.nxo <- sapply(rip, function(a) a[1,ncol(a)]-a[2,ncol(a)])
+#   any(dif.nxo > 0)
+#   
+#   for (i in names(crossData))
+#     rip[[i]] <- ripple(crossData2, i, winSize, method = "likelihood", error.prob = 0.001, verbose = FALSE) #error prob - add to param
+#   lod <- sapply(rip, function(a) a[2, ncol(a)-1])
+#   lod[lod > 0]
+#   summary(rip[["X"]])
+  
+#   return(chkOut = chkAllOut) 
+  return(list(crossObj = crossData2, chkOut = chkAllOut))
+}

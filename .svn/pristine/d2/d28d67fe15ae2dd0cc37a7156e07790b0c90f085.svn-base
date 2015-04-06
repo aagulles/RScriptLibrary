@@ -1,0 +1,39 @@
+# -------------------------------------------------------------------------------
+# R-CropStat Beta Version: Functions for ANALYZE - ANALYSIS OF VARIANCE SUBMENU
+# -------------------------------------------------------------------------------
+# printAOVTable
+# Created by: Alaine A. Gulles for International Rice Research Institute
+# Modified by: Alaine A. Gulles 08.09.2012
+# -------------------------------------------------------------------------------
+
+
+printAOVTable <- function(aovtable) UseMethod("printAOVTable")
+
+printAOVTable.default <- function(aovtable) {
+	colnames(aovtable) <- c("DF", "Sum of Square", "Mean Square", "F Value", "Pr(> F)")
+	colwidth <- max(c(nchar(trimStrings(rownames(aovtable), side = "right")), nchar("Source"))) + 2
+	for (i in (1:(ncol(aovtable) - 1))) { 
+		if (i == 1) { colwidth <- c(colwidth, max(c(nchar(aovtable[,i]), nchar(colnames(aovtable)[i]))) + 2) }
+		if (i == 2 || i == 3) { colwidth <- c(colwidth, max(c(nchar(round(aovtable[,i],4)), nchar(colnames(aovtable)[i]))) + 2) }
+		if (i == 4) { colwidth <- c(colwidth, max(c(nchar(round(aovtable[,i],2)), nchar(colnames(aovtable)[i]))) + 2) }
+	}
+	colwidth <- c(colwidth, 8)
+	options(width = 5000)
+	cat(formatC(paste(rep("-", sum(colwidth)), collapse="")), sep = "\n")
+	cat(formatC("Source", width = colwidth[1], format = "s", flag = "-"), sep = "")
+	for (i in (1:ncol(aovtable))) { cat(formatC(colnames(aovtable)[i], width = colwidth[i + 1], format = "s"), sep = "") }
+	cat("\n")
+	cat(formatC(paste(rep("-", sum(colwidth)), collapse="")), sep = "\n")
+	for (i in (1:nrow(aovtable))) {
+		cat(formatC(trimStrings(rownames(aovtable)[i], side = "right"), width = colwidth[1], format = "s", flag = "-"), sep = "")
+		cat(formatC(aovtable[i,1], width = colwidth[2]), sep = "")
+		for (j in (2:3)) { 
+			if (!is.na(aovtable[i,j])) { cat(formatC(aovtable[i,j], digits = 4, width = colwidth[j + 1], format = "f"), sep = "") 
+			} else { cat(formatC("", width = colwidth[j + 1], format = "s"), sep = "") }
+		}
+		if (!is.na(aovtable[i,4])) { cat(formatC(aovtable[i,4], digits = 2, width = colwidth[5], format = "f"), sep = "") } else { cat(formatC("", width = colwidth[5], format = "s"), sep = "") }
+		if (!is.na(aovtable[i,5])) { cat(formatC(aovtable[i,5], digits = 4, width = colwidth[6], format = "f"), sep = "") } else { cat(formatC("", width = colwidth[6], format = "s"), sep = "") }
+		cat("\n")
+	}
+	cat(formatC(paste(rep("-", sum(colwidth)), collapse="")), sep = "\n\n")
+} ### end statement

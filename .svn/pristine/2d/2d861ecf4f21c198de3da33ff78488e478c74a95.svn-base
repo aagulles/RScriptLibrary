@@ -1,0 +1,25 @@
+\name{GETwoStage.test}
+\alias{GETwoStage.test}
+\alias{GETwoStage.test.default}
+\title{GETwoStage.test}
+\description{
+persforms GxE two stage test
+}
+\usage{
+GETwoStage.test(data, respvar, stderr = NULL, sigma2, numrep, geno, env, weight = c("none", "stderr", "stdmean"), is.genoRandom = FALSE)
+}
+\arguments{
+  \item{data}{a}
+  \item{respvar}{a}
+  \item{stderr}{a}
+  \item{sigma2}{a}
+  \item{numrep}{a}
+  \item{geno}{a}
+  \item{env}{a}
+  \item{weight}{a}
+  \item{is.genoRandom}{a}
+}
+\author{
+Alaine A. Gulles
+}
+\keyword{ twostage }

@@ -1,0 +1,15 @@
+\name{Read}
+\alias{Read}
+\title{{Read}
+}
+\description{
+}
+\usage{
+Read(file.dat = NULL, file.wgt = NULL)
+}
+\arguments{
+  \item{file.dat}{a}
+  \item{file.wgt}{a}
+}
+\author{a}
+\keyword{a}

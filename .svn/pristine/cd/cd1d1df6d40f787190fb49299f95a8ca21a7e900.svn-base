@@ -1,0 +1,288 @@
+# -------------------------------------------------------------------------------
+# R-CropStat Beta Version: Functions for ANALYZE - ANALYSIS OF VARIANCE SUBMENU
+# -------------------------------------------------------------------------------
+# aovTest: Functions for performing ANOVA
+# Created by: Alaine A. Gulles for International Rice Research Institute
+# Modified by: Alaine A. Gulles 02.28.2012
+# -------------------------------------------------------------------------------
+
+AOVTest <- function(data, design, respvar, factor1, factor2 = NULL, factor3 = NULL, factor4 = NULL, rep1 = NULL, rep2 = NULL, descriptive = FALSE, normality = FALSE, homogeneity = FALSE, pwTest = NULL, pwVar = NULL, contrastOption = NULL, sig = 0.05, outputPath = NULL) UseMethod("AOVTest")
+
+AOVTest.default <- function(data, design, respvar, factor1, factor2 = NULL, factor3 = NULL, factor4 = NULL, rep1 = NULL, rep2 = NULL, descriptive = FALSE, normality = FALSE, homogeneity = FALSE, pwTest = NULL, pwVar = NULL, contrastOption = NULL, sig = 0.05, outputPath = NULL) {
+	if (is.character(data)) { 
+      	nameData <- data
+          	data <- eval(parse(text = data))
+     	} else { nameData <- paste(deparse(substitute(data))) }
+     
+     	if (!is.data.frame(data)) { stop("The object 'data' should be a data frame.") }
+     
+	availableDesign <- c("CRD", "RCBD", "LSD", "SplitCRD", "SplitRCBD", "SplitLSD", "Strip", "Split2CRD", "Split2RCBD", "Split2LSD", "Strip-Split",	"Split3CRD", "Split3RCBD", "Split3LSD", "Strip-Split2")
+     	if(is.na(match(design, availableDesign))) {
+		stop("Design must be one of the following:\n'CRD', 'RCBD', 'LSD',\n'SplitCRD', 'SplitRCBD', 'SplitLSD','Strip',\n'Split2CRD', 'Split2RCBD', 'Split2LSD', 'Strip-Split',\n'Split3CRD', 'Split3RCBD', 'Split3LSD', 'Strip-Split2'")
+	}
+
+     	designChoice <- match(design, availableDesign)
+     	designTitle <- c("Completely Randomized Design (CRD)",
+                      "Randomized Complete Block Design (RCBD)",
+                      "Latin Square Design (LSD)", 
+                      "Split Plot Design in CRD", "Split Plot Design in RCBD", "Split Plot Design in LSD", 
+                      "Strip Plot Design", "Split-Split Plot Design in CRD", "Split-Split Plot Design in RCBD", 
+                      "Split-Split Plot Design in LSD", "Strip-Split Plot Design", 
+                      "Split-Split-Split Plot Design in CRD", "Split-Split-Split Plot Design in RCBD", 
+                      "Split-Split-Split Plot Design in LSD", "Strip-Split-Split Plot Design")
+
+     	switch(designChoice,
+      	{numfactor <- 1; numblk <- 0; modelRHS <- paste(paste(factor1, collapse = "*", sep = "")); modelRHS2 <- modelRHS},
+            {numfactor <- 1; numblk <- 1; modelRHS <- paste(rep1, " + ", paste(factor1, collapse = "*", sep = ""), sep = ""); modelRHS2 <- modelRHS},
+            {numfactor <- 1; numblk <- 2; modelRHS <- paste(rep1, " + ", rep2, " + ", paste(factor1, collapse = "*", sep = ""), sep = ""); modelRHS2 <- modelRHS},
+            {numfactor <- 2; numblk <- 1; modelRHS <- paste(paste(c(factor1, factor2), collapse = "*", sep = ""), " + Error((", paste(c(rep1, factor1), collapse = ":", sep = "") , ")/",  rep1, ")", sep = "");
+             modelRHS2 <- paste(paste(c(factor1, factor2), collapse = "*", sep = ""), " + ", paste(c(rep1, factor1), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 2; numblk <- 1; modelRHS <- paste(rep1 ," + ", paste(c(factor1, factor2), collapse = "*", sep = ""), " + Error(", paste(c(rep1, factor1), collapse = ":", sep = ""), "/(", paste(factor1, collapse = ":", sep = ""), "))", sep = "");
+             modelRHS2 <- paste(rep1 ," + ", paste(c(factor1, factor2), collapse = "*", sep = ""), " + ", paste(c(rep1, factor1), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 2; numblk <- 2; modelRHS <- paste(rep1 ," + ", rep2 ," + ", paste(c(factor1, factor2), collapse = "*", sep = ""), " + Error(", paste(c(rep1,rep2, factor1), collapse = ":", sep = ""), "/(", paste(factor1, collapse = "*", sep = ""), "))", sep = "");
+             modelRHS2 <- paste(rep1 ," + ", rep2 ," + ", paste(c(factor1, factor2), collapse = "*", sep = ""), " + ", paste(c(rep1,rep2, factor1), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 2; numblk <- 1; modelRHS <- paste(rep1 ," + ", paste(c(factor1, factor2), collapse = "*", sep = ""), " + Error((", paste(c(rep1,factor1), collapse = ":", sep = ""), "/", paste(factor1, collapse = ":", sep = ""), ") + (", paste(c(rep1, factor2), collapse = ":", sep = ""), "/", paste(factor2, collapse = ":", sep = ""), "))", sep = "");
+             modelRHS2 <- paste(rep1 ," + ", paste(c(factor1, factor2), collapse = "*", sep = ""), " + ", paste(c(rep1,factor1), collapse = ":", sep = ""), " + ", paste(c(rep1, factor2), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 3; numblk <- 1; modelRHS <- paste(paste(c(factor1, factor2, factor3), collapse = "*", sep = ""), " + Error((", paste(c(rep1, factor1), collapse = ":", sep = ""), "/", rep1, ") + (", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), "/", paste(factor2, collapse = ":", sep = ""), "))", sep = "");
+             modelRHS2 <- paste(paste(c(factor1, factor2, factor3), collapse = "*", sep = ""), " + ", paste(c(rep1, factor1), collapse = ":", sep = ""), " + ", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 3; numblk <- 1; modelRHS <- paste(rep1 ," + ", paste(c(factor1, factor2, factor3), collapse = "*", sep = ""), " + Error((", paste(c(rep1, factor1), collapse = ":", sep = ""), "/", paste(factor1, collapse = ":", sep = ""), ") + (", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), "/", paste(factor2, collapse = ":", sep = ""), "))", sep = "");
+             modelRHS2 <- paste(rep1 ," + ", paste(c(factor1, factor2, factor3), collapse = "*", sep = ""), " + ", paste(c(rep1, factor1), collapse = ":", sep = ""), " + ", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 3; numblk <- 2; modelRHS <- paste(rep1 ," + ", rep2 ," + ",paste(c(factor1, factor2, factor3), collapse = "*", sep = ""), " + Error((", paste(c(rep1, rep2, factor1), collapse = ":", sep = ""), "/", paste(factor1, collapse = ":", sep = ""), ") + (", paste(c(rep1, rep2, factor1, factor2), collapse = ":", sep = ""), "/", paste(factor2, collapse = ":", sep = ""), "))", sep = "");
+             modelRHS2 <- paste(rep1 ," + ", rep2 ," + ",paste(c(factor1, factor2, factor3), collapse = "*", sep = ""), " + ", paste(c(rep1, rep2, factor1), collapse = ":", sep = ""), " + ", paste(c(rep1, rep2, factor1, factor2), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 3; numblk <- 1; modelRHS <- paste(rep1 ," + ", paste(c(factor1, factor2, factor3), collapse = "*", sep = ""), " + Error((", paste(c(rep1, factor1), collapse = ":", sep = ""), "/", paste(factor1, collapse = ":", sep = ""), ") + (", paste(c(rep1, factor2), collapse = ":", sep = ""), "/", paste(factor2, collapse = ":", sep = ""), ") + (", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), "/", paste(c(factor1, factor2), collapse = ":", sep = ""),"))", sep = "");
+             modelRHS2 <- paste(rep1 ," + ", paste(c(factor1, factor2, factor3), collapse = "*", sep = ""), " + ", paste(c(rep1, factor1), collapse = ":", sep = ""), " + ", paste(c(rep1, factor2), collapse = ":", sep = ""), " + ", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 4; numblk <- 1; modelRHS <- paste(paste(c(factor1, factor2, factor3, factor4), collapse = "*", sep = ""), " + Error((", paste(c(rep1, factor1), collapse = ":", sep = ""), "/", rep1, ") + (", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), "/", rep1, ") + (", paste(c(rep1, factor1, factor2, factor3), collapse = ":", sep = ""), "/", rep1, "))", sep = "");
+             modelRHS2 <- paste(paste(c(factor1, factor2, factor3, factor4), collapse = "*", sep = ""), " + ", paste(c(rep1, factor1), collapse = ":", sep = ""), " + ", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), " + ", paste(c(rep1, factor1, factor2, factor3), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 4; numblk <- 1; modelRHS <- paste(rep1 ," + ", paste(c(factor1, factor2, factor3, factor4), collapse = "*", sep = ""), " + Error((", paste(c(rep1, factor1), collapse = ":", sep = ""),         "/", paste(factor1, collapse = ":", sep = ""), ") + (", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""),         "/", paste(factor2, collapse = ":", sep = ""), ") + (", paste(c(rep1, factor1, factor2, factor3), collapse = ":", sep = ""), "/", paste(factor3, collapse = ":", sep = ""), "))", sep = "");
+             modelRHS2 <- paste(rep1 ," + ", paste(c(factor1, factor2, factor3, factor4), collapse = "*", sep = ""), " + ", paste(c(rep1, factor1), collapse = ":", sep = ""), " + ", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), " + ", paste(c(rep1, factor1, factor2, factor3), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 4; numblk <- 2; modelRHS <- paste(rep1 ," + ", rep2 ," + ", paste(c(factor1, factor2, factor3, factor4), collapse = "*", sep = ""), " + Error((", paste(c(rep1, rep2, factor1), collapse = ":", sep = ""), "/", paste(factor1, collapse = ":", sep = ""), ") + (", paste(c(rep1, rep2, factor1, factor2), collapse = ":", sep = ""), "/", paste(factor2, collapse = ":", sep = ""), ") + (", paste(c(rep1, rep2, factor1, factor2, factor3), collapse = ":", sep = ""), "/", paste(factor3, collapse = ":", sep = ""),"))", sep = "");
+             modelRHS2 <- paste(rep1 ," + ", rep2 ," + ", paste(c(factor1, factor2, factor3, factor4), collapse = "*", sep = ""), " + ", paste(c(rep1, rep2, factor1), collapse = ":", sep = ""), " + ", paste(c(rep1, rep2, factor1, factor2), collapse = ":", sep = ""), " + ", paste(c(rep1, rep2, factor1, factor2, factor3), collapse = ":", sep = ""), sep = "")},
+            {numfactor <- 4; numblk <- 1; modelRHS <- paste(rep1 ," + ", paste(c(factor1, factor2, factor3, factor4), collapse = "*", sep = ""), " + Error((", paste(c(rep1, factor1), collapse = ":", sep = ""), "/", paste(factor1, collapse = ":", sep = ""), ") + (", paste(c(rep1, factor2), collapse = ":", sep = ""), "/", paste(factor2, collapse = ":", sep = ""), ") + (", paste(c(rep1, factor1, factor2), collapse = ":", sep = ""), "/", paste(c(factor1, factor2), collapse = ":", sep = ""), ") + (", paste(c(rep1, factor1, factor2, factor3), collapse = ":", sep = ""), "/", paste(c(factor3), collapse = ":", sep = ""), "))", sep = "");
+             modelRHS2 <- paste(rep1 ," + ", paste(c(factor1, factor2, factor3, factor4), collapse = "*", sep = ""), " + ", paste(c(rep1, factor1), collapse = ":", sep = ""), " + ", paste(c(rep1, factor2), collapse = ":", sep = ""), " + ", paste(c(rep1, factor1, factor2, factor3), collapse = ":", sep = ""), sep = "")}
+     	)	
+
+     	allFactor <- c(factor1, factor2, factor3, factor4)
+     	prev.option <- options()$show.signif.stars
+     	options(show.signif.stars = FALSE, width = 5000)
+     	options(expressions = 500000)
+     	tempAnova <- list()
+     	residNfittedData <- NULL
+     	pwOption <- list()
+	tempData <- data
+     	aovresult <- list()
+     	rvWithSigEffect <- NULL
+     
+	for (i in (1:length(allFactor))) { tempData[,allFactor[i]]	<- factor(tempData[,allFactor[i]])	 }
+	if (!is.null(rep1)) { tempData[,rep1] <- factor(tempData[,rep1]) }
+	if (!is.null(rep2)) { tempData[,rep2] <- factor(tempData[,rep2]) }
+
+	for (i in (1:length(respvar))) {
+		residualData <- NULL
+     		fittedData <- NULL
+		formula <- paste(respvar[i]," ~ ", paste(c(rep1, rep2, allFactor), collapse = ":", sep = ""), sep = "")
+		if (designChoice != 1) {
+			rawData <- tempData[,sort(match(c(respvar[i], allFactor, rep1, rep2), names(tempData)))]
+			if (is.list(replications(formula, rawData))) {
+				newData <- GenerateBalanceData(tempData, respvar[i], allFactor, c(rep1, rep2) , design)
+				if ((1 - (length(na.omit(newData[,respvar[i]]))/nrow(newData))) > 0.10) { next }
+				tempData <- estMissData(design, data = newData, respvar[i], factor1, factor2, factor3, factor4, rep1, rep2)
+				estimateData <- TRUE
+			} else { estimateData <- FALSE }
+
+		} else {
+               estimateData <- FALSE
+		}
+
+		modelLHS <- paste(respvar[i], "~")
+		mymodel <- paste(modelLHS, modelRHS)
+		mymodel2 <- paste(modelLHS, modelRHS2)
+		if (estimateData) { tempresult <- summary(suppressWarnings(aov(formula(mymodel), data)))	}
+		result <- suppressWarnings(aov(formula(mymodel), tempData))
+          	aovresult[[i]] <- result
+          	if (estimateData) {
+			if (attr(summary(result), "class")[[1]] == "summary.aovlist") {
+			     	tempAnova[[i]] <- summary(result) 
+                    	numRow <- nrow(tempAnova[[i]][[length(tempAnova[[i]])]][[1]])
+                    	dfError <- tempresult[[length(tempresult)]][[1]][nrow(tempresult[[length(tempresult)]][[1]]),"Df"]
+                    	tempAnova[[i]][[length(tempAnova[[i]])]][[1]][numRow,"Df"] <- dfError
+			     	tempAnova[[i]][[length(tempAnova[[i]])]][[1]][numRow,"Mean Sq"] <- tempAnova[[i]][[length(tempAnova[[i]])]][[1]][numRow,"Sum Sq"]/dfError
+				tempAnova[[i]][[length(tempAnova[[i]])]][[1]][1:(numRow - 1),"F value"] <- tempAnova[[i]][[length(tempAnova[[i]])]][[1]][1:(numRow - 1),"Mean Sq"]/tempAnova[[i]][[length(tempAnova[[i]])]][[1]]["Residuals","Mean Sq"]
+				tempAnova[[i]][[length(tempAnova[[i]])]][[1]][1:(numRow - 1), "Pr(>F)"] <- pf(tempAnova[[i]][[length(tempAnova[[i]])]][[1]][1:(numRow - 1),"F value"], tempAnova[[i]][[length(tempAnova[[i]])]][[1]][1:(numRow - 1),"Df"], dfError, lower.tail = FALSE)
+			} else {
+				tempAnova[[i]] <- summary(result)
+				tempAnova[[i]][[1]]["Df"] <- tempresult[[1]]["Df"]
+				tempAnova[[i]][[1]]["Mean Sq"] <- tempAnova[[i]][[1]]["Sum Sq"]/tempAnova[[i]][[1]]["Df"]
+				numEffects <- nrow(tempAnova[[i]][[1]])-1
+				dfError <- tempAnova[[i]][[1]][nrow(tempAnova[[i]][[1]]),"Df"]
+				tempAnova[[i]][[1]][1:numEffects, "F value"] <- tempAnova[[i]][[1]][1:numEffects,"Mean Sq"]/tempAnova[[i]][[1]]["Residuals","Mean Sq"]
+				tempAnova[[i]][[1]][1:numEffects, "Pr(>F)"] <- pf(tempAnova[[i]][[1]][1:numEffects,"F value"], tempAnova[[i]][[1]][1:numEffects,"Df"], dfError, lower.tail = FALSE)
+			}
+		} else { tempAnova[[i]] <- summary(result) }
+		tempAOVTable <- ConstructAOVTable(tempAnova[[i]])
+          
+		# --- CREATE THE RESIDUAL DATA AND PREDICTED VALUES --- #
+		if (is.null(residNfittedData)) {
+			residNfittedData <- data.frame(PredictedValues(result))
+			colnames(residNfittedData) <- paste(respvar[i], "pred",sep = "_")
+		} else {
+			residNfittedData <- data.frame(residNfittedData, PredictedValues(result))
+			colnames(residNfittedData)[ncol(residNfittedData)] <- paste(respvar[i], "pred",sep = "_")
+		}
+		if (inherits(result, what = "aovlist")) { residNfittedData <- data.frame(residNfittedData,proj(result)[[length(result)]][,"Residuals"])
+		} else { residNfittedData <- data.frame(residNfittedData, residuals(result)) }
+		colnames(residNfittedData)[ncol(residNfittedData)] <- paste(respvar[i], "resid",sep = "_")
+
+		# create the diagnostic plot
+		if (!is.null(outputPath)) {
+			png(filename = paste(outputPath, design,"DiagPlot_", respvar[i], ".png", sep = ""))
+			params <- par(mfrow = c(1,2), bg = "white")
+			plot(residNfittedData[,(ncol(residNfittedData)-1)], residNfittedData[,ncol(residNfittedData)], main = paste("Residual vs Fitted:\n", respvar[i], sep = ""), xlab = "Fitted Values", ylab = "Residuals")
+			qqnorm(residNfittedData[,ncol(residNfittedData)])
+			qqline(residNfittedData[,ncol(residNfittedData)])
+			par(params)
+			dev.off()
+		}
+		
+
+		# --- PRINTING CLASS LEVEL INFORMATION --- #
+          	if (i == 1) { cat("Analysis of Variance","\n",designTitle[designChoice],"\n\n", sep = "")}
+		#cat(toupper("Class Information"), "\n")
+		ClassInformation(tempData, respvar = respvar[i])
+		cat("\n\n")
+		
+		# --- PRINTING DESCRIPTIVE STATISTICS --- #	
+		if (descriptive) { 
+			DescriptiveStatistics(data = tempData, var = respvar[i], grp = NULL, statistics = c("n", "mean", "sd", "min", "max"))
+			cat("\n")
+		}
+
+		if (homogeneity || normality) {
+			newTempData <- data.frame(CombineFactorLevels(data = tempData, concatVar = allFactor, targetName = "factor")["factor"], residNfittedData[ncol(residNfittedData)])
+
+			# --- PRINTING RESULTS OF TEST FOR HOMOGENEITY OF VARIANCES --- #
+			if (homogeneity) {
+				capture.output(bartlett.result <- HeteroskedasticityTest(data = newTempData, var = paste(names(newTempData)[2]), grp = "factor", method = c("bartlett")))
+		    		cat("Bartlett's Test for Homogeneity of Variances\n")
+            	   	printDataFrame(bartlett.result[,3:ncol(bartlett.result)])
+               		cat("\n")
+			}
+
+			# --- PRINTING RESULT OF SHAPIRO WILK TEST --- #
+			if (normality) {
+				NormalityTest(data = newTempData, var = paste(names(newTempData)[2]), grp = NULL, method = c("swilk"))
+               		cat("\n")
+			}
+		}
+		
+		# --- PRINTING OF ANOVA TABLE --- #
+		if (is.null(contrastOption)) {
+			cat("ANOVA TABLE\nResponse Variable: ", respvar[i], "\n", sep = "")
+			printAOVTable(tempAOVTable)
+			cat("\n")
+		} else { 
+			ContrastCompute(data = tempData, aovTable = tempAnova[[i]], mymodel, mymodel2,contrast.option = contrastOption)
+               cat("\n")
+		}
+		
+		# --- PRINTING OF SUMMARY STATISTICS --- #
+		summaryStat <- NULL
+		if (designChoice <= 3) {
+               	if (designChoice == 1 && is.list(replications(formula, tempData))) { 
+	            	summaryTable <- suppressWarnings(model.tables(result, "means", se = FALSE))
+               	} else {
+                   	summaryTable <- suppressWarnings(model.tables(result, "means", se = TRUE))     
+               	}
+               	grandMean <- summaryTable$tables[[1]]
+               	summaryStat <- rbind(summaryStat, data.frame(((sqrt(tempAnova[[i]][[1]][nrow(tempAnova[[i]][[1]]),3])/grandMean) * 100))) 
+               	rownames(summaryStat)[nrow(summaryStat)] <- paste("Coef Var", sep = "")
+               	summaryStat <- t(rbind(summaryStat, grandMean))          	
+     		} else {
+			grandMean <- mean(tempData[, respvar[i]], na.rm = TRUE)
+			for (j in (1:length(tempAnova[[i]]))) { 
+				summaryStat <- rbind(summaryStat, data.frame(((sqrt(tempAnova[[i]][[j]][[1]][nrow(tempAnova[[i]][[j]][[1]]),3])/grandMean) * 100))); 
+				rownames(summaryStat)[nrow(summaryStat)] <- paste("Coef Var(",letters[j],")", sep = "")
+			}
+			summaryStat <- t(rbind(summaryStat, grandMean))
+		}
+		colnames(summaryStat)[ncol(summaryStat)] <- paste(respvar[i], "Mean")
+		cat("Summary Statistics\n")
+		printDataFrame(as.data.frame(summaryStat))
+		cat("\n")
+          
+		if (!estimateData) {
+		     if (designChoice == 1 || designChoice == 2 || designChoice == 3) {
+                    if (!is.null(summaryTable$se)) {
+                         stdErrTable <- data.frame(Effects = names(unlist(summaryTable$se)),StdErr = unlist(summaryTable$se))
+                         rownames(stdErrTable) <- 1:nrow(stdErrTable)
+                         cat("Standard Errors\n")
+                         printDataFrame(stdErrTable)
+                         cat("\n")
+                    }
+		     }
+		}
+
+		# --- DETERMINE THE EFFECTS WHICH ARE SIGNIFICANT --- #
+		sigEffect <- SignificantEffect(tempAOVTable, alpha = sig)
+          	if (!is.null(sigEffect)) { 
+               	sigEffect <- trim.strings(sigEffect)
+               	rvWithSigEffect <- c(rvWithSigEffect, respvar[i])
+          	}
+		
+		# --- PRINT THE TABLE OF MEANS --- #
+          	if (is.null(sigEffect)) {
+          		cat("Table of Means\n")
+	          	if (length(allFactor) == 1) {
+      	         	tableMeans <- as.data.frame.table(summaryTable$tables[[length(summaryTable$tables)]])
+            	   	colnames(tableMeans)[ncol(tableMeans)] <- paste(respvar[i]," Means", sep = "")
+               		printDataFrame(tableMeans)
+	          	} else {
+      	         	if (designChoice <= 3) {
+            	        	print(ftable(summaryTable$tables[[length(summaryTable$tables)]]))
+               		} else {
+                    		factorInOrder <- unlist(lapply(tempData[allFactor], nlevels))[order(unlist(lapply(tempData[allFactor], nlevels)))]
+	                    	tableMeans <-eval(parse(text = paste("ftable(tapply(tempData[,'",respvar[i],"'], list(tempData[,'", paste(names(factorInOrder), collapse = "'],tempData[,'", sep = ""),"']), mean))", sep = "")))
+      	              	names(attr(tableMeans, "row.vars")) <- names(factorInOrder[1:(length(allFactor) - 1)])
+            	        	names(attr(tableMeans, "col.vars")) <- names(factorInOrder[length(allFactor)])
+                  	  	print(tableMeans)
+               		}
+          		}
+	          	cat("\n\n")
+          	} else {
+          		if (length(allFactor) > 1) {
+               		highestInteraction <- paste(allFactor, collapse = ":", sep = "")
+	               	if (is.na(match(highestInteraction, sigEffect))) {
+      	              	cat("Table of Means\n")
+            	        	if (designChoice <= 3) { print(ftable(summaryTable$tables[[length(summaryTable$tables)]]))
+                  	  	} else {
+                        	 	factorInOrder <- unlist(lapply(tempData[allFactor], nlevels))[order(unlist(lapply(tempData[allFactor], nlevels)))]
+                         		tableMeans <-eval(parse(text = paste("ftable(tapply(tempData[,'",respvar[i],"'], list(tempData[,'", paste(names(factorInOrder), collapse = "'],tempData[,'", sep = ""),"']), mean))", sep = "")))
+	                         	names(attr(tableMeans, "row.vars")) <- names(factorInOrder[1:(length(allFactor) - 1)])
+      	                   	names(attr(tableMeans, "col.vars")) <- names(factorInOrder[length(allFactor)])
+            	             	print(tableMeans)
+                  	  	}
+                    		cat("\n\n")
+               		}
+          		}
+          	} ## END IF ELSE STMT
+    
+		# --- PRINT PAIRWISE MEANCOMPARISON RESULT --- #
+		if (!is.null(sigEffect)) {
+            	if (!is.na(match(respvar[i], pwVar))) {
+                    	for (j in (1:length(sigEffect))) {
+                         	pairwiseComparison(tempAnova[[i]], design, trim.strings(sigEffect[j]), data = tempData, respvar[i], pwTest, siglevel = sig)
+                    	}     
+               	} else {
+                    	for (j in (1:length(sigEffect))) {
+                         	pairwiseComparison(tempAnova[[i]], design, trim.strings(sigEffect[j]), data = tempData, respvar[i], pwTest = NULL, siglevel = sig)
+                    	}     
+			}
+		}
+          	pwOption[[i]] <- list(rv = respvar[i], test = pwTest, sigEffect = sigEffect)
+		cat("\n")			
+		
+	} ### end stmt --- for (i in (1:length(respvar)))
+
+	options(show.signif.stars = prev.option)
+	return(invisible(list(data = tempData, aovObject = aovresult, rvWithSigEffect = rvWithSigEffect, aovTable = tempAnova, pwOption = pwOption, model = modelRHS, model2 = modelRHS2, alpha = sig)))
+	
+} ### end stmt -- aovTest

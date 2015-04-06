@@ -1,0 +1,204 @@
+# --------------------------------------------------------
+# GraphLine: creates a line chart of the data
+# ARGUMENTS:
+# data - name of R dataframe
+# outputPath - folder where graph(s) will be saved
+# nVar - name of the numeric variable
+# cVar - name of the categorical variable
+# mTitle - main title for bar graph, if any
+# yAxisLab - label to be used for the y-axis (for the numeric variable)
+# xAxisLab - label to be used for x-axis (for the categorical variable)
+# yMinValue - minimum value for the the y-axis
+# yMaxValue - maximum value for the y-axis
+# plotData - whether to plot actual data or computed means from the data
+# byVar - name of categorical variable for which separate graphs are created
+# errBars - logical; whether error bars are displayed or not
+# typeErrBar - whether error bars displayed (if any) are based on:
+# 					standard error or confidence interval
+# errMult - multiplier to be used on standard error 
+# confLev - confidence level, if confidence interval type error bars are to be displayed
+# plotCol - vector of rgb values for the color(s) of the lines (or names of colors)
+# showLineLabels - logical; whether the labels beside the lines are displayed or not
+# showLeg - logical; whether the graph legend is displayed or not
+# legPos - position of the legend (if showLeg is TRUE)
+# legTitle - text for the title of the legend, if displayed
+# boxed - logical; whether a box is drawn around the plot or not
+# multGraphs - logical; whether multiple graphs will be displayed in a page or not
+# numRowsGraphs - number of rows of graphs to allow to be displayed
+# numColsGraphs - number of columns of graphs to allow to be displayed
+# orientGraphs - whether multiple graphs are to be displayed from left-to-right or top-to-bottom
+# --------------------------------------------------------
+
+
+GraphLine <- function(data, outputPath, nVar, cVar = NULL, mTitle = NULL, yAxisLab = NULL, 
+		xAxisLab = NULL, yMinValue = NULL, yMaxValue = NULL, plotData = c("rawData", "means"),
+                byVar = NULL, errBars = FALSE, typeErrBar = c(NULL, "stdErr", "confInt"), errMult = 1, confLev = NULL, 
+                plotCol = NULL, showLineLabels = FALSE, showLeg = FALSE, 
+                legPos = c("bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", "right",	"center"), 
+                legTitle = NULL, boxed = TRUE, linePtTypes, lineTypes,  lineWidths, pointChars, pointCharSizes, 
+                multGraphs = FALSE, numRowsGraphs = 1, numColsGraphs = 1, orientGraphs = c("left-right", "top-bottom")) { 
+	
+  #reads data
+  if (is.character(data)) { data <- eval(parse(text = data)) }
+  
+  #creates a grouping variable if no grouping variable is declared
+  if (is.null(cVar)) { 
+    grp.Var = c(1:nrow(data))
+    cVar = "grp.Var"
+    data = cbind(data,grp.Var)
+  }  
+  #converts to factor the grouping variable(s)
+  data[,cVar] <- factor(data[,cVar]) 
+  if (!is.null(byVar)) { data[,byVar] <- factor(data[,byVar]) }  
+  
+  if (!multGraphs) {
+    numRowsGraphs = 1
+    numColsGraphs = 1
+  } 
+  
+  #determines number of cells allocated for graphs (esp. for multiple graphs)
+  numCells = numRowsGraphs * numColsGraphs
+  
+  #determines number of graphs to be created
+  if (!is.null(byVar)) {
+    numGraphs = (nlevels(data[,byVar]))
+  } else numGraphs = 1
+  
+  graphNum = 1
+  #counts the number of files to save
+  k = 1
+  
+  for (m in 1:numGraphs) {
+    #creates device for saving graph(s)
+    if (!multGraphs) {
+      png(filename = paste(outputPath,"linegraph_",k,".png",sep=""))
+      par(mfrow=c(numRowsGraphs, numColsGraphs))
+        
+    } else {
+      if (graphNum == 1 || graphNum %% numCells == 1)	{
+        png(filename = paste(outputPath,"linegraph_",k,".png",sep=""))
+         
+        if (orientGraphs == "top-bottom") {
+          par(mfcol=c(numRowsGraphs, numColsGraphs))
+        } else if (orientGraphs == "left-right") {
+          par(mfrow=c(numRowsGraphs, numColsGraphs))
+        }
+      }
+    }
+    
+    #creates data by subgroup, if a grouping variable is defined
+    if (!is.null(byVar)) {
+      tempData = data[which(data[,byVar] == levels(data[,byVar])[m]),]
+      subTitle = paste(byVar,"=",levels(tempData[,byVar])[m], sep=" ")
+    } else {
+      tempData = data
+      subTitle = NULL
+    }
+
+    # generates statistics
+    allYStats = NULL
+    yStatEB = NULL
+    yStatEBj = NULL
+    yStatLL = NULL
+    yStatUL = NULL 
+    if (plotData == "means") {
+      yStat = NULL
+      for (j in 1:length(nVar)) {
+        yStat = tapply(tempData[,nVar[j]], tempData[,cVar], mean, na.rm = TRUE)
+        if (errBars) {
+          ySum = tapply((tempData[,nVar[j]]), tempData[,cVar], sum, na.rm = TRUE)
+          yFreq = ySum/yStat
+          yStdDev = tapply(tempData[,nVar[j]], tempData[,cVar], sd, na.rm = TRUE)
+          yStdErr = yStdDev / sqrt(yFreq) 
+              
+          if (typeErrBar == "stdErr") {
+            lLimit = yStat - errMult * yStdErr
+            uLimit = yStat + errMult * yStdErr
+          } else if (typeErrBar == "confInt") {
+            ycIHalfWid = qnorm((1+confLev)/2) * yStdErr
+            lLimit = yStat - ycIHalfWid
+            uLimit = yStat + ycIHalfWid
+          }
+          yStatLL = rbind(yStatLL, lLimit)
+          yStatUL = rbind(yStatUL, uLimit)
+        }
+
+        allYStats = rbind(allYStats, yStat)
+      }
+      allYStats = t(allYStats)
+    } else if (plotData == "rawData") {
+      tempData = tempData[order(data[,cVar]),]
+      allYStats = as.matrix(tempData[nVar])
+      errBars = FALSE
+    }
+      
+    namesX = levels(tempData[,cVar])
+      
+    #determines lower and upper limits for the y-axis
+    yMinLim = if(!is.null(yMinValue)) { yMinValue
+    } else {
+      if(!is.null(yStatLL)) min(0, allYStats, yStatLL) 
+      else min(0, min(allYStats)) 
+    }
+    yMaxLim = if(!is.null(yMaxValue)) { yMaxValue
+    } else {
+      if (!is.null(yStatUL)) max(allYStats, yStatUL) 
+      else max(allYStats) 
+    }
+  
+    legLab = NULL
+    if (showLeg) legLab = nVar
+    
+    yVarLim = c(yMinLim,yMaxLim)
+    xVarLim = NULL
+
+    if (showLineLabels)
+      par(mar=c(5, 4, 4, 4) + 0.1)
+    
+    plot(allYStats[,1], ylab = yAxisLab, xlab = xAxisLab, main = mTitle, 
+         sub = subTitle, type = "n", axes=FALSE, 
+         col = plotCol, ylim = yVarLim)
+
+    axis(1,at=1:nlevels(tempData[,cVar]), labels = namesX)
+    axis(2, ylim = yVarLim, las = 1)
+    
+    if (showLeg) 
+      legend(legPos, legend = legLab, title = legTitle, pch = pointChars, lty = lineTypes, col = plotCol)
+  
+    #draws a box around the plot
+    if (boxed) box(lty = 1)
+    
+    #plot lines
+    for (i in 1:length(nVar)) {
+      lines(allYStats[,i], type = linePtTypes[i], lwd = lineWidths[i], 
+            pch = pointChars[i], cex = pointCharSizes[i], col = plotCol[i], lty = lineTypes[i])
+    }
+    
+    #plot line labels
+    if (showLineLabels) {
+      for (i in 1:length(nVar)) {
+        mtext(side = 4, at = allYStats[nrow(allYStats),i], nVar[i]
+            , cex = pointCharSizes[i], col = plotCol[i]
+            , line = 0.3, las = 1
+        )
+      }
+    }
+    
+    #adds error bars to the plot
+    if (errBars) {
+      lLimits = t(matrix(yStatLL,c(length(nVar),nlevels(tempData[,cVar]))))
+      uLimits = t(matrix(yStatUL,c(length(nVar),nlevels(tempData[,cVar]))))
+      for (i in 1:length(nVar)) {
+       arrows(1:nlevels(tempData[,cVar]), lLimits[,i], 1:nlevels(tempData[,cVar]), uLimits[,i], angle = 90, code = 3, length = 0.1, col = plotCol[i])
+      } 
+    }
+    
+    #increments file number
+    if ((graphNum %% numCells == 0) || graphNum == numGraphs) {
+      dev.off()
+      k = k + 1
+    }
+    graphNum = graphNum + 1
+  }
+	
+}

@@ -1,0 +1,16 @@
+\name{ReadQTL}
+\alias{ReadQTL}
+\title{ReadQTL}
+\description{
+a
+}
+\usage{
+ReadQTL(qtl = NULL)
+}
+\arguments{
+  \item{qtl}{a}
+}
+\author{
+a
+}
+\keyword{a}

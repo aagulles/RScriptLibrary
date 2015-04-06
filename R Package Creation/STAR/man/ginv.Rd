@@ -1,0 +1,32 @@
+% file MASS/man/ginv.Rd
+% copyright (C) 1994-9 W. N. Venables and B. D. Ripley
+%
+\name{ginv}
+\alias{ginv}
+\title{
+Generalized Inverse of a Matrix
+}
+\description{
+Calculates the Moore-Penrose generalized inverse of a matrix
+\code{X}.
+}
+\usage{
+ginv(X, tol = sqrt(.Machine$double.eps))
+}
+\arguments{
+\item{X}{
+Matrix for which the Moore-Penrose inverse is required.
+}
+\item{tol}{
+A relative tolerance to detect zero singular values.
+}}
+\value{
+A MP generalized inverse matrix for \code{X}.
+}
+\references{
+  Venables, W. N. and Ripley, B. D. (1999)
+  \emph{Modern Applied Statistics with S-PLUS.} Third
+  Edition. Springer. p.100.
+}
+\author{from package MASS}
+\keyword{algebra}

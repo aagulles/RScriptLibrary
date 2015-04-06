@@ -1,0 +1,23 @@
+\name{importGenFile}
+\alias{importGenFile}
+\alias{importGenFile.default}
+\title{
+imports a genetic file
+}
+\description{
+imports a file and converts it to genind object
+}
+\usage{
+importGenFile(filename, extension, population, individual, ploidyDegree=2)
+}
+\arguments{
+  \item{filename}{the full path and filename of the file to be imported}
+  \item{extension}{extension of file, e.g. csv}
+  \item{population}{column name which corresponds to the population}
+  \item{individual}{column name which corresponds to the individual}
+  \item{ploidyDegree}{ploidy}
+}
+\author{
+Nellwyn Sales
+}
+\keyword{importData}

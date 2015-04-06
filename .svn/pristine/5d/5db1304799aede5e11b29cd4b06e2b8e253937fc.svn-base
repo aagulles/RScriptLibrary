@@ -1,0 +1,23 @@
+\name{gge.analysis2}
+\alias{gge.analysis2}
+\alias{gge.analysis2.default}
+\title{gge.analysis2}
+\description{
+performs gge analysis for multi-env two-stage
+}
+\usage{
+gge.analysis2(ENV, GEN, REP, Y, SIGMA2, number = TRUE, graphtype = "biplot", respVar, f=0.5)
+}
+\arguments{
+  \item{ENV}{a}
+  \item{GEN}{a}
+  \item{REP}{a}
+  \item{Y}{a}
+  \item{SIGMA2}{a}
+  \item{number}{a}
+  \item{graphtype}{a}
+  \item{respVar}{a}
+  \item{f}{a}
+}
+\author{Alaine A. Gulles, Nellwyn L. Sales}
+\keyword{gge2}

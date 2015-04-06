@@ -1,0 +1,26 @@
+\name{PBTools-package}
+\alias{PBTools-package}
+\alias{PBTools}
+\docType{package}
+\title{Plant Breeding Tools}
+\description{An analytical software the performs statistical analyses that are used in Plant Breeding}
+\details{
+\tabular{ll}{
+Package: \tab PBTools\cr
+Type: \tab Package\cr
+Version: \tab 1.1\cr
+Date: \tab 2013-09-26\cr
+Depends: \tab R (>= 2.12.1), lme4, doBy, splines, MASS, nlme, Matrix, lattice\cr
+License: \tab GPL (>= 2)\cr
+LazyLoad: \tab yes\cr
+}
+}
+\author{
+Rose Imee Zhella A. Morantte <r.morantte@irri.org> and 
+Nellwyn L. Sales <n.sales@irri.org>, with contributions from
+Ms. Violeta A. Bartolome, Ms. Leilani A. Nora, Ms. Alaine A. Gulles
+and Dr. Guoyou Ye of International Rice Research Institute
+
+Maintainer: Rose Imee Zhella A. Morantte <r.morantte@irri.org> and Nellwyn L. Sales <n.sales@irri.org>
+}
+\keyword{ package }

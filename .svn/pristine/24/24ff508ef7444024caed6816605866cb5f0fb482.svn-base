@@ -1,0 +1,29 @@
+\name{checkQTLdata}
+\alias{checkQTLdata}
+\alias{checkQTLdata.default}
+\title{checkQTLdata}
+\description{checkQTLdata}
+\usage{
+checkQTLdata(outputPath, crossData, crossType, bcNum, fNum, doMissing = FALSE, deleteMiss = FALSE, cutOff = NULL, doDistortionTest = FALSE, pvalCutOff, doCompareGeno, cutoffP, doCheckMarkerOrder, lodThreshold, doCheckGenoErrors, lodCutOff, errorProb)
+}
+\arguments{
+  \item{outputPath}{a}
+  \item{crossData}{a}
+  \item{crossType}{a}
+  \item{bcNum}{a}
+  \item{fNum}{a}
+  \item{doMissing}{a}
+  \item{deleteMiss}{a}
+  \item{cutOff}{a}
+  \item{doDistortionTest}{a}
+  \item{pvalCutOff}{a}
+  \item{doCompareGeno}{a}
+  \item{cutoffP}{a}
+  \item{doCheckMarkerOrder}{a}
+  \item{lodThreshold}{a}
+  \item{doCheckGenoErrors}{a}
+  \item{lodCutOff}{a}
+  \item{errorProb}{a}
+}
+\author{Rose Imee Zhella Morantte}
+\keyword{analysis}

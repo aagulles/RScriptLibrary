@@ -1,0 +1,91 @@
+# -------------------------------------------------------------------------------------
+# designSplit: Generate randomization for split plot family design.
+# Created by: Alaine A. Gulles 09.21.2010 for International Rice Research Institute
+# Modified by: Alaine A. Gulles 04.13.2012
+# -------------------------------------------------------------------------------------
+
+designSplit <- function(main, sub, ssub = NULL, sssub = NULL, r = NULL, trial = 1, design = c('crd', 'rcbd', 'lsd'), display = TRUE, file = NULL) UseMethod("designSplit")
+
+designSplit.default <- function(main, sub, ssub = NULL, sssub = NULL, r = NULL, trial = 1, design = c('crd', 'rcbd', 'lsd'), display = TRUE, file = NULL) {
+
+	if (missing(main)) { stop("The argument 'main' is missing.") }
+	if (missing(sub)) { stop("The argument 'sub' is missing.") }
+
+	design <- match.arg(design)
+	factorList <- c(main, sub, ssub, sssub)
+	if (length(main[[1]]) == 1) { trmtLevel <- main[[1]]; factorList[[1]] <- 1:main[[1]] } else { trmtLevel <- length(main[[1]]) }
+	if (design == "crd")  { book <- designCRD(main, r, trial, display = FALSE)	 }
+	if (design == "rcbd") { book <- designRCBD(main, r, trial, display = FALSE) }
+	if (design == "lsd")  { book <- designLSD(main, trial, display = FALSE)	 }
+	if (!is.na(match("PlotNum", names(book)))) { book <- book[-I(match("PlotNum", names(book)))] }
+	if (length(sub[[1]]) == 1) { trmtLevel <- c(trmtLevel, sub[[1]]); factorList[[2]] <- 1:sub[[1]] } else { trmtLevel <- c(trmtLevel, length(sub[[1]])) }
+	randomize <- NULL
+	for (i in (1:nrow(book))) { randomize <- rbind(randomize, data.frame(row.names = NULL, book[i,], sample(GenerateFactor(sub)[,1], length(GenerateFactor(sub)[,1])))) }
+	colnames(randomize)[ncol(randomize)] <- names(sub)[1]
+	if (!is.null(ssub)) {
+		book <- randomize
+		randomize <- NULL
+		if (length(ssub[[1]]) == 1) { trmtLevel <- c(trmtLevel, ssub[[1]]); factorList[[3]] <- 1:ssub[[1]] } else { trmtLevel <- c(trmtLevel, length(ssub[[1]])) }
+		for (i in (1:nrow(book))) { randomize <- rbind(randomize, data.frame(row.names = NULL, book[i,], sample(GenerateFactor(ssub)[,1],length(GenerateFactor(ssub)[,1])))) }
+		colnames(randomize)[ncol(randomize)] <- names(ssub)[1]
+	}
+	if (!is.null(sssub)) {
+		book <- randomize
+		randomize <- NULL
+		if (length(sssub[[1]]) == 1) { trmtLevel <- c(trmtLevel, sssub[[1]]); factorList[[4]] <- 1:sssub[[1]] } else { trmtLevel <- c(trmtLevel, length(sssub[[1]])) }
+		for (i in (1:nrow(book))) { randomize <- rbind(randomize, data.frame(row.names = NULL, book[i,], sample(GenerateFactor(sssub)[,1], length(GenerateFactor(sssub)[,1])))) }
+		colnames(randomize)[ncol(randomize)] <- names(sssub)[1]
+	}
+	numFactor <- length(trmtLevel)
+	
+	if (design == "crd") {
+		randomize[,ncol(randomize) + 1] <- rep(1:(prod(trmtLevel)*r),trial)
+		colnames(randomize)[ncol(randomize)] <- c("PlotNum")
+	}
+	if (design == "rcbd") {
+		randomize[,ncol(randomize) + 1] <- rep(1:prod(trmtLevel),r*trial)
+		colnames(randomize)[ncol(randomize)] <- c("PlotNum")
+	}
+	rownames(randomize) <- 1:nrow(randomize)
+
+	if (display) {
+		splitLabel <- c("Split Plot Design", "Split-Split Plot Design", "Split-Split-Split Plot Design")
+		designLabel <- c("Completely Randomized Design", "Randomized Complete Block Design", "Latin Square Design")
+		factorLabel <- c("Mainplot", "Subplot", "Sub-subplot", "Sub-sub-subplot")
+
+		cat(toupper("Design Properties:"),"\n",sep = "")
+		cat("\t",splitLabel[numFactor-1],"\n",sep = "") 
+		cat("\t",designLabel[match(design, c("crd", "rcbd", "lsd"))],"\n\n",sep = "")
+		cat(toupper("Design Parameters:"),"\n",sep = "")
+		cat("\t","Number of Trials = ", trial, "\n",sep = "")
+		if (design == "crd") cat("\t","Number of Replicates = ", r, "\n",sep = "")
+		if (design == "rcbd") cat("\t","Number of Blocks = ", r, "\n",sep = "")
+		for (i in (1:length(factorList))) {
+			cat("\t",factorLabel[i]," Factor = ", names(factorList)[i], "\n",sep = "")
+			cat("\t","Levels = ", sep = "")
+			if (trmtLevel[i] <= 5) { cat(paste(factorList[[i]], collapse = ", ", sep = ""), sep = "")
+			} else {
+				cat(paste(factorList[[i]][1:3], collapse = ", ", sep = ""), sep = "")
+				cat(paste(", ...,", factorList[[i]][length(factorList[[i]])]), sep = "")
+			}
+			cat("\n")
+		}
+		cat("\n")
+		#cat("Results of Randomization:\n")
+		#printDataFrame(randomize)
+	}
+
+	if (!is.null(file)) {
+		tempFile <- strsplit(file, split = "\\.")[[1]]
+		tempExt <- tolower(tempFile[length(tempFile)])
+		if (tempExt != "csv"){ if(tempExt != "rda") tempExt <- "csv" } 
+		newFile <- paste(tempFile[1:length(tempFile)-1], collapse = ".", sep = "")
+		newFile <- paste(newFile, tempExt, sep = ".")
+		if (tempExt == "csv") { write.csv(randomize, file = newFile, row.names = FALSE)
+		} else { save(randomize, file = newFile) }
+	} else {
+		cat("Results of Randomization:\n")
+		printDataFrame(randomize)
+	}
+	return(invisible(randomize))
+}

@@ -1,0 +1,19 @@
+\name{generationMean.test}
+\alias{generationMean.test}
+\title{generationMean.test}
+\description{
+a
+}
+\usage{
+generationMean.test(data, usersNotationVector, generalNotationVector, alpha)
+}
+\arguments{
+  \item{data}{a}
+  \item{usersNotationVector}{a}
+  \item{generalNotationVector}{a}
+  \item{alpha}{a}
+}
+\author{
+Nellwyn L. Sales
+}
+\keyword{gma}

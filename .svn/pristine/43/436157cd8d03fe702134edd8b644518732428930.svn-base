@@ -1,0 +1,18 @@
+#-------------------------------------------------
+# This function computes several values first before calling ammi.analysis function
+# Author: Alaine A. Gulles
+#-------------------------------------------------
+
+ammi.analysis2 <- function (ENV, GEN, REP, Y, SIGMA2, number = TRUE, graphtype = "biplot", respVar, gge=FALSE) UseMethod("ammi.analysis2")
+  
+ammi.analysis2.default <- function (ENV, GEN, REP, Y, SIGMA2, number = TRUE, graphtype = "biplot", respVar, gge=FALSE) {
+
+  numrepEnv <- tapply(REP, ENV, mean)
+  sigma2Env <- tapply(SIGMA2, ENV, mean)
+  MSE <- sum(numrepEnv*sigma2Env)/sum(numrepEnv)
+  NREP <- 1/mean(1/numrepEnv)
+
+  ammi12Out <- ammi.analysis(ENV, GEN, NREP, Y, MSE, number, graph = graphtype, yVar = respVar, gge)
+
+}
+

@@ -1,0 +1,11 @@
+Package: PBTools
+Type: Package
+Title: Plant Breeding Tools
+Version: 1.0
+Date: 2013-09-27
+Author: Rose Imee Zhella A. Morantte and Nellwyn L. Sales with contributions from Ms. Violeta I. Bartolome, Ms. Leilani A. Nora, Ms. Alaine A. Gulles and Dr. Guoyou Ye of International Rice Research Institute
+Maintainer: Rose Imee Zhella A. Morantte <r.morantte@irri.org> and Nellwyn L. Sales <n.sales@irri.org>
+Description: Statistical Analysis for Plant Breeding
+Depends: R (>= 2.12.1), DiGGer, R.methodsS3, R.oo
+License: GPL (>= 2)
+LazyLoad: yes

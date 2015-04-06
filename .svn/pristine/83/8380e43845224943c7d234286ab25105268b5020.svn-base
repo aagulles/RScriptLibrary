@@ -1,0 +1,20 @@
+#----------------------------------------------------------------
+# This function generates genetic distance matrix.                      
+# PBTools uses this for popgen analysis    
+#                                                     
+# Script Created by: Nellwyn L. Sales
+#----------------------------------------------------------------
+
+genDistance<-function(genindObject, method=1, displayDiag=FALSE, displayUpper=FALSE) UseMethod("genDistance")
+
+genDistance.default<-function(genindObject, method=1, displayDiag=FALSE, displayUpper=FALSE) {
+  options(width=500)
+  library(adegenet)
+  
+  #convert genindObject to genpop object
+  pop <- genind2genpop(genindObject, miss = "0")
+  
+  dist<-dist.genpop(pop, met=method, diag=displayDiag, upper=displayUpper)
+  result<-round(dist, digits=4)
+  return(result)
+}

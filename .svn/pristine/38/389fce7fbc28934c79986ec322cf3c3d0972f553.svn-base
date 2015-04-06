@@ -1,0 +1,438 @@
+#----------------------------------------------------------------
+# Half-sib mating, Triple Test Cross                    
+# Multi-environment                                     
+# P1,P2,F1 (Female) are crossed with F2 lines (Male)    
+# Tests presence of epistasis                           
+# Computes genetic variance components
+#                  
+# R Script Created by: Violeta Bartolome   09.2011
+# R Script Modified by: Nellwyn M. Levita  10.26.2011 
+#----------------------------------------------------------------
+
+ttcTestME <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data, respvar, tester, f2lines, rep=NULL, block=NULL, row=NULL, column=NULL, individual=NULL, environment, codeP1, codeP2, codeF1, alpha=0.05) UseMethod("ttcTestME")
+
+ttcTestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data, respvar, tester, f2lines, rep=NULL, block=NULL, row=NULL, column=NULL, individual=NULL, environment, codeP1, codeP2, codeF1, alpha=0.05) {
+	
+	options(show.signif.stars=FALSE)
+	data <- eval(parse(text = data))
+	library(lme4)
+	
+	# --- trim the strings --- #
+	respvar <- trimStrings(respvar)
+	tester <- trimStrings(tester)
+	f2lines <- trimStrings(f2lines)
+	if (!is.null(block)) {block <- trimStrings(block) }
+	if (!is.null(rep)) {rep <- trimStrings(rep) }
+	if (!is.null(row)) {row <- trimStrings(row) }
+	if (!is.null(column)) {column <- trimStrings(column) }
+	if (!is.null(individual)) {individual <- trimStrings(individual) }
+	environment <-trimStrings(environment)
+	codeP1 <- trimStrings(codeP1)
+	codeP2 <- trimStrings(codeP2)
+	codeF1 <- trimStrings(codeF1)
+	alpha <- trimStrings(alpha)
+	
+	# --- create titles --- #
+	if (design == "CRD") { designName<-"CRD"}
+	if (design == "RCB") { designName<-"RCB"}
+	if (design == "Alpha") { designName<-"ALPHA-LATTICE"}
+	if (design == "RowColumn") { designName<-"ROW-COLUMN"}
+  
+	cat("\nMULTIPLE ENVIRONMENT ANALYSIS\n")
+	cat("\nDESIGN: TRIPLE TEST CROSS (NO PARENTS) IN ",designName, "\n", sep="")
+	
+	result <- list()
+	for (i in (1:length(respvar))) {
+		result[[i]] <- list()
+		temp.data <- data[(is.na(data[,match(respvar[i], names(data))]) == FALSE),]
+    
+		cat("\n-----------------------------")
+		cat("\nRESPONSE VARIABLE: ", respvar[i], "\n", sep="")
+		cat("-----------------------------\n")
+		
+		if ((nrow(temp.data)/nrow(data)) < 0.80) {
+		  cat("\nToo many missing observations. Cannot proceed with the analysis.\n\n")
+		  result[[i]]$tooManyNAWarning <- "YES"
+		  next
+		} else {
+		  result[[i]]$tooManyNAWarning <- "NO"
+      
+		  # --- define factors and get number of levels --- #
+		  temp.data[,match(tester, names(temp.data))] <- factor(trimStrings(temp.data[,match(tester, names(temp.data))]))
+		  temp.data[,match(f2lines, names(temp.data))] <- factor(trimStrings(temp.data[,match(f2lines, names(temp.data))]))
+		  temp.data[,match(environment, names(temp.data))] <- factor(trimStrings(temp.data[,match(environment, names(temp.data))]))
+		  
+		  f<-nlevels(temp.data[,match(tester, names(temp.data))])
+		  m<-nlevels(temp.data[,match(f2lines, names(temp.data))])
+		  e<-nlevels(temp.data[,match(environment, names(temp.data))])
+		  
+		  # --- create new column containing treatment combinations --- #
+		  temp.data$crossEnv<-factor(paste(temp.data[,f2lines], ":", temp.data[,tester], ":", temp.data[,environment], sep=""))
+		  temp.data<-temp.data[order(temp.data$crossEnv),]
+		  
+		  # --- compute harmonic mean that will be used later in the estimation of genetic variances --- #
+		  lengthPerCross<-tapply(temp.data[,respvar[i]], temp.data$crossEnv, length)
+		  repHarmonicMean<-1/mean((1/lengthPerCross), na.rm=TRUE)
+		  
+		  if (design == "CRD") {
+		    # --- add column Rep --- #
+		    temp.data<-data.frame(temp.data, Rep=sequence(lengthPerCross))
+		    
+		    nlevelsRep<-max(lengthPerCross, na.rm=TRUE)
+		  }
+		  if (design == "RCB") {
+		    temp.data[,match(block, names(temp.data))] <- factor(trimStrings(temp.data[,match(block, names(temp.data))]))  
+		    nlevelsRep<-nlevels(temp.data[,match(block, names(temp.data))])
+		  }
+		  if (design == "Alpha") {
+		    temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))
+		    temp.data[,match(block, names(temp.data))] <- factor(trimStrings(temp.data[,match(block, names(temp.data))]))
+		    nlevelsRep<-nlevels(temp.data[,match(rep, names(temp.data))])
+		  }
+		  if (design == "RowColumn") {
+		    temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))
+		    temp.data[,match(row, names(temp.data))] <- factor(trimStrings(temp.data[,match(row, names(temp.data))]))
+		    temp.data[,match(column, names(temp.data))] <- factor(trimStrings(temp.data[,match(column, names(temp.data))]))
+		    nlevelsRep<-nlevels(temp.data[,match(rep, names(temp.data))])
+		  }
+		  nBalance<-3*m*e*nlevelsRep
+		  temp.data<-temp.data[-c(match("crossEnv", names(temp.data)))]
+		  
+		  # --- data summary --- #
+		  funcTrialSum <- class.information2(names(temp.data),temp.data)
+		  cat("\nDATA SUMMARY: ","\n\n", sep="")
+		  print(funcTrialSum)
+		  cat("\n Number of observations read: ",nrow(data), sep="")
+		  cat("\n Number of observations used: ",nrow(temp.data), sep="")
+		  missingObs<-nBalance-nrow(temp.data)
+		  
+		  result[[i]]$funcTrialSum <- funcTrialSum
+		  result[[i]]$obsread <- nrow(data)
+		  result[[i]]$obsused <- nrow(temp.data)
+		  
+		  # --- if design is CRD or RCB, check if raw data is balanced. --- #
+		  # --- give warning if the number of obs in the dataset exceeds the balanced data size --- #
+		  if (nBalance<nrow(temp.data)) {
+		    cat("\n\n***\nERROR: The number of observations read in the data exceeds the size of a balanced data.\n       Please check if the column for block/replicate is properly labeled.\n***\n\n")
+		    result[[i]]$exceededWarning <- "YES"
+		  } else {
+		    result[[i]]$exceededWarning <- "NO"
+		    
+		    responseRate<-(nrow(temp.data)/nBalance)
+		    result[[i]]$responseRate <- responseRate
+		    
+		    if ((nrow(temp.data)/nBalance) >= 0.90) {
+		      if (nrow(temp.data) == nBalance) {
+		        anovaRemark <- "Raw dataset is balanced."
+		        dataForAnova<-temp.data  
+		      } else {
+		        #for CRD, no estimation of missing values
+		        if (design == "CRD") {
+		          dataForAnova <- temp.data
+		          anovaRemark <- "Raw dataset is unbalanced."
+		        } else {
+		          # --- estimate missing values per environment --- #
+		          dataForAnova<-NULL
+		          for (x in (1:e)) {
+		            tempSplit<-temp.data[temp.data[,environment]==levels(temp.data[,match(environment, names(temp.data))])[x],]
+		            if (design == "RCB") {
+		              tempDataForAnova<-tempSplit[,c(f2lines, tester, block, respvar[i])]
+		              balancedData<-generateBalancedData(design="FACTORIAL", data=tempDataForAnova, respvar[i], f2lines, tester, block)
+		              tempDataForAnova<-estimateMissingData(design="RCB", data=balancedData, respvar[i], f2lines, tester, block)
+		              tempDataForAnova<-tempDataForAnova[,c(f2lines, tester, block, respvar[i])]
+		            }
+		            if (design == "Alpha" || design == "RowColumn") {
+		              tempDataForAnova<-tempSplit[,c(f2lines, tester, rep, respvar[i])]
+		              balancedData<-generateBalancedData(design="FACTORIAL", data=tempDataForAnova, respvar[i], f2lines, tester, rep)
+		              tempDataForAnova<-estimateMissingData(design="RCB", data=balancedData, respvar[i], f2lines, tester, rep)
+		              tempDataForAnova<-tempDataForAnova[,c(f2lines, tester, rep, respvar[i])]
+		            }
+		            tempDataForAnova$EnvIndex<-levels(temp.data[,match(environment, names(temp.data))])[x]
+		            dataForAnova<-rbind(dataForAnova,tempDataForAnova)
+		          }
+		          colnames(dataForAnova)[match("EnvIndex",names(dataForAnova))]<-environment
+		          dataForAnova[,match(environment, names(dataForAnova))] <- factor(dataForAnova[,match(environment, names(dataForAnova))])
+		          
+		          anovaRemark <- "Raw data and estimates of the missing values are used."
+		        }
+		      }
+		      result[[i]]$anovaRemark <- anovaRemark
+		      
+		      if (design == "CRD" || design == "RCB") {
+		        # --- ANOVA for TTC experiment --- #
+		        if (design == "CRD") {
+		          myformula <- paste(respvar[i], " ~ ", environment, " * ", f2lines, "*", tester, sep = "")
+		          anovaFactorial<-summary(aov(formula(myformula), data=dataForAnova))
+		          
+		          #rerun aov using temp.data to get the original df's
+		          anovaFactorial.temp<-summary(aov(formula(myformula), data=temp.data))
+		          anovaFactorial<-adjustAnovaDf(anovaFactorial, anovaFactorial.temp[[1]]$"Df")
+		        }
+		        if (design == "RCB") {
+		          myformula <- paste(respvar[i], " ~ ", environment, ":", block, " + ", f2lines, "*", tester, "*", environment, sep = "")
+		          anovaFactorial<-summary(aov(formula(myformula), data=dataForAnova))
+		          
+		          #rerun aov using temp.data to get the original df's
+		          anovaFactorial.temp<-summary(aov(formula(myformula), data=temp.data))
+		          anovaFactorial.temp[[1]]$"Df"[length(anovaFactorial.temp[[1]]$"Df")]<-anovaFactorial[[1]]$"Df"[length(anovaFactorial[[1]]$"Df")]-missingObs
+		          anovaFactorial<-adjustAnovaDf(anovaFactorial, anovaFactorial.temp[[1]]$"Df")
+		          
+		          #rearrange the rows of anovaFactorial
+		          index<-match(paste(environment, ":", block, sep=""), trimStrings(rownames(anovaFactorial)))
+		          indexEnv<-match(paste(environment), trimStrings(rownames(anovaFactorial)))
+		          anovaFactorial <- rbind(anovaFactorial[c(indexEnv,index),], anovaFactorial[-I(match(c(indexEnv, index), 1:nrow(anovaFactorial))),])
+		          
+		          #recompute f value and pvalue of environment
+		          anovaFactorial[1,"F value"] <- anovaFactorial[1, "Mean Sq"]/anovaFactorial[2, "Mean Sq"]
+		          anovaFactorial[1,"Pr(>F)"] <-  pf(anovaFactorial[1,"F value"], anovaFactorial[1,"Df"], anovaFactorial[2,"Df"], lower.tail = FALSE)
+		        }
+		        anovaFormat<-formatAnovaTable(anovaFactorial)
+		        
+		        cat("\n\n\nANOVA TABLE:\n\n")
+		        print(anovaFormat)
+		        cat("-------\n")
+		        cat(paste("REMARK: ",anovaRemark, sep=""))
+		        result[[i]]$ttc.anova <- anovaFormat
+		      }
+		    } else {anovaRemark <- "ERROR: Too many missing values. Cannot perform ANOVA for balanced data." 
+		            cat("\n\n\nANOVA TABLE:\n")
+		            cat("\n",anovaRemark)
+		    }
+		    
+		    # --- test significance of tester:f2lines --- #
+		    Crosses <- temp.data[,match(tester, names(temp.data))]:temp.data[,match(f2lines, names(temp.data))]	
+		    
+		    pValue <- 0
+		    cat("\n\n\nTESTING FOR THE SIGNIFICANCE OF CROSS EFFECT: (Crosses = ", tester,":", f2lines, ")\n", sep="")
+		    
+		    # --- CONSTRUCT THE MODEL ---#
+		    if (design == "CRD") {
+		      myformula1 <- paste(respvar[i], " ~ Crosses + (1|",environment,") + (1|Crosses:",environment,")",sep = "")
+		      myformula2 <- paste(respvar[i], " ~ (1|",environment,") + (1|Crosses:",environment,")",sep = "")
+		    }
+		    if (design == "RCB") {
+		      myformula1 <- paste(respvar[i], " ~ Crosses + (1|",environment,") + (1|",block,":",environment,") + (1|Crosses:",environment,")",sep = "")
+		      myformula2 <- paste(respvar[i], " ~ (1|",environment,") + (1|",block,":",environment,") + (1|Crosses:",environment,")",sep = "")
+		    }	
+		    if (design == "Alpha") {
+		      myformula1 <- paste(respvar[i], " ~ Crosses + (1|", environment, ") + (1|", environment, ":", rep, ") + (1|", environment, ":", rep, ":", block, ") + (1|Crosses:", environment, ")", sep = "") 
+		      myformula2 <- paste(respvar[i], " ~ (1|", environment, ") + (1|", environment, ":", rep, ") + (1|", environment, ":", rep, ":", block, ") + (1|Crosses:", environment, ")", sep = "")
+		    }
+		    if (design == "RowColumn") {
+		      myformula1 <- paste(respvar[i], " ~ Crosses + (1|", environment, ") + (1|", environment, ":", rep, ") + (1|", environment, ":", rep, ":", row, ") + (1|", environment, ":", rep, ":", column, ") + (1|Crosses:", environment, ")", sep = "") 
+		      myformula2 <- paste(respvar[i], " ~ (1|", environment, ") + (1|", environment, ":", rep, ") + (1|", environment, ":", rep, ":", row, ") + (1|", environment, ":", rep, ":", column, ") + (1|Crosses:", environment, ")", sep = "") 
+		    }
+		    
+		    model1 <- lmer(formula(myformula1), data=temp.data)
+		    #model2 <- lmer(formula(myformula2), data=temp.data)
+		    #anova.table <- anova(model1,model2)
+		    #pValue <- anova.table$"Pr(>Chisq)"[[2]]
+		    
+		    result[[i]]$formula1 <- myformula1
+		    result[[i]]$data <- cbind(temp.data, Crosses)
+		    
+		    # print anova table
+		    #p<-formatC(as.numeric(format(anova.table[2,7], scientific=FALSE)), format="f")
+		    #anova_new<-cbind(round(anova.table[1:6],digits=2), rbind(" ",p))
+		    #rownames(anova_new)<-c(" model2", " model1")
+		    #colnames(anova_new)<-c("Df", "AIC", "BIC", "logLik", "Chisq", "Chi Df","Pr(>Chisq)" )
+		    #anova_print<-replace(anova_new, is.na(anova_new), " ")
+		    #cat("\n Formula for Model 1: ", myformula1, sep="")
+		    #cat("\n Formula for Model 2: ", myformula2,"\n\n", sep="")
+		    #print(anova_print)
+		    #result[[i]]$testerF2.test <- anova_print
+		    
+		    # --- check if tester:f2lines is significant. if significant, proceed to test for epistasis --- #
+		    alpha <- as.numeric(alpha)
+		    #if (pValue < alpha) {
+		    cat("\n\nANOVA FOR TESTING EPISTASIS:\n")
+		    
+		    # --- Create variables: s = P1 + P2 + F1; d = P1 - P2; sd = P1 + P2 - 2F1 --- #
+		    if (design == "CRD") {
+		      dataForAnova<-dataForAnova[,c(environment, f2lines, tester, "Rep", respvar[i])]
+		      data2 <- reshape(dataForAnova, v.names=respvar[i],idvar=c(environment,f2lines,"Rep"),timevar=tester,direction="wide",sep=".")
+		      data2 <- data2[complete.cases(data2),]
+		    }
+		    if (design == "RCB") {
+		      dataForAnova<-dataForAnova[,c(environment, f2lines, tester, block, respvar[i])]
+		      data2 <- reshape(dataForAnova, v.names=respvar[i],idvar=c(environment,f2lines,block),timevar=tester,direction="wide",sep=".")
+		    }
+		    if (design == "Alpha" || design == "RowColumn") {
+		      dataForAnova<-dataForAnova[,c(environment, f2lines, tester, rep, respvar[i])]
+		      data2 <- reshape(dataForAnova, v.names=respvar[i],idvar=c(environment,f2lines,rep),timevar=tester,direction="wide",sep=".")
+		    }
+		    respvardot<-paste(respvar[i],".", sep = "")
+		    colnames(data2) <- gsub(respvardot, "", colnames(data2))
+		    
+		    data2$s <- data2[,match(codeP1, names(data2))] + data2[,match(codeP2, names(data2))] + data2[,match(codeF1, names(data2))]
+		    data2$d <- data2[,match(codeP1, names(data2))] - data2[,match(codeP2, names(data2))]
+		    data2$sd <- data2[,match(codeP1, names(data2))] + data2[,match(codeP2, names(data2))] - 2*data2[,match(codeF1, names(data2))]
+		    
+		    #--- Test for epistasis ---#
+		    library(doBy)
+		    if (design == "CRD") {sdrepplusmale<-paste("sd ~ Rep +",f2lines,sep="")}
+		    if (design == "RCB") {sdrepplusmale<-paste("sd~",block,"+",f2lines,sep="")}
+		    if (design == "Alpha" || design == "RowColumn") {sdrepplusmale<-paste("sd~",rep,"+",f2lines,sep="")}
+		    sd.ij <- summaryBy(formula(sdrepplusmale), FUN=sum, data=data2)
+		    sdmale<-paste("sd~",f2lines,sep="")
+		    sd.i. <- summaryBy(formula(sdmale), FUN=sum, data=data2)
+		    sdenvmale<-paste("sd~",environment,"+",f2lines,sep="")
+		    sdhi. <- summaryBy(formula(sdenvmale), FUN=sum, data=data2)
+		    
+		    #--- ANOVA for sd ---#
+		    if (design == "CRD") {ANOVA.sd <- ANOVA("sd", data2, cont=6, DESIGN="CRD", TRT=f2lines, Block=NULL, Env=environment)}
+		    if (design == "RCB") {ANOVA.sd <- ANOVA("sd", data2, cont=6, DESIGN="RCB", TRT=f2lines, Block=block, Env=environment)}
+		    if (design == "Alpha" || design == "RowColumn") {ANOVA.sd <- ANOVA("sd", data2, cont=6, DESIGN="RCB", TRT=f2lines, Block=rep, Env=environment)}
+		    
+		    r<-repHarmonicMean
+		    
+		    SSaxa <- sum(sd.ij$sd.sum)^2/(6*m*r*e)
+		    DFaxa <- 1
+		    MSaxa <- SSaxa/DFaxa
+		    
+		    SSad.dd <- ANOVA.sd$SSg
+		    DFad.dd <- ANOVA.sd$DFg
+		    MSad.dd <- ANOVA.sd$MSg
+		    
+		    SSaaxe <- ((1/(6*m*r*e))*sum(data2$sd)^2) - SSaxa - ANOVA.sd$SSenv
+		    DFaaxe <- e-1
+		    MSaaxe <- SSaaxe/DFaaxe
+		    
+		    SSad.ddxe <- ANOVA.sd$SSgxenv
+		    DFad.ddxe <- ANOVA.sd$DFgxenv
+		    MSad.ddxe <- ANOVA.sd$MSgxenv
+		    
+		    SSE <- (1/(6*r))*(sum(sdhi.$sd.sum^2)) - 2*ANOVA.sd$SSenv
+		    DFE <- m*e
+		    MSE <- SSE/DFE
+		    
+		    Faxa <- MSaxa/MSaaxe
+		    Fad.dd <- MSad.dd/MSad.ddxe
+		    Faaxe <- MSaaxe/ANOVA.sd$MSe
+		    Fad.ddxe <- MSad.ddxe/ANOVA.sd$MSe
+		    FE <- MSE/ANOVA.sd$MSe
+		    Fe_sd <- NA
+		    
+		    Paxa <- 1-pf(Faxa,DFaxa,DFaaxe)
+		    Pad.dd <- 1-pf(Fad.dd,DFad.dd,DFad.ddxe)
+		    Paaxe <- 1-pf(Faaxe,DFaaxe,ANOVA.sd$DFe)
+		    Pad.ddxe <- 1-pf(Fad.dd,DFad.dd,ANOVA.sd$DFe)
+		    
+		    PE <- 1-pf(FE,DFE,ANOVA.sd$DFe)
+		    Pe_sd <- NA
+		    
+		    DF <- c(DFaxa, DFad.dd, DFaaxe, DFad.ddxe, DFE, ANOVA.sd$DFe)
+		    SS <- c(SSaxa, SSad.dd, SSaaxe, SSad.ddxe, SSE, ANOVA.sd$SSe)
+		    MS <- c(MSaxa, MSad.dd, MSaaxe, MSad.ddxe, MSE, ANOVA.sd$MSe)
+		    Fvalue <- c(Faxa, Fad.dd, Faaxe, Fad.ddxe, FE, NA)
+		    Prob <-c(Paxa, Pad.dd, Paaxe, Pad.ddxe, PE, NA)
+        
+		    AOV <- cbind(DF, SS, MS, Fvalue, Prob)
+		    rownames(AOV) <- c("AxA", "AxD and DxD", "AAxE", "ADxE or DDxE", "Total", "Residuals")
+        AOV<-as.data.frame(AOV)
+        AOV<-formatAnovaTable(AOV)
+		    print(AOV)
+		    cat("-------\n")
+		    cat(paste("REMARK: ",anovaRemark, sep=""))
+		    cat("\n")
+		    result[[i]]$epistasis.test<- AOV
+		    # --- NOTE: There is epistatis if either the AxA or AxD and DxD or both are significant. --- #
+		    
+		    #--- estimates of variance components --- #
+		    
+		    #---  ANOVA FOR s ---#
+		    if (design == "CRD") {ANOVA.s <- ANOVA("s", data2, cont=3, DESIGN="CRD", TRT=f2lines, Block=NULL, Env=environment)}
+		    if (design == "RCB") {ANOVA.s <- ANOVA("s", data2, cont=3, DESIGN="RCB", TRT=f2lines, Block=block, Env=environment)}
+		    if (design == "Alpha" || design == "RowColumn") {ANOVA.s <- ANOVA("s", data2, cont=3, DESIGN="RCB", TRT=f2lines, Block=rep, Env=environment)}
+		    
+		    Fg_s <- ANOVA.s$MSg/ANOVA.s$MSe
+		    Fgxe_s <- ANOVA.s$MSgxenv/ANOVA.s$MSe
+		    Fe_s <- NA
+		    
+		    Pg_s <- 1-(pf(Fg_s,ANOVA.s$DFg,ANOVA.s$DFe))
+		    Pgxe_s <- 1-(pf(Fgxe_s,ANOVA.s$DFgxenv,ANOVA.s$DFe))
+		    Pe_s <- NA
+		    
+		    #---  ANOVA FOR d ---#
+		    if (design == "CRD") {ANOVA.d <- ANOVA("d", data2, cont=2, DESIGN="CRD", TRT=f2lines, Block=NULL, Env=environment)}
+		    if (design == "RCB") {ANOVA.d <- ANOVA("d", data2, cont=2, DESIGN="RCB", TRT=f2lines, Block=block, Env=environment)}
+		    if (design == "Alpha" || design =="RowColumn") {ANOVA.d <- ANOVA("d", data2, cont=2, DESIGN="RCB", TRT=f2lines, Block=rep, Env=environment)}
+		    
+		    Fg_d <- ANOVA.d$MSg/ANOVA.d$MSe
+		    Fgxe_d <- ANOVA.d$MSgxenv/ANOVA.d$MSe
+		    Fe_d <- NA
+		    
+		    Pg_d <- 1-(pf(Fg_d,ANOVA.d$DFg,ANOVA.d$DFe))
+		    Pgxe_d <- 1-(pf(Fgxe_d,ANOVA.d$DFgxenv,ANOVA.d$DFe))
+		    Pe_d <- NA
+        
+		    DF <- c(ANOVA.s$DFg, ANOVA.s$DFgxe, ANOVA.s$DFe, ANOVA.d$DFg, ANOVA.d$DFgxe, ANOVA.d$DFe)
+		    SS <- c(ANOVA.s$SSg, ANOVA.s$SSgxe, ANOVA.s$SSe, ANOVA.d$SSg, ANOVA.d$SSgxe, ANOVA.d$SSe)
+		    MS <- c(ANOVA.s$MSg, ANOVA.s$MSgxe, ANOVA.s$MSe, ANOVA.d$MSg, ANOVA.d$MSgxe, ANOVA.d$MSe)
+		    Fvalue <- c(Fg_s, Fgxe_s, NA, Fg_d, Fgxe_d,NA)
+		    Prob <-c(Pg_s, Pgxe_s, NA, Pg_d, Pgxe_d, NA)
+		    
+		    AOV2 <- cbind(DF, SS, MS, Fvalue, Prob)
+		    rownames(AOV2) <- c("s", "sxe", "e(s)", "d", "dxe", "e(d)")
+		    AOV2 <- as.data.frame(AOV2)
+		    AOV2 <- formatAnovaTable(AOV2)
+		    cat("\n\nANOVA TABLE:\n")
+		    print(AOV2)
+		    cat("-------\n")
+		    cat(paste("REMARK: ",anovaRemark, sep=""))
+		    cat("\n")
+		    result[[i]]$sd.anova <-AOV2
+		    
+		    sigma2A <- (ANOVA.s$MSg - ANOVA.s$MSe)/(3*r)
+		    sigma2D <- (ANOVA.d$MSg - ANOVA.d$MSe)/(2*r)
+		    if (sigma2A < 0) sigma2A<-0
+		    if (sigma2D < 0) sigma2D<-0
+		    
+		    #--- Genetic variance estimates ---#
+		    varcomp <- summary(model1)@REmat
+		    Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+		    VA <- 4*sigma2A
+		    VVA <- (32/(9*(r^2)))*(((ANOVA.s$MSg^2)/(m-1+2))+((ANOVA.s$MSe^2)/((m-1)*(r-1)+2)))
+		    
+		    VD <- 2*sigma2D
+		    VVD <- (2/(r^2))*(((ANOVA.d$MSg^2)/(m-1+2)) + ((ANOVA.d$MSe^2)/((m-1)*(r-1)+2)))
+		    
+		    VE <- Ve
+        
+		    if (VA < 0 || VA < 1e-10) VA <- 0
+		    if (VD < 0 || VD < 1e-10) VD <- 0
+		    
+		    VP <- VA + VD + VE
+		    h2B <- (VA + VD) / VP                 # individual based
+		    # Vh2B <- (2*(1-h2B)^2*(1+(r-1)*h2B)^2)/(r*(r-1)*(m-1))
+		    
+		    h2N <- VA / VP      	              # individual based
+		    # Vh2N <- (2*(1-h2N)^2*(1+(r-1)*h2N)^2)/(r*(r-1)*(m-1))
+		    Dominance.ratio <- sqrt(2*VD/VA)
+		    
+		    VA_p<-formatNumericValue(VA)
+		    VD_p<-formatNumericValue(VD)
+		    h2N_p<-formatNumericValue(h2N)
+		    h2B_p<-formatNumericValue(h2B)
+		    Dominance.ratio_p<-formatNumericValue(Dominance.ratio)
+		    
+		    Estimate <- rbind(VA_p, VD_p, h2N_p, h2B_p, Dominance.ratio_p)
+		    with.colheader<-format(rbind("Estimate", Estimate), justify="right")
+		    colnames(with.colheader) <- c("")
+		    rownames(with.colheader) <- c(""," VA", " VD", " h2-narrow sense"," H2-broad sense", " Dominance Ratio")
+		    TABLE <- as.table(with.colheader)
+		    cat("\n\nESTIMATES OF GENETIC VARIANCE COMPONENTS:\n")
+		    print(TABLE)
+		    cat("\n")
+		    result[[i]]$genVar <- TABLE
+		    detach("package:doBy")
+		    #}
+		    cat("\n")
+		  }
+		}
+	}## end of loop (i)
+	cat("\n==============================================================\n")
+	detach("package:lme4")
+	return(list(output = result))
+}
+

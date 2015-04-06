@@ -1,0 +1,19 @@
+\name{graph.sea.predint}
+\alias{graph.sea.predint}
+\alias{graph.sea.predint.default}
+\title{graph.sea.predint}
+\description{
+function for single environment analysis; outputs prediction interval
+}
+\usage{
+graph.sea.predint(data, respvar, env, geno, result)
+}
+\arguments{
+  \item{data}{a}
+  \item{respvar}{a}
+  \item{env}{a}
+  \item{geno}{a}
+  \item{result}{a}
+}
+\author{Alaine A. Gulles}
+\keyword{interval}

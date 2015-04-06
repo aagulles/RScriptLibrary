@@ -1,0 +1,25 @@
+\name{ssa.test}
+\alias{ssa.test}
+\alias{ssa.test.default}
+\title{ssa.test}
+\description{
+performs single environment analysis
+}
+\usage{
+ssa.test(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env = NULL, is.random = FALSE, excludeCheck=FALSE, checkList = NULL)
+}
+\arguments{
+  \item{exptl.design}{RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol}
+  \item{data}{a string; name of the dataframe}
+  \item{respvar}{a string; variable name of the response variable}
+  \item{geno}{a string; variable name of the treatment/genotype variable}
+  \item{row}{a string; variable name of the blocking variable or row variable}
+  \item{column}{a string; variable name of the column variable; NULL, if design is RCB, Aug RCB, Alpha Lattice}
+  \item{rep}{a string; variable name of the replication variable; NULL, if design is RCB, Aug RCB, Aug LS}
+  \item{env}{a string; variable name of the environment variable}
+  \item{is.random}{logical; indicating whether genotype/treatment is random or not; default value is FALSE (FIXED factor)}
+  \item{excludeCheck}{logical; indicating whether to exclude checks}
+  \item{checkList}{vector of genotype levels considered as checks}
+}
+\author{Alaine A. Gulles, Nellwyn L. Sales}
+\keyword{single-site}

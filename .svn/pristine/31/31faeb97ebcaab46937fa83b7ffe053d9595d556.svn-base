@@ -1,0 +1,20 @@
+\name{estimateMissingData}
+\alias{estimateMissingData}
+\title{estimateMissingData}
+\description{
+ estimates missing values using AOV
+}
+\usage{
+estimateMissingData(design=c("CRD", "RCB"), data=NULL , respvar, male, female, rep)
+}
+\arguments{
+  \item{design}{experimental design}
+  \item{data}{data frame}
+  \item{respvar}{response variable}
+  \item{male}{string, name of male factor}
+  \item{female}{string, name of female factor}
+  \item{rep}{string, name of rep variable}
+}
+\author{Nellwyn L. Sales, Alaine A. Gulles}
+\keyword{missingdata}
+

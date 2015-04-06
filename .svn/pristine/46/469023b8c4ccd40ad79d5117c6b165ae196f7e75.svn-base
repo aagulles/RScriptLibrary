@@ -1,0 +1,572 @@
+#----------------------------------------------------------------
+# diallel analysis                           
+# Griffing Method 3                          
+# (F1's + Reciprocals)                       
+#                             
+# Script Created by: Violeta Bartolome   07.2011
+# Script Modified by: Nellwyn M. Levita  09.14.2011 
+#----------------------------------------------------------------
+
+diallel3Test <-
+function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data, respvar, p1, p2, rep=NULL, block=NULL, row=NULL, column=NULL, cross=TRUE, individual=NULL, environment=NULL, alpha=0.05) {
+	
+	options(show.signif.stars=FALSE)
+	data <- eval(parse(text = data))
+	
+	# --- trim the strings --- 
+	respvar <- trim.strings(respvar)
+	p1 <- trim.strings(p1)
+	p2 <- trim.strings(p2)
+	if (!is.null(block)) {block <- trim.strings(block) }
+	if (!is.null(rep)) {rep <- trim.strings(rep) }
+	if (!is.null(row)) {row <- trim.strings(row) }
+	if (!is.null(column)) {column <- trim.strings(column) }
+	if (!is.null(individual)) {individual <- trim.strings(individual) }
+	if (!is.null(environment)) {environment <-trim.strings(environment) }
+	alpha <- trim.strings(alpha)
+		
+	# --- create titles --- #
+	if (design == "CRD") { designName<-"CRD"}
+	if (design == "RCB") { designName<-"RCB"}
+	if (design == "Alpha") { designName<-"ALPHA-LATTICE"}
+	if (design == "RowColumn") { designName<-"ROW-COLUMN"}
+  
+	if (cross) {parentsType<-"CROSS"
+	} else {parentsType<-"SELF"}
+	cat("\nDIALLEL ANALYSIS: GRIFFING METHOD III IN ",designName, " (", parentsType, ")\n", sep="")
+	
+	# --- get number of environment levels --- #
+	if (!is.null(environment)) {
+	  data[,match(environment, names(data))] <- factor(trim.strings(data[,match(environment, names(data))]))
+	  envNumLevels<-nlevels(data[,match(environment, names(data))])
+	} else {envNumLevels<-1}
+	
+	result <- list()
+	for (i in (1:length(respvar))) {
+	  result[[i]] <- list()
+	  cat("\n-----------------------------")
+	  cat("\nRESPONSE VARIABLE: ", respvar[i], "\n", sep="")
+	  cat("-----------------------------\n")
+	  for (j in (1:envNumLevels)) {
+	    result[[i]]$site[[j]] <- list()
+	    if (!is.null(environment)) {
+	      crdVars<-c(respvar[i], p1, p2, environment)
+	      rcbVars<-c(respvar[i], p1, p2, block, environment)
+	      alphaVars<-c(respvar[i], p1, p2, rep, block, environment)
+	      rowcolVars<-c(respvar[i], p1, p2, rep, row, column, environment)
+	    } else {
+	      crdVars<-c(respvar[i], p1, p2)
+	      rcbVars<-c(respvar[i], p1, p2, block)
+	      alphaVars<-c(respvar[i], p1, p2, rep, block)
+	      rowcolVars<-c(respvar[i], p1, p2, rep, row, column)
+	    }
+	    if (design == "CRD") {temp.data <- data[sort(match(crdVars, names(data)))]}
+	    if (design == "RCB") {temp.data <- data[sort(match(rcbVars, names(data)))]}
+	    if (design == "Alpha") {temp.data <- data[sort(match(alphaVars, names(data)))]}
+	    if (design == "RowColumn") {temp.data <- data[sort(match(rowcolVars, names(data)))]}
+	    if (!is.null(environment)) {
+	      cat("-----------------------------")
+	      cat("\nANALYSIS FOR: ",environment, " = " ,levels(temp.data[,match(environment, names(temp.data))])[j],"\n", sep="")
+	      cat("-----------------------------\n")
+	      temp.data <- temp.data[temp.data[,match(environment, names(temp.data))] == levels(temp.data[,match(environment, names(temp.data))])[j],]
+        temp.data[,match(environment, names(temp.data))] <- factor(trim.strings(temp.data[,match(environment, names(temp.data))]))
+	    }
+	    
+	    # --- define factors and number of levels --- #
+	    temp.data[,match(p1, names(temp.data))] <- factor(trim.strings(temp.data[,match(p1, names(temp.data))]))
+	    temp.data[,match(p2, names(temp.data))] <- factor(trim.strings(temp.data[,match(p2, names(temp.data))]))
+	    p <- length(unique(c(levels(temp.data[,match(p1, names(temp.data))]), levels(temp.data[,match(p2, names(temp.data))]))))
+	    
+	    # --- create new column containing treatment combinations --- #
+	    temp.data$cross<-factor(paste(temp.data[,p1], ":", temp.data[,p2], sep=""))
+	    temp.data<-temp.data[order(temp.data$cross),]
+	    
+	    # --- compute harmonic mean that will be used later in the estimation of genetic variances --- #
+	    lengthPerCross<-tapply(temp.data[,respvar[i]], temp.data$cross, length)
+	    repHarmonicMean<-1/mean((1/lengthPerCross), na.rm=TRUE)
+      
+	    if (design == "CRD") {
+	      # --- add column Rep --- #
+	      temp.data<-data.frame(temp.data, Rep=sequence(lengthPerCross))
+	      
+	      nlevelsRep<-max(lengthPerCross, na.rm=TRUE)
+	    }
+	    if (design == "RCB") {
+	      temp.data[,match(block, names(temp.data))] <- factor(trim.strings(temp.data[,match(block, names(temp.data))]))
+	      nlevelsRep <- nlevels(temp.data[,match(block, names(temp.data))])
+	    }
+	    if (design == "Alpha") {
+	      temp.data[,match(rep, names(temp.data))] <- factor(trim.strings(temp.data[,match(rep, names(temp.data))]))
+	      temp.data[,match(block, names(temp.data))] <- factor(trim.strings(temp.data[,match(block, names(temp.data))]))
+	      nlevelsRep <- nlevels(temp.data[,match(rep, names(temp.data))])
+	      if (!is.null(environment)) {
+	        blockSizeFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(environment, rep, block)], length))
+	      } else {
+	        blockSizeFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(rep, block)], length))
+	      }
+	      blockSize<-max(blockSizeFrame$Freq, na.rm=TRUE)
+	      nBlocksWithinRep<-((p*p)-p)/blockSize
+	    }
+	    if (design == "RowColumn") {
+	      temp.data[,match(rep, names(temp.data))] <- factor(trim.strings(temp.data[,match(rep, names(temp.data))]))
+	      temp.data[,match(row, names(temp.data))] <- factor(trim.strings(temp.data[,match(row, names(temp.data))]))
+	      temp.data[,match(column, names(temp.data))] <- factor(trim.strings(temp.data[,match(column, names(temp.data))]))
+	      nlevelsRep <- nlevels(temp.data[,match(rep, names(temp.data))])
+	      
+	      if (!is.null(environment)) {
+	        rowWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(environment, rep, row)], length))
+	      } else {
+	        rowWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(rep, row)], length))
+	      }
+	      rowWithinRep<-max(rowWithinRepFrame$Freq, na.rm=TRUE)
+	      
+	      if (!is.null(environment)) {
+	        columnWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(environment, rep, column)], length))
+	      } else {
+	        columnWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(rep, column)], length))
+	      }
+	      columnWithinRep<-max(columnWithinRepFrame$Freq, na.rm=TRUE)
+	    }
+	    temp.data<-temp.data[-c(match("cross", names(temp.data)))]
+      
+			# --- check if raw data is balanced. If not, generate estimates for missing values --- #
+	    temp.data <- temp.data[(is.na(temp.data[,match(respvar[i], names(temp.data))]) == FALSE),]
+      if (design == "CRD") {
+				tempDataForAnova<-temp.data[,c(p1, p2, "Rep", respvar[i])]
+				tempDataForAnova[,match("Rep", names(tempDataForAnova))] <- factor(trim.strings(tempDataForAnova[,match("Rep", names(tempDataForAnova))]))
+				balancedData<-generateBalancedData(design="DIALLEL3", data=tempDataForAnova, respvar[i], p1, p2, "Rep")
+			}
+			if (design == "RCB") {
+				tempDataForAnova<-temp.data[,c(p1, p2, block, respvar[i])]
+				balancedData<-generateBalancedData(design="DIALLEL3", data=tempDataForAnova, respvar[i], p1, p2, block)
+			}
+	    if (design == "Alpha" || design == "RowColumn") {
+	      tempDataForAnova<-temp.data[,c(p1, p2, rep, respvar[i])]
+	      balancedData<-generateBalancedData(design="DIALLEL3", data=tempDataForAnova, respvar[i], p1, p2, rep)
+	    }
+	    
+	    # --- data summary --- #
+	    funcTrialSum <- class.information2(names(temp.data),temp.data)
+	    cat("\nDATA SUMMARY: ","\n\n", sep="")
+	    print(funcTrialSum)
+	    cat("\nNumber of observations read: ",nrow(temp.data), sep="")
+	    cat("\nNumber of missing observations: ",nrow(balancedData)-nrow(temp.data), sep="")
+	    
+	    # --- ANOVA for Diallel Method 3 experiment --- #
+	    estimatedMissing <- FALSE
+			if ((nrow(temp.data)/nrow(balancedData)) >= 0.90) {
+				if (nrow(temp.data) == nrow(balancedData)) {
+				  anovaRemark <- "REMARK: Raw dataset is balanced."
+					dataForAnova<-tempDataForAnova  
+				} else {
+					if (design == "CRD") {
+            dataForAnova<-estimateMissingData(design="CRD", data=balancedData, respvar[i], p1, p2, "Rep")  
+            anovaRemark <- "REMARK: Raw data is unbalanced."
+					}
+					if (design == "RCB") {
+            dataForAnova<-estimateMissingData(design="RCB", data=balancedData, respvar[i], p1, p2, block)  
+            anovaRemark <- "REMARK: Raw data and estimates of the missing values are used."
+					}
+					if (design == "Alpha" || design == "RowColumn") {
+            dataForAnova<-estimateMissingData(design="RCB", data=balancedData, respvar[i], p1, p2, rep)  
+            anovaRemark <- "REMARK: Raw data and estimates of the missing values are used."
+					}
+					estimatedMissing <- TRUE
+				}  
+			} else {anovaRemark <- "ERROR: Too many missing values. Cannot perform ANOVA for balanced data." 
+			        #cat("\n",anovaRemark)
+			}
+					
+			# --- testing for genotypic effect ---#
+	    #pValue=0;
+			#if (design == "CRD") {
+      #  myformula1 <- paste(respvar[i], " ~ ", p1,":",p2, sep = "") 
+      #  model <- aov(formula(myformula1), data = temp.data)
+      #  anovatable<-summary(model)
+        
+        # --- format anova table --- #
+      #  p<-formatC(as.numeric(format(anovatable[[1]][1,5], scientific=FALSE)), format="f")
+      #  anova_new<-cbind(round(anovatable[[1]][1:4],digits=2), rbind(p, " "))
+      #  anova_print<-replace(anova_new, is.na(anova_new), " ")
+      #  pValue <- anovatable[[1]]$"Pr(>F)"[[1]] 
+      #}
+			#if (design == "RCB") {
+      #  myformula1 <- paste(respvar[i], " ~ ", block," + ", p1,":",p2, sep = "") 
+      #  model <- aov(formula(myformula1), data = temp.data)
+      #  anovatable<-summary(model)
+        
+        # --- format anova table --- #
+      #  pval1<-formatC(as.numeric(format(anovatable[[1]][1,5], scientific=FALSE)), format="f")
+      #  pval2<-formatC(as.numeric(format(anovatable[[1]][2,5], scientific=FALSE)), format="f")
+      #  anova_new<-cbind(round(anovatable[[1]][1:4],digits=2), rbind(pval1, pval2, " "))
+      #  anova_print<-replace(anova_new, is.na(anova_new), " ")
+      #  pValue <- anovatable[[1]]$"Pr(>F)"[[2]]
+      #}
+		
+			#colnames(anova_print) <- c("Df", "Sum Sq", "Mean Sq", "F value", "Pr(>F)")
+	    #cat("\n\n\nANOVA TABLE FOR TESTING SIGNIFICANCE OF GENOTYPIC EFFECT \n", sep="")
+	    #cat(" Formula: ", myformula1,"\n\n")
+	    #print(anova_print)
+	    #result[[i]]$site[[j]]$genoEffect.anova <-anova_print
+			
+			#out <- anova(model)
+			#EMS <- out[rownames(out)=="Residuals","Mean Sq"]
+			#EDF <- out[rownames(out)=="Residuals","Df"]
+		
+	    # new approach in testing for genotypic effect
+	    Crosses <- temp.data[,match(p1, names(temp.data))]:temp.data[,match(p2, names(temp.data))]
+	    pValue <- 0
+	    cat("\n\n\nTESTING FOR THE SIGNIFICANCE OF CROSS EFFECT: (Crosses = ", p1,":", p2, ")\n", sep="")
+	    
+	    # --- assign value for r --- #
+	    r<-nlevelsRep
+      
+	    if (design == "CRD") {
+	      myformula1 <- paste(respvar[i], " ~ Crosses",sep = "") 
+	      model1 <- aov(formula(myformula1), data=temp.data)
+	      anova.table<-summary(model1)
+	      rownames(anova.table[[1]])<-c(" Crosses", " Residuals")
+	      pValue<-anova.table[[1]]$"Pr(>F)"[[1]]
+	      
+	      # print anova table
+	      pVal<-formatC(as.numeric(format(anova.table[[1]][1,5], scientific=FALSE)), format="f")
+	      f<-round(anova.table[[1]][1,4],digits=2)
+	      anova_new<-cbind(round(anova.table[[1]][1:3],digits=4),rbind(f," "),rbind(pVal, " "))
+	      anova_print<-replace(anova_new, is.na(anova_new), " ")
+	      colnames(anova_print)<-c("Df", "Sum Sq", "Mean Sq", "F value", "Pr(>F)")
+	      cat("\n Formula: ", myformula1, "\n\n", sep="")
+	      
+	      #get MSE
+	      EMS <- as.numeric(anova.table[[1]]$"Mean Sq"[2])
+	      EDF <- as.numeric(anova.table[[1]]$"Df"[2])
+	      numberTrt<-(p*p)-p
+	    }
+	    if (design == "RCB") {
+	      myformula1 <- paste(respvar[i], " ~ Crosses + (1|", block, ")", sep = "") 
+	      myformula2 <- paste(respvar[i], " ~ (1|", block, ")", sep = "")
+	      library(lme4)
+	      model1 <- lmer(formula(myformula1), data=temp.data) 
+	      model2 <- lmer(formula(myformula2), data=temp.data)  
+	      anova1<-anova(model1)
+	      anova.table<-anova(model1, model2)
+	      pValue<-anova.table$"Pr(>Chisq)"[[2]]
+	      
+	      # print anova table
+	      pVal<-formatC(as.numeric(format(anova.table[2,7], scientific=FALSE)), format="f")
+	      anova_new<-cbind(round(anova.table[1:6],digits=2), rbind(" ",pVal))
+	      rownames(anova_new)<-c(" model2", " model1")
+	      colnames(anova_new)<-c("Df", "AIC", "BIC", "logLik", "Chisq", "Chi Df","Pr(>Chisq)" )
+	      anova_print<-replace(anova_new, is.na(anova_new), " ")
+	      cat("\n Formula for Model 1: ", myformula1, sep="")
+	      cat("\n Formula for Model 2: ", myformula2,"\n\n", sep="")
+	      
+	      #get MSE
+	      varcomp <- summary(model1)@REmat
+	      EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+	      numberTrt<-(p*p)-p
+	      EDF <- ((numberTrt*r)-1)-(numberTrt-1)-(r-1)
+	    }
+	    if (design == "Alpha") {
+	      myformula1 <- paste(respvar[i], " ~ Crosses + (1|", rep, ") + (1|", block, ":", rep, ")", sep = "") 
+	      myformula2 <- paste(respvar[i], " ~ (1|", rep, ") + (1|", block, ":", rep, ")", sep = "")
+	      library(lme4)
+	      model1 <- lmer(formula(myformula1), data=temp.data) 
+	      model2 <- lmer(formula(myformula2), data=temp.data)  
+	      anova1<-anova(model1)
+	      anova.table<-anova(model1, model2)
+	      pValue<-anova.table$"Pr(>Chisq)"[[2]]
+	      
+	      # print anova table
+	      pVal<-formatC(as.numeric(format(anova.table[2,7], scientific=FALSE)), format="f")
+	      anova_new<-cbind(round(anova.table[1:6],digits=2), rbind(" ",pVal))
+	      rownames(anova_new)<-c(" model2", " model1")
+	      colnames(anova_new)<-c("Df", "AIC", "BIC", "logLik", "Chisq", "Chi Df","Pr(>Chisq)" )
+	      anova_print<-replace(anova_new, is.na(anova_new), " ")
+	      cat("\n Formula for Model 1: ", myformula1, sep="")
+	      cat("\n Formula for Model 2: ", myformula2,"\n\n", sep="")
+	      
+	      #get MSE
+	      varcomp <- summary(model1)@REmat
+	      EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+	      numberTrt<-(p*p)-p
+	      EDF <- ((r*numberTrt)-1)-(r-1)-(r*(nBlocksWithinRep-1))-((numberTrt)-1)
+	    }
+	    if (design == "RowColumn") {
+	      myformula1 <- paste(respvar[i], " ~ Crosses + (1|", rep, ") + (1|", row, ":", rep, ") + (1|", column, ":", rep, ")", sep = "") 
+	      myformula2 <- paste(respvar[i], " ~ (1|", rep, ") + (1|", row, ":", rep, ") + (1|", column, ":", rep, ")", sep = "")
+	      library(lme4)
+	      model1 <- lmer(formula(myformula1), data=temp.data) 
+	      model2 <- lmer(formula(myformula2), data=temp.data)  
+	      anova1<-anova(model1)
+	      anova.table<-anova(model1, model2)
+	      pValue<-anova.table$"Pr(>Chisq)"[[2]]
+	      
+	      # print anova table
+	      pVal<-formatC(as.numeric(format(anova.table[2,7], scientific=FALSE)), format="f")
+	      anova_new<-cbind(round(anova.table[1:6],digits=2), rbind(" ",pVal))
+	      rownames(anova_new)<-c(" model2", " model1")
+	      colnames(anova_new)<-c("Df", "AIC", "BIC", "logLik", "Chisq", "Chi Df","Pr(>Chisq)" )
+	      anova_print<-replace(anova_new, is.na(anova_new), " ")
+	      cat("\n Formula for Model 1: ", myformula1, sep="")
+	      cat("\n Formula for Model 2: ", myformula2,"\n\n", sep="")
+	      
+	      #get MSE
+	      varcomp <- summary(model1)@REmat
+	      EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+	      numberTrt<-(p*p)-p
+	      EDF <- ((numberTrt*r)-1)-(numberTrt-1)-(r-1)-((rowWithinRep-1)*r)-((columnWithinRep-1)*r)
+	    }
+	    print(anova_print)
+	    result[[i]]$site[[j]]$genoEffect.anova <-anova_print
+      
+	    # --- mean data of diallel --- #   
+			library(doBy)
+			myformula2<- paste(respvar[i], " ~ ", p1," + ",p2, sep = "")
+      
+	    if ((nrow(temp.data)/nrow(balancedData)) >= 0.90) {
+	      if (design=="CRD") {
+	        meandata <- summaryBy(formula(myformula2), data=tempDataForAnova)
+	        
+	        # --- check if there is missing cross --- #
+	        if (nrow(meandata)<numberTrt) {
+	          meandata <- summaryBy(formula(myformula2), data=dataForAnova)
+	          anovaRemark <- "REMARK: Raw data and estimates of the missing values are used."
+	        }
+	      } else {
+	        meandata <- summaryBy(formula(myformula2), data=dataForAnova)
+	      }
+	      
+	      # serial to parallel of meandata
+	      mdata <- as.matrix(rep(0,p*p),nrow=p, ncol=p)
+	      dim(mdata) <- c(p,p)
+	      
+	      for (I in 1:p)  {
+	        for (J in 1:p)   {
+	          if (I != J) mdata[I,J] <- meandata[(meandata[,match(p1, names(meandata))]==levels(temp.data[,match(p1, names(temp.data))])[I] & meandata[,match(p2, names(meandata))]==levels(temp.data[,match(p2, names(temp.data))])[J]),3]
+	        } 
+	      }
+	      
+	      colnames(mdata) <- rownames(mdata) <- levels(temp.data[,match(p1, names(temp.data))])
+	      
+	      # --- printing the matrix of means --- #
+	      mdata2 <- format(round(mdata, 4),nsmall=4)
+	      mdata3 <-noquote(format(gsub(" 0.0000", "", mdata2),justify="right"))
+	      cat("\n\nMATRIX OF MEANS:\n\n")
+	      print(mdata3)
+	      result[[i]]$site[[j]]$means.matrix  <- mdata3
+	      if (estimatedMissing) {
+	        cat("-------\n")
+	        cat(anovaRemark,"\n")
+	      }
+      }
+			
+	    # --- check if genotypic effect is significant. If significant, proceed to diallel analysis --- #
+	    alpha <- as.numeric(alpha)
+	    if (pValue < alpha) {
+	      cat("\n\nANALYSIS OF VARIANCE:\n")
+	      if ((nrow(temp.data)/nrow(balancedData)) >= 0.90) {
+	        XI <- rowSums(mdata)
+	        XJ <- colSums(mdata)
+	        SUMX <- sum(mdata)
+	        MEPRIME <-EMS/r            #  ERROR PRIME (ME')  
+	        
+	        #----  GENERAL COMBINING ABILITY (GCA) SUM OF SQUARES  ----#
+	        SG <- (1/(2*(p-2)))*sum((XI + XJ)^2)-((2/(p*(p-2)))*SUMX^2)
+	        
+	        #----- SPECIFIC COMBINING ABILITY (SCA) SUM OF SQUARES  ----#
+	        SUMR <- as.matrix(rep(0,p*p),nrow=p, ncol=p)
+	        dim(SUMR) <- c(p,p)
+	        for (I in 1:p)  {
+	          for (J in 1:p)   {
+	            if (I > J)  SUMR[I,J] <- (mdata[I,J] + mdata[J,I])
+	          } 
+	        }
+	        SUMR2 <- XI + XJ
+	        SS <- ((1/2) * sum(SUMR^2)) - ((1/(2*(p-2))) * sum(SUMR2^2)) + ((1/((p-1)*(p-2)))*SUMX^2)
+	        
+	        #----- RECIPROCAL SUM OF SQUARES ------#
+	        
+	        MINUSR <- as.matrix(rep(0,p*p),nrow=p, ncol=p)
+	        dim(MINUSR) <- c(p,p)
+	        for (I in 1:p)  {
+	          for (J in 1:p)   {
+	            if (I > J)  MINUSR[I,J] <- (mdata[I,J] - mdata[J,I])
+	          } 
+	        }
+	        
+	        SR <- (1/2)*sum(MINUSR^2)
+	        
+	        #----  ERROR PRIME SUM OF SQUARES  ----#
+	        SE <- MEPRIME * EDF
+	        
+	        #----  COMPUTATION OF MEAN SQUARE AND F-VALUES  ----#
+	        DG <- p-1
+	        DS <- p*(p-3)/2
+	        DR <- p*(p-1)/2
+	        DE <- EDF
+	        
+	        MG <- SG/DG
+	        MS <- SS/DS
+	        MR <- SR/DR
+	        
+	        FG <- MG/MS
+	        FS <- MS/MEPRIME
+	        FR <- MR/MEPRIME
+	        FE <- NA
+	        
+	        PG <- 1 - pf(FG, DG, DS)
+	        PS <- 1 - pf(FS, DS, EDF)
+	        PR <- 1 - pf(FR, DR, EDF)
+	        PE <- NA
+	        
+	        #printing the anova table
+	        SV <- c("SV","GCA", "SCA", "Reciprocal", "Error")
+	        DF <- format(rbind("Df",DG,DS,DR,DE), justify="right")
+	        SSq <- format(rbind("Sum Sq",format(round(rbind(SG, SS, SR, SE),digits=2))), justify="right")
+	        MSq <- format(rbind("Mean Sq",format(round(rbind(MG, MS, MR, MEPRIME),digits=2))), justify="right")
+	        Fvalue<-format(round(rbind(FG, FS, FR),digits=2))
+	        Fvalue2 <- format(rbind("F value", Fvalue, " "), justify="right")
+	        PG2<-formatC(as.numeric(format(PG,scientific=FALSE)),format="f")
+	        PS2<-formatC(as.numeric(format(PS,scientific=FALSE)),format="f")
+	        PR2<-formatC(as.numeric(format(PR,scientific=FALSE)),format="f")
+	        P <- format(rbind("Pr(>F)",PG2,PS2,PR2, " "), justify="right")
+	        AOV <- noquote(cbind(SV,DF,SSq,MSq,Fvalue2,P))
+	        colnames(AOV) <- c("", "", "", "", "", "")
+	        rownames(AOV) <- rep("",nrow(AOV))
+	        print(AOV)
+	        result[[i]]$site[[j]]$gcasca.anova <-AOV
+	        
+	        #--- Estimation of varinace components ---#
+	        Ve <- MEPRIME
+	        SEe <- sqrt((2/EDF)*(MEPRIME^2))
+	        
+	        Vr <- (MR-MEPRIME)/2
+	        if (Vr <0) Vr <- 0
+	        SEr <- sqrt((1/(p*(p-1)))*MR^2 + (1/(2*(p^2-p-1)*(r-1)))*MEPRIME^2)
+	        
+	        Vs <- (MS-MEPRIME)/2
+	        if (Vs < 0) Vs <- 0
+	        SEs <- sqrt((1/(p*(p-3)))*MS^2 + (1/(2*(p^2-p-1)*(r-1)))*MEPRIME^2)
+	        
+	        Vg <- (1/(2*(p-2)))*(MG - MS)	 
+	        if (Vg < 0) Vg <- 0
+	        SEg <- sqrt((1/(2*(p-1)*((p-2)^2)))*MG^2 + (1/(p*(p-3)*((p-2)^2)))*MS^2)
+	        
+	        VC <- round(rbind(Vg, Vs, Vr, Ve), digits=4)
+	        StdErr <- round(rbind(SEg, SEs, SEr,  SEe), digits=4)
+	        TABLE <- cbind(VC, StdErr)
+	        colnames(TABLE) <- c("Variance Component", "Std. Error")
+	        rownames(TABLE) <- c(" GCA", " SCA", " Reciprocal", " Error")
+	        TABLE_print<-as.table(TABLE)
+	        cat("\n\nESTIMATES OF VARIANCE COMPONENTS:\n\n")
+	        print(TABLE_print)
+	        result[[i]]$site[[j]]$var.components <-TABLE_print
+	        
+	        #---- Genetic Variance components ----#
+	        if (cross) {F<-0}
+	        else {F<-1}
+          
+	        VA <- (4/(1+F))*Vg
+	        VVA <- 4*SEg^2
+	        
+	        VD <- (4/(1+F)^2)*Vs
+	        if (VD < 0) VD <- 0
+	        VVD <- 16*SEs^2
+	        
+	        VE <- Ve
+	        VP <- VA + VD + VE
+	        h2B <- (VA + VD) / VP                 # individual based
+	        # Vh2B <- (2*(1-h2B)^2*(1+(r-1)*h2B)^2)/(r*(r-1)*p*(p+1)-1)
+	        
+	        h2N <- VA / VP                        # individual based
+	        # Vh2N <- (2*(1-h2N)^2*(1+(r-1)*h2N)^2)/(r*(r-1)*p*(p+1)-1)
+	        Dominance.ratio <- sqrt(2*VD/VA) 
+          
+	        VA_p<-formatNumericValue(VA)
+	        VD_p<-formatNumericValue(VD)
+	        h2N_p<-formatNumericValue(h2N)
+	        h2B_p<-formatNumericValue(h2B)
+	        Dominance.ratio_p<-formatNumericValue(Dominance.ratio)
+	        Estimate <- rbind(VA_p, VD_p, h2N_p, h2B_p, Dominance.ratio_p)
+	        with.colheader<-format(rbind("Estimate", Estimate), justify="right")
+	        colnames(with.colheader) <- c("")
+	        rownames(with.colheader) <- c("", " VA", " VD", " h2-narrow sense", " H2-broad sense", " Dominance Ratio")
+	        TABLE2 <- as.table(with.colheader)
+	        cat("\n\nESTIMATES OF GENETIC VARIANCE COMPONENTS:\n")
+	        print(TABLE2)
+	        result[[i]]$site[[j]]$genvar.components <-TABLE2  
+	        
+	        #----  ESTIMATES OF GCA EFFECTS  ----#
+	        G_SCA <- as.matrix(rep(0,p*p),nrow=p, ncol=p)
+	        dim(G_SCA) <- c(p,p)
+	        
+	        for (I in 1:p)  {
+	          for (J in 1:p)   {
+	            if (I == J) G_SCA[I,J] <- (1/(2*p*(p-2)))*(p*(XI[I]+XJ[J])-(2*SUMX))
+	          } 
+	        }
+	        
+	        #----  ESTIMATES OF SCA EFFECTS  ----#
+	        for (I in 1:p)  {
+	          for (J in 1:p)   {
+	            if (I < J)   {
+	              B1 <-(1/2)*(mdata[I,J]+mdata[J,I])
+	              B2 <- (1/(2*(p-2)))* (XI[I] + XJ[I] + XI[J] + XJ[J])
+	              B3 <- (1/((p-1)*(p-2)))*SUMX
+	              G_SCA[I,J] <- B1 - B2 + B3
+	            }
+	          } 
+	        }
+	        
+	        #----  ESTIMATES OF RECIPROCAL EFFECTS  ----#
+	        for (I in 1:p)  {
+	          for (J in 1:p)   {
+	            if (I > J)   G_SCA[I,J] <- (1/2)*(mdata[J,I] - mdata[I,J])
+	          } 
+	        }
+	        
+	        colnames(G_SCA) <- rownames(G_SCA) <- levels(temp.data[,match(p1, names(temp.data))])
+	        G_SCA_2 <-format(round(G_SCA, 4),nsmall=4, justify="right")
+	        G_SCA_3 <- noquote(gsub(" 0.0000", "", G_SCA_2))
+	        cat("\n\nGENERAL COMBINING ABILITY EFFECTS (diagonal), SPECIFIC COMBINING\n")
+	        cat("ABILITY EFFECTS (above diagonal) AND RECIPROCAL EFFECTS (below diagonal):\n\n")
+	        print(G_SCA_3)
+	        result[[i]]$site[[j]]$gcasca.matrix <-G_SCA_3
+	        
+	        #--- estimates of standard errors ---#
+	        
+	        SE_GI <- sqrt((p-1)*Ve/(2*p*(p-2)))
+	        LSD_GI <- NA
+	        SE_SII <- sqrt((p-3)*Ve/(2*(p-1)))
+	        LSD_SII <- NA
+	        SE_RIJ <- sqrt(Ve/2)
+	        LSD_RIJ <- NA
+	        
+	        SE_Gdiff <- sqrt(Ve/(p-2))
+	        LSD_Gdiff <- qt(.975,EDF)*SE_Gdiff
+	        SE_SIJ_SIK <- sqrt((p-3)*Ve/(p-2))
+	        LSD_SIJ_SIK <- qt(.975,EDF)*SE_SIJ_SIK
+	        SE_SIJ_SKL <- sqrt((p-4)*Ve/(p-2))
+	        LSD_SIJ_SKL <- qt(.975,EDF)*SE_SIJ_SKL
+	        
+	        STDERR <- round(rbind(SE_GI,SE_SII, SE_RIJ, SE_Gdiff, SE_SIJ_SIK, SE_SIJ_SKL), digits=4)
+	        LSD <- round(rbind(LSD_GI,LSD_SII, LSD_RIJ, LSD_Gdiff, LSD_SIJ_SIK, LSD_SIJ_SKL),digits=4)
+	        VAREST <- as.table(cbind(STDERR, LSD))
+	        rownames(VAREST) <- c(' Gi', ' Sii', ' Rij', ' Gi-Gj', ' Sij-Sik', ' Sij-Skl')
+	        colnames(VAREST) <- c("Std. Error", "LSD")
+	        cat("\n\nTABLE OF STANDARD ERRORS AND LSDs:\n\n")
+	        print(VAREST)
+          cat("\n\n")
+	        result[[i]]$site[[j]]$stderror.table <-VAREST
+	      }else {
+	        cat("\n ERROR: Too many missing values. Cannot perform test for significance of GCA and SCA effects") 
+	        cat("\n        and estimation of genetic variance components.\n\n")
+	      }
+	    } ## end of if statement
+	  } ## end of for loop (j)
+	  cat("\n==============================================================\n")
+	}## end of loop (i)
+	detach("package:doBy")
+	return(list(output = result))
+}
+

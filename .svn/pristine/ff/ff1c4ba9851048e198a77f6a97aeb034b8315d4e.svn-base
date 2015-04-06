@@ -1,0 +1,22 @@
+\name{ammi.analysis2}
+\alias{ammi.analysis2}
+\alias{ammi.analysis2.default}
+\title{ammi.analysis2}
+\description{
+performs ammi analysis for multi-env two-stage
+}
+\usage{
+ammi.analysis2(ENV, GEN, REP, Y, SIGMA2, number = TRUE, graphtype = "biplot", respVar, gge=FALSE)
+}
+\arguments{
+  \item{ENV}{a}
+  \item{GEN}{a}
+  \item{REP}{a}
+  \item{Y}{a}
+  \item{SIGMA2}{a}
+  \item{number}{a}
+  \item{graphtype}{a}
+  \item{respVar}{a}
+}
+\author{Alaine A. Gulles, Nellwyn L. Sales}
+\keyword{ammi2}

@@ -1,0 +1,24 @@
+\name{Two_stage}
+\alias{Two_stage}
+\docType{data}
+\title{Two_stage}
+\description{
+data on summary statistics derived from sigle-environment analysis
+}
+\usage{data(Two_stage)}
+\format{
+  A data frame with 132 observations on the following 6 variables.
+  \describe{
+    \item{\code{Env}}{a factor with levels \code{E1} \code{E10} \code{E2} \code{E3} \code{E4} \code{E5} \code{E6} \code{E7} \code{E8} \code{E9}}
+    \item{\code{Geno}}{a factor with levels \code{G1} \code{G10} \code{G11} \code{G12} \code{G2} \code{G3} \code{G4} \code{G5} \code{G6} \code{G7} \code{G8} \code{G9}}
+    \item{\code{Yield_Mean}}{a numeric vector}
+    \item{\code{Yield_StdErrMean}}{a numeric vector}
+    \item{\code{Yield_sigma2}}{a numeric vector}
+    \item{\code{Yield_No.rep}}{a numeric vector}
+  }
+}
+\examples{
+data(Two_stage)
+## maybe str(Two_stage) ; plot(Two_stage) ...
+}
+\keyword{datasets}

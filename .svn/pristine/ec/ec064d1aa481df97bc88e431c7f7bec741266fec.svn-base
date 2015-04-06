@@ -1,0 +1,21 @@
+\name{KNIndex_2}
+\alias{KNIndex_2}
+\title{KNIndex_2}
+\description{
+a
+}
+\usage{
+KNIndex_2(file.dat = NULL, weights = NULL, selval = 5, design = "lattice", corr = FALSE, rawdata = TRUE)
+}
+\arguments{
+  \item{file.dat}{a}
+  \item{weights}{a}
+  \item{selval}{a}
+  \item{design}{a}
+  \item{corr}{a}
+  \item{rawdata}{a}
+}
+\author{
+S. Perez-Elizalde, J. Crossa, J. Ceron-Rojas, and G. Alvarado
+}
+\keyword{a}

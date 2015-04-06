@@ -1,0 +1,19 @@
+\name{HWETest}
+\alias{HWETest}
+\alias{HWETest.default}
+\title{
+HWETest
+}
+\description{
+HWETest
+}
+\usage{
+HWETest(genindObject)
+}
+\arguments{
+  \item{genindObject}{genind object}
+}
+\author{
+Nellwyn Sales
+}
+\keyword{HWE}

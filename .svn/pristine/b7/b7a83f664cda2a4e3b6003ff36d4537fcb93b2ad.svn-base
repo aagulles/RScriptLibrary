@@ -1,0 +1,24 @@
+\name{generationMeanSummaryStats.test}
+\alias{generationMeanSummaryStats.test}
+\title{generationMeanSummaryStats.test}
+\description{
+a
+}
+\usage{
+generationMeanSummaryStats.test(data, meanVar, weightsVar, stdDevVar, numObsVar, generationVar, usersNotationVector, generalNotationVector, alpha)
+}
+\arguments{
+  \item{data}{a}
+  \item{meanVar}{a}
+  \item{weightsVar}{a}
+  \item{stdDevVar}{a}
+  \item{numObsVar}{a}
+  \item{generationVar}{a}
+  \item{usersNotationVector}{a}
+  \item{generalNotationVector}{a}
+  \item{alpha}{a}
+}
+\author{
+Nellwyn L. Sales
+}
+\keyword{gma}

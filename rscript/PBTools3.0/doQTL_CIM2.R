@@ -1,0 +1,444 @@
+##############################################################################################################
+#  doQTL_CIM2 
+#' Function for performing SIM and CIM
+#
+#  Parameters:
+#' @param crossobj cross object containing phenotypic means, genotypic data and genetic map data
+#' @param QTL.path location where files will be saved
+#' @param env.label column name for environment variable
+#' @param env = NULL
+#' @param trait phenotypic trait to be analysed
+#' @param step Maximum distance (in cM) between positions at which the genotype probabilities 
+#'             are calculated, though for step = 0, probabilities are calculated only at the
+#'             marker locations
+#' @param method “SIM” or “CIM”, simple interval or composite interval mapping
+#' @param threshold p-value cut-off (numerical) or "Li&Ji", based on the effective number of markers
+#' @param distance the minimum distance within which two markers are allowed to stay in the model
+#' @param cofactors vector of genetic predictors to be used as cofactors
+#' @param window.size minimum window size to allow a cofactor
+#
+#' @author Joost van Heerwaarden, Sabine Schnabel, Lucía Gutierrez, Fred van Eeuwijk, Marcos Malosetti and Rose Imee Zhella Morantte
+#' Wageningen University and Research Center, Netherlands and IRRI
+#  Edited by: Rose Imee Zhella Morantte 
+#
+##############################################################################################################
+
+doQTL_CIM2<-function(crossobj=cross.data, QTL.path, geno, env.label=NULL, env = NULL, trait="pred", step, method, threshold, distance, cofactors, window.size) UseMethod("doQTL_CIM2")
+
+doQTL_CIM2.default <-function(crossobj=cross.data, QTL.path, geno, env.label=NULL, env = NULL, trait="pred", step, method, threshold, distance, cofactors, window.size){
+#   library(qtl)
+#   library(lattice)
+  #proj.path<-paste(getwd(),sep="")
+  #QTL.path <- paste(proj.path, "/", sep="")
+  
+#   u.e.=FALSE #obsolete
+  file<-crossobj  
+  
+  #gen.predictors 
+  file<-calc.genoprob(file, step=step)
+  
+  #replace pseudomarkernames with proper ones
+  mark.names<-c(); for(i in 1:length(file$geno)){mark.names<-c(mark.names,colnames(file$geno[[i]]$data));}#make list of markernames 
+  
+  #extract genotypic predictors
+  probs1<-NULL
+  probs2<-NULL 
+  for(i in 1:nchr(file)){
+    names<-dimnames(file$geno[[i]]$prob)[[2]]  
+    sel.mark<-which(names%in%mark.names==FALSE); names[sel.mark]<-paste(i,names[sel.mark],sep="_")
+    dimnames(file$geno[[i]]$prob)[[2]]<-names   
+    names(attributes(file$geno[[i]]$prob)$map)<-names
+    p1<-file$geno[[i]]$prob
+    names(p1)<-dimnames(p1)[[2]]
+    probs1<-cbind(probs1, p1[,,1])
+    if(class(file)[1]=="f2"|class(file)[1]=="4way"){ 
+      probs2<-cbind(probs2, p1[,,3])
+    }
+    if(class(file)[1]=="dh"| class(file)[1]=="bc" | class(file)[1]=="riself" | class(file)[1]=="ri4self" | class(file)[1]=="ri8self" | class(file)[1]=="risib" | class(file)[1]=="ri4sib" | class(file)[1]=="ri8sib" ){ 
+      probs2<-cbind(probs2, p1[,,2])  #cbind(probs,, p1[,,2]) in original , check! JvH
+    }
+  }
+  additive<-probs2-probs1
+  
+  ###
+  
+  new.additive=additive   #JvH single phenotype check if these are supposed to be reps?
+  
+  #Import the phenotypic data file
+  P.data<-file$pheno
+  
+  #use some labels...
+#   Gen<-"id"
+  Gen <- geno
+  
+  Trait<-paste(trait)
+  
+#   if (is.null(env.label) == FALSE) {
+#     if(is.null(P.data[[match(env.label,names(P.data))]])==FALSE){ENV<-as.factor(P.data[[match(env.label,names(P.data))]])}
+#     if(is.null(P.data[[match(env.label,names(P.data))]])==TRUE){ENV<-as.factor(rep("env",nrow(P.data)))}
+#   } else {
+
+##    ENV<-as.factor(rep("env",nrow(P.data)))
+
+#   }
+  
+  GEN<-as.factor(P.data[, Gen])  
+  MEAN<-as.numeric(as.matrix(P.data[,Trait])) 
+#   if(u.e.=="FALSE") {
+    all.means<-data.frame(
+#       ENV,
+      GEN,MEAN, stringsAsFactors=FALSE)      
+#   }
+#   if(u.e.!="FALSE") {
+#     ue<-paste(u.e.)
+#     UE<-as.numeric(as.matrix(P.data[,ue])) 
+#     all.means<-data.frame(ENV,GEN,MEAN,UE, stringsAsFactors=FALSE)      
+#   }
+  
+  b<-matrix(,0,2) 
+  for(i in 1:nchr(file)){
+    a<-paste("file$geno$'", i, "'$prob", sep="")
+    mp<-attributes(eval(parse(text=a)))$map
+    mp<-cbind(rep(i,length(mp)),as.matrix(mp))	
+    b<-rbind(b,mp) 	
+  }
+  
+  #################For MB and SIM
+  if(method=="SIM"){
+    p.values<-NULL
+    fixeff<-NULL
+    for( i in 1:dim(new.additive)[2]){
+      marker<-new.additive[,i]
+      GE.data<-data.frame(all.means, marker)
+#       if(length(levels(ENV))>1) {CS.Model<-lmer(MEAN~ ENV+ marker:ENV + (1|GEN), data=GE.data)}
+#       if(length(levels(ENV))==1) {
+        CS.Model<-lm(MEAN~ marker, data=GE.data);fstats<-as.vector(summary(CS.Model)$fstatistic)
+#       }
+      
+#       if(length(levels(ENV))>1){p.value<-1-pf(anova(CS.Model)[2,4], anova(CS.Model)[2,1], (dim(GE.data)[1]-anova(CS.Model)[1,1]-anova(CS.Model)[2,1]-1))}
+#       if(length(levels(ENV))==1){
+        p.value<-1-pf(fstats[1],fstats[2],fstats[3])
+#       }   
+      
+      p.value<-data.frame(rownames(b)[i], b[i,1], b[i,2], p.value, stringsAsFactors=FALSE)
+      p.values<-rbind(p.values, p.value)
+#       if(length(levels(ENV))>1){ f<-t(t(CS.Model@fixef[(length(unique(all.means$ENV))+1):length(CS.Model@fixef)]))}
+#       if(length(levels(ENV))==1){
+        f<-CS.Model$coefficients[2]
+#       }
+      fixeff<-cbind(fixeff, f)
+    }
+  }
+  
+  #################For CIM
+  if(method=="CIM"){   ###CIM
+    cofactor.list<-NULL
+    cofactor.pos<-NULL
+    for(i in 1:length(cofactors)){
+      c<-new.additive[,which(colnames(new.additive)==cofactors[i])]
+      cofactor.list<-cbind(cofactor.list, c)
+      cof.pos<-cbind(cofactors[i], t(b[row.names(b)==cofactors[i]]))
+      cofactor.pos<-rbind(cofactor.pos, cof.pos)
+    }
+    
+    cofactor.win.f<-rep(0, dim(b)[1])
+    for(j in 1:length(cofactors)){
+      c<-b[,1]==as.numeric(as.character(cofactor.pos[j,2]))
+      c[c==FALSE]=0
+      c[c==TRUE]=1
+      win<-(b[,2]>(as.numeric(as.character(cofactor.pos[j,3]))[1]-0.5*window.size)& b[,2]<(as.numeric(as.character(cofactor.pos[j,3]))[1]+0.5*window.size))
+      win[win==FALSE]=0
+      win[win==TRUE]=1
+      cofactor.win<-c*win
+      cofactor.win[cofactor.win==1]=j
+      cofactor.win.f<-cofactor.win.f+cofactor.win
+    }
+    
+    p.values<-NULL
+    fixeff<-NULL
+    for( i in 1:dim(new.additive)[2]){
+      marker<-new.additive[,i]
+      if(unlist(cofactor.win.f[i])>0){
+        new.list<-cofactor.list[,-c(unlist(cofactor.win.f[i]))]
+        number.cofactors<-length(cofactors)-1
+      }
+      if(unlist(cofactor.win.f[i])==0){ 
+        new.list<-cofactor.list
+        number.cofactors<-length(cofactors)
+      }
+      GE.data<-data.frame(all.means, marker)
+#       if(length(levels(ENV))>1) {CS.Model<-lmer(MEAN~ ENV+ marker:ENV + new.list + (1|GEN), data=GE.data)}
+#       if(length(levels(ENV))==1) {
+        CS.Model<-lm(MEAN~ new.list+marker, data=GE.data);fstats<-c(anova(CS.Model)[2,4],anova(CS.Model)[2,1],anova(CS.Model)[3,1])
+#       }
+      
+#       if(length(levels(ENV))>1) {p.value<-1-pf(anova(CS.Model)[dim(anova(CS.Model))[1],4], anova(CS.Model)[dim(anova(CS.Model))[1],1], (dim(GE.data)[1]-dim(GE.data)[2]-number.cofactors-anova(CS.Model)[dim(anova(CS.Model))[1],1]))}
+#       if(length(levels(ENV))==1){
+        p.value<-1-pf(fstats[1],fstats[2],fstats[3])
+#       }   
+      p.value<-data.frame(rownames(b)[i], b[i,1], b[i,2], p.value, stringsAsFactors=FALSE)
+      
+      p.values<-rbind(p.values, p.value)
+#       if(length(levels(ENV))>1){ f<-t(t(CS.Model@fixef[(length(unique(all.means$ENV))+(length(new.list)/length(all.means$ENV))+1):length(CS.Model@fixef)]))}
+#       if(length(levels(ENV))==1){
+        f<-CS.Model$coefficients[ncol(new.list)+2]
+#       }
+      fixeff<-cbind(fixeff, f)
+    }
+  }  #CIM
+  
+  names(p.values)=c("marker", "Chr", "Pos", "LOD")
+  outem<-p.values
+  
+  #Threshold options
+  if(threshold>0) threshold.f<-threshold
+  if(threshold=="Li&Ji"){
+    a<-eigen(cor(probs1), only.values=TRUE)
+    a<-a$values
+    for(i in 1:length(a)){
+      if(a[i]>1) {a[i]<-a[i]
+      } else {a[i]<-0 }
+    }
+    c<-NULL
+    for(i in 1:length(a)){
+      bt<-((a[i]-1)^2)/(totmar(file)-1)
+      c<-rbind(c,bt)
+    }
+    v.lambda<-sum(c)
+    M.eff<-1+((totmar(file)-1)*(1-(v.lambda/totmar(file))))
+    alpha.e<-0.05
+    alpha.p<-1-((1-alpha.e)^(1/M.eff))
+    #-log(alpha.p)
+    if(class(file)[1]=="bc") dff<-2
+    if(class(file)[1]=="dh") dff<-2
+    if(class(file)[1]=="f2") dff<-3
+    if(class(file)[1]=="ril") dff<-3
+    #threshold.f<-qchisq((1-alpha.p), df=dff)/4.6
+    threshold.f<-alpha.p
+  }
+  
+  ####New Looping function JvH
+  pot.qtl<-outem[which(outem$'LOD'<threshold.f),] #potential qtl under threshold
+  res.qtl<-c()   #result frame with selected markers
+  
+  if(nrow(pot.qtl)>0){ #condition to deal with 0 qtl
+    pot.qtl$select<-1   #select flag to be modified in loop
+    pot.qtl$eval<-0   #evaluated flag to be modified in loop
+    
+    #loop through chromosomes
+    for(chr in unique(pot.qtl$Chr)){
+      t.pot.qtl<-pot.qtl[pot.qtl$Chr==chr,]	
+      while(sum(t.pot.qtl$eval)<nrow(t.pot.qtl)){
+        min.p<-min(t.pot.qtl$'LOD'[which(t.pot.qtl$eval==0)])
+        sel.row<-which(t.pot.qtl$'LOD'==min.p&t.pot.qtl$eval==0)[1]
+        d<-abs(t.pot.qtl$Pos-t.pot.qtl$Pos[sel.row])
+        t.pot.qtl$select[d<=distance]<-0
+        t.pot.qtl$eval[d<=distance]<-1
+        t.pot.qtl$select[sel.row]<-1
+      }
+      t.pot.qtl<-t.pot.qtl[which(t.pot.qtl$select==1),]
+      res.qtl<-rbind(res.qtl,t.pot.qtl)	
+    }
+    
+    res.qtl$select<-NULL
+    res.qtl$eval<-NULL	
+  }
+  
+  ##### New Looping function JvH
+#   if(length(levels(ENV))>1)   {  ####test for interactions if multiple environments
+#     ##############for second part model
+#     if(method=="SIM"){
+#       new.additive2<-new.additive[,outem[,4]<threshold.f]
+#       p.values.main<-NULL
+#       p.values.inter<-NULL
+#       fixeff2<-NULL
+#       for( i in 1:dim(new.additive2)[2]){
+#         marker<-new.additive2[,i]
+#         GE.data<-data.frame(all.means, marker)
+#         CS.Model<-lmer(MEAN~ ENV + marker + marker:ENV + (1|GEN), data=GE.data)
+#         
+#         p.value.inter<-1-pf(anova(CS.Model)[3,4], anova(CS.Model)[3,1], (dim(GE.data)[1]-anova(CS.Model)[1,1]-anova(CS.Model)[2,1]-2))
+#         p.values.inter<-rbind(p.values.inter, p.value.inter)
+#         p.value.main<-1-pf(anova(CS.Model)[2,4], anova(CS.Model)[2,1], (dim(GE.data)[1]-anova(CS.Model)[1,1]-anova(CS.Model)[2,1]-2))
+#         p.values.main<-rbind(p.values.main, p.value.main)
+#         f<-CS.Model@fixef[length(unique(all.means$ENV))+1]+CS.Model@fixef[1]
+#         
+#         fixeff2<-cbind(fixeff2, f)                                                               
+#       }
+#     }
+#     
+#     if(method=="CIM"){
+#       new.additive2<-new.additive[,outem[,4]<threshold.f]
+#       p.values.main<-NULL
+#       p.values.inter<-NULL
+#       fixeff2<-NULL
+#       
+#       #I will not do it for the reduced set now because of the windows size
+#       for( i in 1:dim(new.additive)[2]){
+#         marker<-new.additive[,i]
+#         if(unlist(cofactor.win.f[i])>0){
+#           new.list<-cofactor.list[,-c(unlist(cofactor.win.f[i]))]
+#           number.cofactors<-length(cofactors)-1
+#         }
+#         if(unlist(cofactor.win.f[i])==0){ 
+#           new.list<-cofactor.list
+#           number.cofactors<-length(cofactors)
+#         }
+#         GE.data<-data.frame(all.means, marker)
+#         
+#         CS.Model<-lmer(MEAN~ ENV + marker + marker:ENV + new.list + (1|GEN), data=GE.data)
+#         p.value.inter<-1-pf(anova(CS.Model)[3,4], anova(CS.Model)[3,1], (dim(GE.data)[1]-anova(CS.Model)[1,1]-anova(CS.Model)[2,1]-2))
+#         
+#         p.values.inter<-rbind(p.values.inter, p.value.inter)
+#         p.value.main<-1-pf(anova(CS.Model)[2,4], anova(CS.Model)[2,1], (dim(GE.data)[1]-anova(CS.Model)[1,1]-anova(CS.Model)[2,1]-2))
+#         
+#         p.values.main<-rbind(p.values.main, p.value.main)
+#         f<-CS.Model@fixef[length(unique(all.means$ENV))+1]+CS.Model@fixef[1]
+#         
+#         fixeff2<-cbind(fixeff2, f)                                                               
+#       }
+#       
+#       #this because of new.additive instead of new.additive2
+#       fixeff2<-fixeff2[,outem[,4]<threshold.f]
+#       p.values.inter<-p.values.inter[outem[,4]<threshold.f,]
+#       p.values.main<-p.values.main[outem[,4]<threshold.f,]
+#     }
+#     
+#     
+#     p.values.inter<-data.frame(row.names(b)[outem[,4]<threshold.f], b[outem[,4]<threshold.f,], p.values.inter)
+#     p.values.main<-data.frame(row.names(b)[outem[,4]<threshold.f], b[outem[,4]<threshold.f,], p.values.main)
+#     colnames(p.values.main)=c("marker", "Chr", "Pos", "LOD")
+#     colnames(p.values.inter)=c("marker", "Chr", "Pos", "LOD")
+#     
+#   } ####test for interactions if multiple environments
+  
+  #####To plot profile
+  if(max(-log10(outem[,4]),na.rm=TRUE)=="Inf") {max=10} 
+  if(max(-log10(outem[,4]),na.rm=TRUE)!="Inf") {max=(max(-log10(outem[,4]))+0.05)} 
+  
+  #############for heatmaps...
+  colnames(fixeff)<-colnames(new.additive)
+  rescale<-fixeff[, outem[,4]<threshold.f]
+  
+#   if(length(levels(ENV))>1){
+#     #pdf(file=paste(QTL.path,"QTLxE heatmap.pdf",sep=""), onefile=TRUE)                        
+#     png(file=paste(QTL.path,"QTLxE heatmap.png",sep=""))
+#     par(mfrow = c(1,1))
+#     heatmap(rescale, Rowv=NA, Colv=NA, scale="none", col=colorRampPalette(c("yellow","blue"))(50)) 
+#     dev.off()
+#     
+#     #####QTL effect by location and marker plots
+#     rownames(rescale)<-unique(all.means$ENV)
+#     
+#     #pdf(file=paste(QTL.path,"QTLxE effects by location and marker.pdf",sep=""), onefile=TRUE)
+#     png(file=paste(QTL.path,"QTLxE effects by location and marker.png",sep=""))
+#     par(mfrow=c(2,1))
+#     barplot(rescale, beside=TRUE, legend.text=TRUE, xlim=c(0,dim(rescale)[1]*dim(rescale)[2]+30), col=heat.colors(dim(rescale)[1],alpha=1), main="QTL specific effects sorted by Marker and Location")
+#     barplot(t(rescale), beside=TRUE, legend.text=TRUE, xlim=c(0,dim(rescale)[1]*dim(rescale)[2]+30), col=colorRampPalette(c("dark blue","light blue"))(dim(rescale)[2]))
+#     dev.off()
+#   }   
+  
+  ######For reporting final model choose only significant markers calculate effects and R squared
+  bw.sel<-function(y,X,alpha=0){ #bw function
+    XXX<-X
+    pval<-rep(alpha,ncol(XXX))
+    names(pval)<-colnames(XXX)
+    ##
+    test=1
+    Rsq<-0
+    Rvec<-c()
+    toss.names<-c()
+    while(test==1){
+      toss<-which(pval==max(pval)&pval>alpha)
+      if(length(pval)>1){toss.name<-names(pval)[toss]
+      } else {toss.name<-setdiff(colnames(X),toss.names) }
+      toss.names<-c(toss.names,toss.name)
+      sel<-setdiff(c(1:ncol(XXX)),toss)
+      if (length(sel)==0) {break}
+      XXX<-as.matrix(XXX[,sel])	
+      CS.Model<-lm(y~XXX);
+      r<-summary(CS.Model)$r.squared
+      Rvec<-c(Rvec,Rsq-r)
+      Rsq<-r
+      pval<-summary(CS.Model)$coefficients[,4]; pval <-pval[2:length(pval)]
+      names(pval)<-gsub("XXX","",names(pval));
+      test<-((sum(pval>=alpha)>0)*1)	
+    }
+    Rvec<-c(Rvec[2:length(Rvec)],r)
+    names(Rvec)<-toss.names
+    coef<-coefficients(CS.Model); coef<-coef[2:length(coef)]		
+    qtl.names<-names(coef); qtl.names<-gsub("XXX","",qtl.names); 
+    
+    return(list(qtl.names,Rvec,coef))
+  } #bw function
+  
+  if(nrow(pot.qtl)>0){  
+#     if(length(levels(ENV))==1) {
+      
+      #backward select final model
+#       new.additive.final<-new.additive[,colnames(new.additive)%in%res.qtl$marker]
+      ###added:
+      new.additive.final<-data.frame(new.additive[,colnames(new.additive)%in%res.qtl$marker])
+      colnames(new.additive.final) <- res.qtl$marker
+      ###
+      
+      BW<-bw.sel(MEAN,new.additive.final,alpha=0.15)
+      qtl.names<-BW[[1]]
+      res.qtl<-res.qtl[match(qtl.names,res.qtl$marker),]
+      m.eff<-BW[[3]]
+      
+      #backward selection of markers to set R squared
+      ##modified/added
+      new.additive.final2<-data.frame(new.additive.final[,match(qtl.names,colnames(new.additive.final))])
+      #       colnames(new.additive.final) <- res.qtl$marker
+      colnames(new.additive.final2) <- colnames(new.additive.final)[match(qtl.names,colnames(new.additive.final))]
+      new.additive.final <- new.additive.final2
+      Rsq<-bw.sel(MEAN,new.additive.final,alpha=0)[[2]]
+      
+#       new.additive.final<-new.additive.final[,match(qtl.names,colnames(new.additive.final))]
+#       Rsq<-bw.sel(MEAN,new.additive.final,alpha=0)[[2]]
+#     } 
+  }
+  
+  if(nrow(pot.qtl)==0){  m.eff<-NA; Rsq<-NA;} #output NA if no qtl found
+  QTL.result<-NULL
+  QTL.result$all<-outem
+  QTL.result$selected<-cbind(res.qtl,m.eff,Rsq)
+  
+  m.eff<-NULL
+  
+  #convert p tot lod 
+  QTL.result$all$'LOD'<-(-log10(QTL.result$all$'LOD'))
+  if(nrow(pot.qtl)>0){QTL.result$selected$'LOD'<-(-log10(QTL.result$selected$'LOD'));}
+  
+#   if(length(levels(ENV))>1) {QTL.result$interaction<-p.values.inter} 
+#   if(length(levels(ENV))==1) {
+    QTL.result$interaction<-NULL
+#   }
+#   if(length(levels(ENV))>1) {QTL.result$main<-p.values.main}
+#   if(length(levels(ENV))>1) {QTL.result$main<-outem}
+  
+  row.names(QTL.result$all) <- NULL
+  row.names(QTL.result$selected) <- NULL
+  
+  if (method == "CIM") {
+  ####write data to file 
+#   if (is.null(env.label)==FALSE) {
+#     fnam = paste(QTL.path,"/QTL_", tolower(trait), '_',  env.label, "=", env, "_", tolower(method), '.Rdata', sep = '')
+#     pngFile = paste(QTL.path,"/QTLmap_", trait, '_', env.label, "=", env, "_", method,".png",sep="")
+#   } else {
+#     fnam = paste(QTL.path,"/QTL_", tolower(trait), '_',  tolower(method), '.Rdata', sep = '')
+    pngFile = paste(QTL.path,"/QTLmap_", trait, '_', method,".png",sep="")
+#   }
+  
+#   save(QTL.result, file = fnam)
+    #pdf(file = pdfFile,onefile=TRUE);
+    png(file = pngFile);
+    print(xyplot(-log10(outem[,4])~ outem[,3] | factor(outem[,2]), type="l", layout=c(nchr(file),1), col="red", xlab="Chromosome position", ylab="-log10(P)", main=paste("QTL mapping", method, sep=""), scales = list(x = "free"), ylim=c(0,max), lwd=3,panel = function(x,y,...) {panel.abline(h =-log10(threshold.f),lty=2);llines(x,y,col="red",lwd=2)}));
+  
+    dev.off()
+  }
+#   detach("package:qtl")
+  return(QTL.result)
+  
+}

@@ -1,0 +1,61 @@
+# -------------------------------------------------------------------------------------
+# designBIBD: Generate randomization for Balanced Incomplete Block.
+# Created by: Alaine A. Gulles 04.11.2012 for International Rice Research Institute
+# Modified by: Alaine A. Gulles 09.10.2012
+# Note: This is a modified version of the function design.bib in package agricolae 
+# -------------------------------------------------------------------------------------
+
+designBIBD <- function(generate, blkSize, trial = 1, display = TRUE, file = NULL) UseMethod("designBIBD")
+
+designBIBD.default <- function(generate, blkSize, trial = 1, display = TRUE, file = NULL) {
+
+	if (missing(generate)) { stop("The argument 'generate' is missing.") }
+	if (missing(blkSize)) { stop("The argument 'blkSize' is missing.") }
+	if (length(generate) > 1) { stop("The argument 'generate' must be of lenght 1.") }
+
+	generate <- FactorList(generate)
+	if (blkSize >= length(generate[[1]])) { stop("The argument 'blkSize' should be less than levels of the factor.") }
+
+	tempComb <- GenerateFactor(generate, times = 1)
+	trmtComb <- combn(generate[[1]], blkSize)
+	numBlks <- ncol(trmtComb)
+	r <- factorial(length(generate[[1]]) - 1)/(factorial(blkSize - 1)*factorial(length(generate[[1]]) - blkSize))
+	lambda <- factorial(length(generate[[1]]) - 2)/(factorial(blkSize - 2)*factorial(length(generate[[1]]) - blkSize))
+	randomize <- NULL
+	for (i in (1:trial)) {
+		temp <- trmtComb[,sample(1:numBlks, numBlks)]
+		for (j in (1:numBlks)) { temp[,j] <- temp[sample(1:blkSize,blkSize),j] }
+		randomize <- rbind(randomize, data.frame(Trials = as.factor(i), Blocks = gl(numBlks, blkSize), trmt = factor(as.vector(temp)), PlotNum = as.integer(gl(nrow(trmtComb),1,blkSize*numBlks))))
+	}
+	names(randomize)[3] <- names(generate)[1]
+
+	if (display) {
+		cat(toupper("Design Properties:"),"\n",sep = "")
+		#cat("\t","Incomplete Block Design","\n",sep = "") 
+		cat("\t","Balanced Incomplete Block Design","\n\n",sep = "")
+		cat(toupper("Design Parameters:"),"\n",sep = "")
+		cat("\t","Number of Trials = ", trial, "\n",sep = "")
+		cat("\t","Number of Treatments = ", length(generate[[1]]), "\n",sep = "")
+		cat("\t","Plots per Block (Block Size) = ", blkSize, "\n",sep = "")
+		cat("\t","Number of Blocks = ", numBlks, "\n",sep = "")
+		cat("\t","Number of Replicates = ", r, "\n",sep = "")
+		cat("\t","Lambda = ", lambda, "\n\n",sep = "")
+		#cat("Results of Randomization:\n")
+		#printDataFrame(randomize)
+	}
+
+	if (!is.null(file)) {
+		tempFile <- strsplit(file, split = "\\.")[[1]]
+		tempExt <- tolower(tempFile[length(tempFile)])
+		if (tempExt != "csv"){ if(tempExt != "rda") tempExt <- "csv" } 
+		newFile <- paste(tempFile[1:length(tempFile)-1], collapse = ".", sep = "")
+		newFile <- paste(newFile, tempExt, sep = ".")
+		if (tempExt == "csv") { write.csv(randomize, file = newFile, row.names = FALSE)
+		} else { save(randomize, file = newFile) }
+	} else {
+		cat("Results of Randomization:\n")
+		printDataFrame(randomize)
+	}
+	return(invisible(randomize))
+}
+

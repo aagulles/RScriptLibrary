@@ -1,0 +1,23 @@
+\name{genoNpheno.corr}
+\alias{genoNpheno.corr}
+\title{genoNpheno.corr}
+\description{
+outputs genotypic and phenotypic correlation
+}
+\usage{
+genoNpheno.corr(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env, excludeLevels = FALSE, excludeList = NULL)
+}
+\arguments{
+  \item{exptl.design}{RCB, AugRCB, AugLS, Alpha or RowCol}
+  \item{data}{a dataframe}
+  \item{respvar}{a vector of strings containing variable names of the response variable}
+  \item{geno}{a string; variable name of the treatment/genotype variable}
+  \item{row}{a string; variable name of the blocking variable or row variable}
+  \item{column}{a string; variable name of the column variable; NULL, if design is RCB, Aug RCB, Alpha Lattice}
+  \item{rep}{a string; variable name of the replication variable; NULL, if design is RCB, Aug RCB, Aug LS}
+  \item{env}{a string; variable name of the environment variable}
+  \item{excludeLevels}{logical; TRUE if some genotype levels will be excluded}
+  \item{excludeList}{vector of genotype levels to exclude}
+}
+\author{Alaine A. Gulles}
+\keyword{correlation}

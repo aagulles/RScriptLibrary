@@ -1,0 +1,83 @@
+######
+# LinearRegressionSelection - function for performing Linear Regression Analysis with a selection method
+######
+
+LinearRegressionSelection <- function(data, depVar, indepVar, constant = TRUE, correlate = FALSE, 
+                                     selection = "none", selectionStat = NULL,
+                                     confInt = FALSE, confLevel = 0.95, 
+                                     covMatrix = FALSE, normality = NULL, 
+                                     heteroskedasticity = NULL, autoCorr = FALSE, 
+                                     VIF = FALSE, COOKS = FALSE, leverage = FALSE) {
+  
+  if (is.character(data)) {
+    nameData <- data
+    data <- eval(parse(text = data))
+  } else { nameData <- paste(deparse(substitute(data))) } #reads data: if (is.character(data)) { data <- eval(parse(text = data)) }
+  
+  #descriptive statistics
+  DescriptiveStatistics(data = data, var = c(depVar,indepVar), statistics = c("nnmiss", "mean", "sd", "se.mean")) 
+  cat("\n")
+
+  #correlation
+  if (correlate) {
+    cat("\n")
+    BivariateCorrelationTest(data = data, var = c(depVar, indepVar), method = "pearson", alternative = "two.sided", statistics = FALSE)
+  }
+  
+  #selection
+  if (selection == "none") {
+    #perform regression
+    LinearRegressionAnalysis(data, depVar, indepVar, constant, statistics = FALSE, confInt, confLevel, covMatrix,
+                             normality, heteroskedasticity, autoCorr, VIF, COOKS, leverage)
+    
+  } else if (selection == "allposs") {
+    allPossibleReg(data, depVar, indepVar, selectionStat, constant)
+  
+  } else {
+    selMethod <- switch(selection, 
+           forward = "Forward selection",
+           backward = "Backward elimination",
+           stepwise = "Stepwise regression")
+    
+    
+    cat("SELECTION METHOD: ", selMethod, "\n\n", sep = "")
+      if (selection == "stepwise") selection = "both"
+#     regCom <- paste("lm(", yVars[1], " ~ ", paste(indepVar, collapse = "+"),", data = data)", sep = "")
+#     res <- eval(parse(text = regCom))
+#     #use all variables
+#     step(res, direction = "backward")
+    
+    for (i in 1:length(depVar)) {
+      if (constant) {regCom <- paste("lm(", depVar[i], " ~ ", paste(indepVar, collapse = "+"),", data = data)", sep = "")
+      } else { regCom <- paste("lm(", depVar[i], " ~ ", paste(indepVar, collapse = "+"),"- 1, data = data)", sep = "")}
+      res <- eval(parse(text = regCom))
+      fwdReg <- step(res, direction = selection, trace = 1)
+        
+      if (constant) { selIndepVar <- names(fwdReg$coefficients)[-1]
+      } else selIndepVar <- names(fwdReg$coefficients)
+      
+      cat("\n")
+      #perform regression
+      LinearRegressionAnalysis(data, depVar[i], selIndepVar, constant, statistics = FALSE, confInt, confLevel, covMatrix,
+                                 normality, heteroskedasticity, autoCorr, VIF, COOKS, leverage)
+    }      
+      
+  }
+        
+#     
+#     } else if (selection == "backward") {
+#       
+#     } else if (selection == "stepwise") {
+#       
+#     }
+     
+      
+    #perform regression
+#     LinearRegressionAnalysis(data, depVar, selIndepVar, constant, statistics = FALSE, confInt, confLevel, covMatrix,
+#                              normality, heteroskedasticity, autoCorr, VIF, COOKS, leverage)
+#     
+#   }
+    
+  
+}
+  

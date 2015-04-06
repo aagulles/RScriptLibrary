@@ -1,0 +1,17 @@
+#-------------------------------------------------
+# This function computes several values first before calling gge.analysis function
+# Author: Nellwyn Sales
+#-------------------------------------------------
+
+gge.analysis2 <- function (ENV, GEN, REP, Y, SIGMA2, number = TRUE, graphtype = "biplot", respVar, f=0.5) UseMethod("gge.analysis2")
+
+gge.analysis2.default <- function (ENV, GEN, REP, Y, SIGMA2, number = TRUE, graphtype = "biplot", respVar,f=0.5) {
+  
+  numrepEnv <- tapply(REP, ENV, mean)
+  sigma2Env <- tapply(SIGMA2, ENV, mean)
+  MSE <- sum(numrepEnv*sigma2Env)/sum(numrepEnv)
+  NREP <- 1/mean(1/numrepEnv)
+  
+  gge2Out <- gge.analysis(ENV, GEN, NREP, Y, MSE, number, graph = graphtype, yVar = respVar, f)
+  
+}

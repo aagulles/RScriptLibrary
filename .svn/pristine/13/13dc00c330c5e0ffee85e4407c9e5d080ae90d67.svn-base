@@ -1,0 +1,40 @@
+\name{doQTLanalysis}
+\alias{doQTLanalysis}
+\alias{doQTLanalysis.default}
+\title{doQTLanalysis}
+\description{doQTLanalysis}
+\usage{
+doQTLanalysis(outputPath, crossData, traitType = c("Continuous", "Binary", "Ordinal"), yVars, mMethod = c("IM", "CIM", "MQM", "BIM"), stepCalc = 0, errCalc = 0.01, mapCalc = c("haldane", "kosambi", "c-f", "morgan"), lodCutoffM = 3, phenoModel = c("normal", "binary", "2part", "np"), alMethod = c("em", "imp", "hk", "ehk"), nPermutations = 100, numCovar = 1, winSize = 10, genoName, thresholdWUR = "Li&Ji", minDist = 10, stepSize = 5, addModel = TRUE, numCofac = 1, mlAlgo = TRUE, setupModel = TRUE, includeEpistasis = FALSE, useDepPrior = FALSE, priorMain = 3, priorAll = priorMain + 3, maxQTLs = NULL, priorProb = c(0.5, 0.1, 0.05))
+}
+\arguments{
+  \item{outputPath}{a}
+  \item{crossData}{a}
+  \item{traitType}{a}
+  \item{yVars}{a}
+  \item{mMethod}{a}
+  \item{stepCalc}{a}
+  \item{errCalc}{a}
+  \item{mapCalc}{a}
+  \item{lodCutoffM}{a}
+  \item{phenoModel}{a}
+  \item{alMethod}{a}
+  \item{nPermutations}{a}
+  \item{numCovar}{a}
+  \item{winSize}{a}
+  \item{genoName}{a}
+  \item{thresholdWUR}{a}
+  \item{minDist}{a}
+  \item{stepSize}{a}
+  \item{addModel}{a}
+  \item{numCofac}{a}
+  \item{mlAlgo}{a}
+  \item{setupModel}{a}
+  \item{includeEpistasis}{a}
+  \item{useDepPrior}{a}
+  \item{priorMain}{a}
+  \item{priorAll}{a}
+  \item{maxQTLs}{a}
+  \item{priorProb}{a}
+}
+\author{Rose Imee Zhella Morantte}
+\keyword{analysis}

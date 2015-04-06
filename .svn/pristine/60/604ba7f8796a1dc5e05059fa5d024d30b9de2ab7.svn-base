@@ -1,0 +1,22 @@
+\name{ammi.analysis}
+\alias{ammi.analysis}
+\title{ammi.analysis}
+\description{
+performs ammi analysis
+}
+\usage{
+ammi.analysis(ENV, GEN, REP, Y, MSE = 0, number = TRUE, graph = "none", yVar = "Y1", ...)
+}
+\arguments{
+  \item{ENV}{a}
+  \item{GEN}{a}
+  \item{REP}{a}
+  \item{Y}{a}
+  \item{MSE}{a}
+  \item{number}{a}
+  \item{graph}{a}
+  \item{yVar}{a}
+  \item{\dots}{a}
+}
+\author{Alaine A. Gulles}
+\keyword{ammi}

@@ -1,0 +1,16 @@
+\name{adjmeans}
+\alias{adjmeans}
+\title{adjmeans}
+\description{
+a
+}
+\usage{
+adjmeans(i, data, design = "lattice")
+}
+\arguments{
+  \item{i}{a}
+  \item{data}{a}
+  \item{design}{a}
+}
+\author{a}
+\keyword{a}

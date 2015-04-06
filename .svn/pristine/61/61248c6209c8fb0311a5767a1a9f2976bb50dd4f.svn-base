@@ -1,0 +1,38 @@
+\name{Sevilla2012Cluster}
+\alias{Sevilla2012Cluster}
+\docType{data}
+\title{Sevilla2012Cluster}
+\description{A multivariate data gathered from the entries of the Green Super Rice
+ (GSR) nursery trials that underwent seed increase before distribution to target 
+countries.  Each entry were characterized based on agromorphological traits using 
+the new rice descriptors published by the Bioversity International. The data contains
+ 74 rows and 21 columns.
+}
+\usage{data(Sevilla2012Cluster)}
+\format{
+  A data frame with 74 observations on the following 21 variables.
+  \describe{
+    \item{\code{Entry}}{a factor with levels \code{118} \code{119} \code{709} \code{HHZ 1-DT13-Y2-Y1} \code{HHZ 10-DT12-LI1-LI1} \code{HHZ 11-DT10-SAL1-SUB1} \code{HHZ 11-DT7-SAL1-SAL1} \code{HHZ 11-SAL13-Y2-SUB1} \code{HHZ 11-Y10-DT3-Y3} \code{HHZ 11-Y6-Y2-SUB1} \code{HHZ 12-DT10-SAL1-DT1} \code{HHZ 12-SAL2-Y3-Y1} \code{HHZ 12-SAL2-Y3-Y2} \code{HHZ 12-SAL8-Y1-SAL1} \code{HHZ 12-SAL8-Y1-Y2} \code{HHZ 12-Y4-DT1-Y1} \code{HHZ 12-Y4-DT1-Y2} \code{HHZ 12-Y4-DT1-Y3} \code{HHZ 12-Y4-Y1-DT1} \code{HHZ 15-DT4-DT1-Y1} \code{HHZ 15-DT7-SAL4-SAL1} \code{HHZ 17-DT5-Y1-Y1} \code{HHZ 17-DT6-Y1-DT1} \code{HHZ 17-Y16-Y3-SAL1} \code{HHZ 17-Y16-Y3-Y1} \code{HHZ 17-Y16-Y3-Y2} \code{HHZ 2-Y3-Y1-Y1} \code{HHZ 21-Y4-Y2-Y1} \code{HHZ 25-DT9-Y1-Y1} \code{HHZ 3-DT5-Y1-Y1} \code{HHZ 4-SAL12-LI1-LI1} \code{HHZ 5-DT1-DT1} \code{HHZ 5-DT20-DT2-DT1} \code{HHZ 5-DT20-DT3-Y2} \code{HHZ 5-DT7-Y3-SAL1} \code{HHZ 5-SAL10-DT3-Y2} \code{HHZ 5-SAL12-DT3-Y2} \code{HHZ 5-SAL14-SAL2-Y1} \code{HHZ 5-SAL14-SAL2-Y2} \code{HHZ 5-SAL8-DT2-SAL1} \code{HHZ 5-SAL8-DT3-SUB1} \code{HHZ 5-Y3-SAL2-SUB1} \code{HHZ 5-Y3-Y1-DT1} \code{HHZ 5-Y4-SAL1-Y1} \code{HHZ 5-Y7-Y2-SAL1} \code{HHZ 5-Y7-Y2-SUB1} \code{HHZ 6-DT10-LI1-LI1} \code{HHZ 6-DT8-Y2} \code{HHZ 6-SAL16-LI1-LI1} \code{HHZ 8-DT10-SAL3-SUB1} \code{HHZ 8-SAL12-Y2-DT1} \code{HHZ 8-SAL14-SAL1-SUB1} \code{HHZ 8-SAL14-SAL3-Y2} \code{HHZ 8-SAL6-SAL3-SAL1} \code{HHZ 8-SAL6-SAL3-Y1} \code{HHZ 8-SAL6-SAL3-Y2} \code{HHZ 8-SAL9-DT2-Y2} \code{HHZ 8-Y1-DT3-SUB1} \code{HHZ 8-Y7-DT2-SAL1} \code{HHZ 9-DT12-DT1-SUB1} \code{HHZ 9-SAL9-Y3-SUB1} \code{HHZ5-SAL10-DT1-DT1} \code{IR 83140-B-11-B} \code{IR 83140-B-36-B} \code{IR 83141-B-17-B} \code{IR 83141-B-18-B} \code{IR 83141-B-32-B} \code{IR 83142-B-19-B} \code{IR 83142-B-21-B} \code{IR 83142-B-57-B} \code{IR 83142-B-60-B} \code{IR 83142-B-61-B} \code{IR 84678-25-5-B}}
+    \item{\code{Code}}{a numeric vector}
+    \item{\code{Grain_Length}}{a numeric vector}
+    \item{\code{Grain_Width}}{a numeric vector}
+    \item{\code{Flowering}}{a numeric vector}
+    \item{\code{PH}}{a numeric vector}
+    \item{\code{Blade_Col}}{a numeric vector}
+    \item{\code{Flag_Leaf}}{a numeric vector}
+    \item{\code{Culm_Angle}}{a numeric vector}
+    \item{\code{Awn_Distn}}{a numeric vector}
+    \item{\code{Panicle_Exrtn}}{a numeric vector}
+    \item{\code{Panicle_Axis}}{a numeric vector}
+    \item{\code{Internode_Col}}{a numeric vector}
+    \item{\code{Lodging_Resist}}{a numeric vector}
+    \item{\code{Shattering}}{a numeric vector}
+    \item{\code{Leaf_Senscene}}{a numeric vector}
+    \item{\code{Leaf_Length}}{a numeric vector}
+    \item{\code{Leaf_Width}}{a numeric vector}
+    \item{\code{Culm_Length}}{a numeric vector}
+    \item{\code{Culm_Diam}}{a numeric vector}
+    \item{\code{Panicle_Length}}{a numeric vector}
+  }
+}
+\keyword{datasets}

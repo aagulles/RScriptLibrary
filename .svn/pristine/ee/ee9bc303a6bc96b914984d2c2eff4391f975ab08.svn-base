@@ -1,0 +1,17 @@
+\name{class.information2}
+\alias{class.information2}
+\alias{class.information2.default}
+\title{class.information v.2}
+\description{
+ outputs list of factors and their levels
+}
+\usage{
+class.information2(x, data)
+}
+\arguments{
+  \item{x}{column names}
+  \item{data}{data frame}
+}
+\author{Nellwyn L. Sales, Alaine A. Gulles}
+\keyword{classinfo}
+

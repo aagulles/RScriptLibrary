@@ -1,0 +1,16 @@
+BLUP_synbreed_cv        Function for performing cross validation for
+                        GBLUP
+BLUP_synbreed_gv        Function for calculating genetic value (GBLUP)
+GSDataCheck             Function for preparing/matching data for
+                        genomic selection
+GSDataImputation        Function for imputing data
+GSDataPrep              Function for preparing/matching data for
+                        genomic selection
+createGSPlots           Function for creating graphs for genomic
+                        selection
+doGBLUP                 Function for performing GBLUP
+doGenSim                Function for computing relationhsip matrix
+marker_relationship     Function for computing marker-based
+                        relationship matrix
+pedigree_relationship   Function for computing pedigree-based
+                        relationship matrix

@@ -1,0 +1,19 @@
+\name{runBackwardRegression}
+\alias{runBackwardRegression}
+\title{runBackwardRegression}
+\description{
+a
+}
+\usage{
+runBackwardRegression(selectedGen, myFormula, alphaValue, set)
+}
+\arguments{
+  \item{selectedGen}{a}
+  \item{myFormula}{a}
+  \item{alphaValue}{a}
+  \item{set}{a}
+}
+\author{
+Nellwyn L. Sales
+}
+\keyword{regression}

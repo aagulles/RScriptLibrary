@@ -1,0 +1,27 @@
+\name{ammi.analysis}
+\alias{ammi.analysis}
+\alias{ammi.analysis.default}
+\title{ammi.analysis}
+\description{
+This function is lifted from the AMMI function of agricolae package which is authored by Felipe de Mendiburu
+}
+\usage{
+ammi.analysis(ENV, GEN, REP, Y, MSE = 0, number = TRUE, biplotPC12 = FALSE, biplotPC13 = FALSE, biplotPC23 = FALSE, ammi1 = FALSE, adaptMap = FALSE, yVar = "Y1", ...)
+}
+\arguments{
+  \item{ENV}{vector containing values of environment factor}
+  \item{GEN}{vector containing values of genotype factor}
+  \item{REP}{vector containing values of rep factor; or a single value of the number of replicates}
+  \item{Y}{vector containing the values of the response variable}
+  \item{MSE}{vector containing values of residual variance; or a single value of the residual variance}
+  \item{number}{TRUE if levels of genotype and environment factors are numeric}
+  \item{biplotPC12}{TRUE if biplot (PC1 vs PC2) will be created}
+  \item{biplotPC13}{TRUE if biplot (PC1 vs PC3) will be created}
+  \item{biplotPC23}{TRUE if biplot (PC2 vs PC3) will be created}
+  \item{ammi1}{TRUE if ammi1 biplot will be created}
+  \item{adaptMap}{TRUE if adaptation map will be created}
+  \item{yVar}{name of response variable}
+  \item{\dots}{plot graphics parameters}
+}
+\author{Felipe de Mendiburu, Alaine A. Gulles, Nellwyn L. Sales}
+\keyword{ammi}

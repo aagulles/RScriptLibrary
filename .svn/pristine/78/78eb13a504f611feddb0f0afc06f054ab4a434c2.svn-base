@@ -1,0 +1,23 @@
+\name{recodeDiallelData}
+\alias{recodeDiallelData}
+\title{
+recode diallel data
+}
+\description{
+recode diallel data
+}
+\usage{
+recodeDiallelData(design = c("diallel1", "diallel2", "diallel3", "diallel4"), data, p1, p2, rep, respvar)
+}
+\arguments{
+  \item{design}{a}
+  \item{data}{a}
+  \item{p1}{a}
+  \item{p2}{a}
+  \item{rep}{a}
+  \item{respvar}{a}
+}
+\author{
+Nellwyn L. Sales
+}
+\keyword{recodeDiallel}

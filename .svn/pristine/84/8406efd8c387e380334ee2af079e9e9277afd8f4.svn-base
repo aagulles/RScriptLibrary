@@ -1,0 +1,95 @@
+##doQTLanalysis - function for QTL analysis
+#
+# REQUIRED input: 
+# outputPath - folder where graph(s) will be saved
+# crossData - cross object
+# traitType - type of traits to be analyzed, whether "Continuous", "Binary", or "Ordinal"
+# yVars - traits to be analyzed
+# mMethod - mapping method to be used
+# stepCalc - step size or the maximum distance in cM between positions at which genotype probabilities are calculated
+# errCalc - genotyping error rate used in the calculation of the penetrance Pr(observed|true genotype)
+# mapCalc - map function used when converting genetic distances into recombination fractions, whether "haldane","kosambi","c-f","morgan"
+# lodCutoffM - cutoff for error LOD scores
+# phenoModel - phenotype model, whether "normal","binary","2part","np"
+# alMethod - indicates whether to use "em","imp","hk","ehk"
+# nPermutations - number of permutation replicates
+# numCovar - number of marker covariates to use 
+# winSize - window size in cM
+# genoName - name of genotype variable
+# thresholdWUR - theshold for determining LOD cutoff, whether numeric or based on "Li&Ji"
+# minDist - minimum distance
+# stepSize - step size used in interval mapping
+# addModel - logical; whether "additive" (not "dominance" model) is used
+# numCofac - number of cofactors to set
+# mlAlgo - logical; whether to use maximum likelihood instead of the default REML as statistical method to use to estimate variance components
+# setupModel - logical; whether to set-up QTL model or not
+# includeEpistasis - logical; whether epistasis is included in the model or not
+# useDepPrior - logical; whether to use dependent prior for indicating variables of epistatic effects or not
+# priorMain - prior expected number of main effect QTLs 
+# priorAll - prior expected number for all QTLs on all chromosomes including QTLs with main effects, epistatic 
+#               effects and gene-environment interactions; default is priorMain + 3
+# maxQTLs - maximum number of QTLs allowed in the model
+# priorProb - prior inclusion probabilities for epistatic effects: 0.5, 0.1 or 0.05 when both (default), one or none
+#               of the main effects of the two interacting QTL are included in the model           
+#
+# Packages required: qtl, qtlbim, lattice
+
+doQTLanalysis <- function(outputPath, crossData, traitType = c("Continuous", "Binary", "Ordinal"), yVars, mMethod = c("IM", "CIM", "MQM", "BIM"), 
+                          stepCalc = 0, errCalc = 0.01, mapCalc = c("haldane","kosambi","c-f","morgan"), lodCutoffM = 3,
+                          phenoModel = c("normal","binary","2part","np"), alMethod = c("em","imp","hk","ehk"), nPermutations = 100, 
+                          numCovar = 1, winSize = 10, genoName, thresholdWUR =  "Li&Ji", minDist = 10, stepSize = 5.0,
+                          addModel = TRUE, numCofac = 1, mlAlgo = TRUE, 
+                          setupModel = TRUE, includeEpistasis = FALSE, useDepPrior = FALSE,
+                          priorMain = 3, priorAll = priorMain + 3, maxQTLs = NULL, priorProb = c(0.5, 0.1, 0.05)) { 
+                          
+  
+  cat("QTL ANALYSIS\n\n")
+  
+  crossData2 <- crossData
+
+  if (mMethod == "IM") {
+    
+    doQTL <- doIM(outputPath, crossData2, yVars, stepCalc, errCalc, mapCalc,
+         lodCutoffM, phenoModel, alMethod, nPermutations)
+      
+  } else if (mMethod == "CIM") {
+    
+    doQTL <- doQTL_CIM(outputPath, crossData2, yVars, stepCalc, errCalc, mapCalc, lodCutoffM, alMethod, 
+                       nPermutations, numCovar, winSize)
+
+  } else if (mMethod == "CIM2") {
+    
+    cat("Method: Composite Interval Mapping\n")
+    
+    for (i in 1:length(yVars)) { 
+      
+      cat("\nTrait: ", yVars[i], "\n\n")
+      
+      QTLselected <- QTL.analysis(crossobj = crossData2, QTL.path = outputPath, geno = genoName, env.label = NULL, env = NULL, trait = yVars[i], 
+            step = stepCalc, method = "SIM", threshold = thresholdWUR, distance = minDist, cofactors = NULL, window.size = winSize)
+    
+      if (!is.null(QTLselected$selected$marker)) {
+        QTLOutCIMWUR <- QTL.analysis(crossobj = crossData2, QTL.path = outputPath, geno = genoName, env.label = NULL, env = NULL, trait = yVars[i], 
+           step = stepCalc, method = "CIM", threshold = thresholdWUR, distance = minDist, cofactors = QTLselected$selected$marker, window.size = winSize)  
+      }
+      
+      if (!is.null(QTLOutCIMWUR$selected)) {
+        cat("Markers above the threshold:\n\n") 
+        printDataFrame(QTLOutCIMWUR$selected)
+      }
+      
+    }
+    
+  } else if (mMethod == "MQM") {
+    
+    doQTL <- doQTL_MQM(outputPath, crossData2, yVars, lodCutoffM, nPermutations, winSize, stepSize,
+                       addModel, numCofac, mlAlgo)
+    
+  } else if (mMethod == "BIM") {
+
+    doQTL <- doQTL_BIM(outputPath, crossData2, traitType, yVars, lodCutoffM, nPermutations, setupModel, includeEpistasis, 
+		       useDepPrior, priorMain, priorAll, maxQTLs, priorProb)
+      
+  }
+  
+}

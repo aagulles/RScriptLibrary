@@ -1,0 +1,32 @@
+Heatmap <- function(R, data, genAs = "fixed", row, column, respvar, model, env) {
+  
+  if (is.null(env)) {
+    env = "EnvLevel"
+    data <- cbind(data, EnvLevel=1)
+  }
+  
+  #data[,match(env, names(data))] <- factor(trim.strings(data[,match(env, names(data))]))
+  R[,match(env, names(R))] <- factor(trim.strings(R[,match(env, names(R))]))
+  envLevels <- levels(R[,match(env, names(R))])
+  #dir.create("plots")
+
+  for (i in 1:length(respvar)) {
+  	for (j in 1:length(envLevels)) {
+      resid = paste(respvar[i],"_","resid_",genAs,sep = "")
+    	if (resid %in% names(R)) {
+    	  #envlevel = levels(data[,match(env, names(data))])[j]
+    	  envlevel = levels(R[,match(env, names(R))])[j]
+    	  data1 = subset(data, data[,match(env, names(data))] == envlevel)
+    	  Rdata1 = subset(R, R[match(env,names(R))] == envlevel)
+    	  lp = levelplot(Rdata1[[match(resid,names(Rdata1))]] ~ data1[[match(row,names(data1))]] * data1[[match(column,names(data1))]],
+    	                 xlab = row, ylab = column,
+    	                 main = paste("Residuals (", resid, ")", sep = ""),
+    	                 sub = paste(env, " = ", envlevel, ", ", model, sep = ""),
+    	                 col.regions = colorRampPalette(c("yellow","red"))(50))
+    	  png(paste(getwd(), "/heatmap_", resid, "_", model,"_", envlevel,".png", sep=""))
+    	  print(lp)
+    	  dev.off()
+    	}
+  	}
+	}
+}

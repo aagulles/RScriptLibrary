@@ -1,0 +1,19 @@
+\name{GETwoStage_resid}
+\alias{GETwoStage_resid}
+\alias{GETwoStage_resid.default}
+\title{GETwoStage_resid}
+\description{
+residual
+}
+\usage{
+GETwoStage_resid(ge2sout, respvar, is.genoRandom = FALSE)
+}
+\arguments{
+  \item{ge2sout}{a}
+  \item{respvar}{a}
+  \item{is.genoRandom}{a}
+}
+\author{
+Alaine A. Gulles
+}
+\keyword{residual}

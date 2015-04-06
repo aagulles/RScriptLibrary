@@ -1,0 +1,39 @@
+#############################
+###MDSGraph - function for plotting points obtained in MDS
+##############################
+
+mdsGraph <- function(outputPath, grpLevels = NULL, dimnum, fit, type, useIdVar = FALSE, pChars, pSizes, pCol,
+  showLeg, legTitle, legPos, legNcol
+  ){
+  x <- fit$points
+  
+#   for (i in 1:dimnum) {
+#   }
+  if (useIdVar) { 
+    plotType = "n" 
+    pChars = grpLevels
+  } else plotType = "p"
+  
+  if (dimnum == 2){
+    png(filename = paste(outputPath,"MDS_Coords1and2.png",sep=""))
+    plot(x[,1], x[,2], xlab = "Coordinate 1", ylab = "Coordinate 2", main = paste(type,"MDS"),
+       type = plotType, pch = pChars, cex = pSizes, col = pCol)
+    if (useIdVar) text(x[,1], x[,2], labels =  grpLevels, cex = pSizes, col = pCol)
+    if (showLeg)
+      legend(legPos, title = legTitle, legend = grpLevels, pch = pChars, cex = pSizes, col = pCol, ncol = legNcol)
+    dev.off()
+  } else if (dimnum > 2){
+    for (i in 1:(dimnum-1)) {
+      jlim = i+1
+      for (j in jlim:dimnum) {
+        png(filename = paste(outputPath,"MDS_Coords", i, "and", j, ".png",sep=""))
+        plot(x[,i], x[,j], xlab = paste("Coordinate", i), ylab = paste("Coordinate", j), main = paste(type,"MDS"),
+             type = plotType, pch = pChars, cex = pSizes, col = pCol)
+        if (useIdVar) text(x[,i], x[,j], labels =  grpLevels, cex = pSizes, col = pCol)
+        if (showLeg)
+          legend(legPos, title = legTitle, legend = grpLevels, pch = pChars, cex = pSizes, col = pCol, ncol = legNcol)
+        dev.off()
+      }
+    }
+  }
+}#-- end --#

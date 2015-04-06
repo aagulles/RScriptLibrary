@@ -1,0 +1,115 @@
+# -----------------------------------------------------------------------------------------
+# designAlphaLattice: Generate randomization for alpha lattice design using the 4 series
+#             formulated by Patterson and Williams
+# Created by: Alaine A. Gulles for International Rice Research Institute
+# Modified by: Alaine A. Gulles 07.16.2013
+# Note: Uses the design.alpha by Felipe de Mendiburu of the agricolae package
+# -----------------------------------------------------------------------------------------
+
+designAlphaLattice <- function(generate, blksize, r = 2, trial = 1, numFieldRow, serpentine = FALSE, file = NULL) UseMethod("designAlphaLattice")
+
+designAlphaLattice.default <- function(generate, blksize, r = 2, trial = 1, numFieldRow, serpentine = FALSE, file = NULL) {
+
+     # check if r between 2 to 4    
+     if (r < 2 || r > 4) { stop("Valid value of number of replicates should be between 2 to 4.")}
+
+	if (length(generate[[1]]) == 1) { tempComb <- FactorList(generate) } else { tempComb <- generate }
+     # check if the number of treatment is divisible by the block size
+     if (length(tempComb[[1]])%%blksize != 0) { stop("Number of treatments should be divisible by block size.") }
+
+     numBlk <- length(tempComb[[1]])/blksize   # determine the number of block per replicate
+     numBlkRow <- numFieldRow/numBlk           # determine the number of rep within the length of the field layout
+     
+     if (r == 2) {  
+          if (blksize > numBlk) { stop("For r = 2,  block size should be less than or equal to number of blocks per replicate (number of treatments/block size).") }
+          if (numFieldRow %% numBlk != 0)  { stop("Number of field rows should be divisible by the number of blocks per replicate.") }
+     }
+     if (r == 3) {
+          if (numBlk%%2 == 0) { if (blksize >= numBlk) { stop("For r = 3 and number of blocks per replicate is an even number,  block size should be less than the number of blocks per replicate (number of treatments/block size).") }
+          }  else { if (blksize > numBlk) { stop("For r = 3 and number of blocks per replicate is an odd number,  block size should be less than or equal to the number of blocks per replicate (number of treatments/block size).") }}
+     }
+     if (r == 4) {
+          if (numBlk%%2 != 0) {
+               if (numBlk%%3 != 0) {
+                    if (blksize > numBlk) { stop("For r = 4, number of block should be an odd number but not multiple of 3 and block size should be less than or equal to number of blocks (number of treatments/block size).")	 }
+               } else {
+                    stop("For r = 4, number of block should be an odd number but not multiple of 3 and block size should be less than or equal to number of blocks (number of treatments/block size).")	
+               }
+          } else { stop("For r = 4, the number of replicate should be an odd number.") }
+          if (numFieldRow %% numBlk != 0)  { stop("Number of field rows should be divisible by the number of blocks per replicate.") }
+          
+     }
+
+     if (r%%numBlkRow != 0) { stop("Number of field rows is not divisible by the total number of blocks.") }
+     
+     numBlkCol <- r/numBlkRow
+	withAlphaDesign <- FALSE
+
+     randomize <- NULL
+     plan <- list()
+     plotNum <- NULL
+	for (i in (1:trial)) {
+		capture.output(temp <- design.alpha(trt = tempComb[[1]], k = blksize, r))
+          plan[[i]] <- matrix(0, nrow = numBlkRow * numBlk, ncol = numBlkCol * blksize)
+		if (i == 1) plotNum <- matrix(0, nrow = numBlkRow * numBlk, ncol = numBlkCol * blksize)
+          for (j in (1:length(temp$design))) {
+               tempPlotNum <- matrix(as.numeric(paste(j, paste(c(rep(0, max(nchar(1:length(tempComb[[1]]))))), collapse = ""), sep = ""))+1:length(tempComb[[1]]), 
+                                     nrow = numBlk, ncol = blksize, byrow = TRUE)
+               if (serpentine) { for (k in seq(2, numBlk, by = 2)) { tempPlotNum[k, ] <- rev(tempPlotNum[k, ]) }}
+               if (j%%numBlkCol != 0) { colIndex <- j%%numBlkCol } else { colIndex <- numBlkCol }
+               if (colIndex == 1) { colIndexLL <- colIndex  } else { colIndexLL <- colIndexLL + blksize }
+               colIndexUL <- colIndexLL + blksize - 1
+               rowIndex <- ceiling(j/numBlkCol)
+               rowIndexLL <- (rowIndex * numBlk) - numBlk + 1
+               rowIndexUL <- rowIndexLL + numBlk - 1 
+               plan[[i]][rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <- temp$design[[j]]
+               if (i == 1) plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <- tempPlotNum
+               tempFieldOrder <- merge(as.data.frame.table(matrix(rowIndexLL:rowIndexUL,nrow = numBlk, ncol = blksize, byrow = FALSE)), 
+                                       as.data.frame.table(matrix(colIndexLL:colIndexUL,nrow = numBlk, ncol = blksize, byrow = TRUE)), 
+                                       by.x = c("Var1", "Var2"), by.y = c("Var1", "Var2"))
+               tempOrder <- merge(as.data.frame.table(temp$design[[j]]), as.data.frame.table(tempPlotNum), by.x = c("Var1", "Var2"), by.y = c("Var1", "Var2"))
+               randomize <- rbind(randomize, cbind(Trial = i, merge(temp$book[temp$book[, "replication"] == j,], 
+                                                   merge(tempOrder, tempFieldOrder, by.x = c("Var1", "Var2"), by.y = c("Var1", "Var2"))[,3:6], 
+                                                   by.x = "tempComb[[1]]", by.y = "Freq.x.x")))
+          }
+		dimnames(plan[[i]]) <- list(paste("FieldRow", 1:nrow(plan[[i]]),sep = ""), paste("FieldCol", 1:ncol(plan[[i]]), sep = ""))
+		if (i == 1) dimnames(plotNum) <- dimnames(plan[[i]])
+	}
+	names(plan) <- paste("Trial", 1:trial, sep = "")
+     randomize <- randomize[,c("Trial", "replication", "block", "tempComb[[1]]", "Freq.y.x", "Freq.x.y", "Freq.y.y")]
+     names(randomize) <- c("Trial", "Rep", "Block", names(tempComb)[1], "PlotNum", "FieldRow", "FieldCol")
+     randomize <- randomize[order(randomize$Trial, randomize$Rep, randomize$FieldRow, randomize$FieldCol),]
+     randomize[,"Trial"] <- factor(randomize[,"Trial"])
+	randomize[,"Rep"] <- factor(randomize[,"Rep"])
+	randomize[,"Block"] <- factor(randomize[,"Block"])
+	randomize[,"FieldRow"] <- as.numeric(randomize[,"FieldRow"])
+	randomize[,"FieldCol"] <- as.numeric(randomize[,"FieldCol"])
+	rownames(randomize) <- 1:nrow(randomize)
+
+	
+	cat(toupper("Design Properties:"),"\n",sep = "")
+	cat("\t","Incomplete Block Design","\n",sep = "") 
+	cat("\t","Alpha Lattice Design","\n\n",sep = "") 
+	cat(toupper("Design Parameters:"),"\n",sep = "")
+	cat("\t","Number of Trials = ", trial, "\n",sep = "")
+	cat("\t","Number of Treatments = ", length(tempComb[[1]]), "\n",sep = "")
+	cat("\t","Number of Replicates = ", r, "\n",sep = "")
+	cat("\t","Plots per Block (Block Size) = ", blksize, "\n",sep = "")
+	cat("\t","Block per Replicate = ", length(tempComb[[1]])/blksize, "\n\n",sep = "")
+	#cat("Results of Randomization:\n")
+	#printDataFrame(randomize)
+	if (!is.null(file)) {
+		tempFile <- strsplit(file, split = "\\.")[[1]]
+		tempExt <- tolower(tempFile[length(tempFile)])
+		if (tempExt != "csv"){ if(tempExt != "rda") tempExt <- "csv" } 
+		newFile <- paste(tempFile[1:length(tempFile)-1], collapse = ".", sep = "")
+		newFile <- paste(newFile, tempExt, sep = ".")
+		if (tempExt == "csv") { write.csv(randomize, file = newFile, row.names = FALSE)
+		} else { save(randomize, file = newFile) }
+	} else {
+		cat("Results of Randomization:\n")
+		printDataFrame(randomize)
+	}
+	return(invisible(list(fieldbook = randomize, layout = plan, plotNum = plotNum)))
+}
+

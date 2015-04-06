@@ -1,0 +1,267 @@
+#----------------------------------------------------------------
+# Half-sib mating, design NC III                            
+# F2 lines (males) are randomly selected and back-crossed   
+# to parents (females)                                      
+# Estimates genetic variance components                     
+# 
+# ARGUMENTS:
+# design - experiment design
+# data - name of data frame
+# respvar - vector of response variables
+# tester - string, name of tester factor
+# f2lines - string, name of F2 lines factor
+# rep - string, name of rep factor
+# block - string, name of block factor
+# row - string, name of row factor
+# column - string, name of column factor
+# individual - string, name of individual factor
+# environment - string, name of environment factor
+#
+# Script Created by: Violeta Bartolome   07.2011
+# Script Modified by: Nellwyn Sales and Guoyou Ye 
+#----------------------------------------------------------------
+
+nc3Test <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data, respvar, tester, f2lines, rep=NULL, block=NULL, row=NULL, column=NULL, individual=NULL, environment=NULL) UseMethod("nc3Test")
+
+nc3Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data, respvar, tester, f2lines, rep=NULL, block=NULL, row=NULL, column=NULL, individual=NULL, environment=NULL) {
+	
+	options(show.signif.stars=FALSE)
+	data <- eval(parse(text = data))
+	library(lme4)
+	
+	# --- trim the strings --- #
+	respvar <- trimStrings(respvar)
+	tester <- trimStrings(tester)
+	f2lines <- trimStrings(f2lines)
+	if (!is.null(block)) {block <- trimStrings(block) }
+	if (!is.null(rep)) {rep <- trimStrings(rep) }
+	if (!is.null(row)) {row <- trimStrings(row) }
+	if (!is.null(column)) {column <- trimStrings(column) }
+	if (!is.null(individual)) {individual <- trimStrings(individual) }
+	if (!is.null(environment)) {environment <-trimStrings(environment) }
+	
+	# --- create titles --- #
+	if (design == "CRD") { designName<-"CRD"}
+	if (design == "RCB") { designName<-"RCB"}
+	if (design == "Alpha") { designName<-"ALPHA-LATTICE"}
+	if (design == "RowColumn") { designName<-"ROW-COLUMN"}
+	cat("\nDESIGN: NORTH CAROLINA EXPERIMENT III IN ",designName, "\n", sep="")
+	
+	# --- get number of environment levels --- #
+	if (!is.null(environment)) {
+	  data[,match(environment, names(data))] <- factor(trimStrings(data[,match(environment, names(data))]))
+	  envNumLevels<-nlevels(data[,match(environment, names(data))])
+	} else {envNumLevels<-1}
+	
+	result <- list()
+	for (i in (1:length(respvar))) {
+	  result[[i]] <- list()
+	  cat("\n-----------------------------")
+	  cat("\nRESPONSE VARIABLE: ", respvar[i], "\n", sep="")
+	  cat("-----------------------------\n")
+	  for (j in (1:envNumLevels)) {
+	    result[[i]]$site[[j]] <- list()
+	    if (!is.null(environment)) {
+	      crdVars<-c(respvar[i], tester, f2lines, environment)
+	      rcbVars<-c(respvar[i], tester, f2lines, block, environment)
+	      alphaVars<-c(respvar[i], tester, f2lines, rep, block, environment)
+	      rowcolVars<-c(respvar[i], tester, f2lines, rep, row, column, environment)
+	    } else {
+	      crdVars<-c(respvar[i], tester, f2lines)
+	      rcbVars<-c(respvar[i], tester, f2lines, block)
+	      alphaVars<-c(respvar[i], tester, f2lines, rep, block)
+	      rowcolVars<-c(respvar[i], tester, f2lines, rep, row, column)
+	    }
+	    if (design == "CRD") {temp.data <- data[sort(match(crdVars, names(data)))]}
+	    if (design == "RCB") {temp.data <- data[sort(match(rcbVars, names(data)))]}
+	    if (design == "Alpha") {temp.data <- data[sort(match(alphaVars, names(data)))]}
+	    if (design == "RowColumn") {temp.data <- data[sort(match(rowcolVars, names(data)))]}
+	    if (!is.null(environment)) {
+	      cat("-----------------------------")
+	      cat("\nANALYSIS FOR: ",environment, " = " ,levels(temp.data[,match(environment, names(temp.data))])[j],"\n", sep="")
+	      cat("-----------------------------\n")
+        
+	      # --- create temp.data that contains data for one environment level only --- #
+	      #temp.data <- subset(temp.data, temp.data[,match(environment, names(temp.data))] == levels(temp.data[,match(environment, names(temp.data))])[j])
+	      temp.data <- temp.data[temp.data[,match(environment, names(temp.data))] == levels(temp.data[,match(environment, names(temp.data))])[j],]
+        temp.data[,match(environment, names(temp.data))] <- factor(trimStrings(temp.data[,match(environment, names(temp.data))]))
+	    }
+	    
+	    # --- define factors --- #
+	    obsread<-nrow(temp.data)
+			temp.data[,match(tester, names(temp.data))] <- factor(trimStrings(temp.data[,match(tester, names(temp.data))]))
+			temp.data[,match(f2lines, names(temp.data))] <- factor(trimStrings(temp.data[,match(f2lines, names(temp.data))]))
+			if (design == "RCB") {temp.data[,match(block, names(temp.data))] <- factor(trimStrings(temp.data[,match(block, names(temp.data))]))	}
+	    if (design == "Alpha") {
+	      temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))
+	      temp.data[,match(block, names(temp.data))] <- factor(trimStrings(temp.data[,match(block, names(temp.data))]))
+	    }
+	    if (design == "RowColumn") {
+	      temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))
+	      temp.data[,match(row, names(temp.data))] <- factor(trimStrings(temp.data[,match(row, names(temp.data))]))
+	      temp.data[,match(column, names(temp.data))] <- factor(trimStrings(temp.data[,match(column, names(temp.data))]))
+	    }
+      
+			# --- check if raw data is balanced. If not, generate estimates for missing values --- #
+	    # --- remove rows with missing observations --- #
+			#temp.data <- subset(temp.data, subset = (is.na(temp.data[,match(respvar[i], names(temp.data))]) == FALSE))
+	    temp.data <- temp.data[(is.na(temp.data[,match(respvar[i], names(temp.data))]) == FALSE),]
+	    obsused<-nrow(temp.data)
+      
+	    responseRate<-(obsused/obsread)
+	    
+	    if (responseRate < 0.80) {
+	      cat("\nToo many missing observations. Cannot proceed with the analysis.\n\n")
+	      next
+	    } else {
+	      # --- compute harmonic mean that will be used later in the estimation of genetic variances --- #
+	      lengthPerCross<-tapply(temp.data[,respvar[i]], temp.data[,c(f2lines, tester)], length)
+	      repHarmonicMean<-1/mean((1/lengthPerCross), na.rm=TRUE)
+	      
+	      # --- compute the number of observations for balanced data --- #
+	      if (design == "CRD") {
+	        tempDataForAnova<-temp.data[,c(f2lines, tester, respvar[i])]
+	        nlevelsRep<-max(lengthPerCross, na.rm=TRUE)
+	        balancedDataSize<-2*nlevels(temp.data[,f2lines])*nlevelsRep
+	      }
+	      if (design == "RCB") {
+	        tempDataForAnova<-temp.data[,c(f2lines, tester, block, respvar[i])]
+	        balancedData<-generateBalancedData(design="FACTORIAL", data=tempDataForAnova, respvar[i], f2lines, tester, block)
+	        #balancedDataSize<-nrow(balancedData)
+	        balancedDataSize<-2*nlevels(temp.data[,f2lines])*nlevels(temp.data[,block])
+	      }
+	      if (design == "Alpha") {
+	        balancedDataSize<-2*nlevels(temp.data[,f2lines])*nlevels(temp.data[,rep])
+	      }
+	      if (design == "RowColumn") {
+	        balancedDataSize<-2*nlevels(temp.data[,f2lines])*nlevels(temp.data[,rep])
+	      }
+	      
+	      # --- data summary --- #
+	      funcTrialSum <- class.information2(names(temp.data),temp.data)
+	      cat("\nDATA SUMMARY: ","\n\n", sep="")
+	      print(funcTrialSum)
+	      cat("\nNumber of observations read: ",obsread, sep="")
+	      cat("\nNumber of observations used: ",obsused, sep="")
+	      missingObs<-balancedDataSize-nrow(temp.data)
+	      
+	      # --- ANOVA for NC3 experiment --- #
+	      if (design == "CRD" || design == "RCB") {
+	        cat("\n\n\nANOVA TABLE FOR THE EXPERIMENT:\n\n")
+	        if (balancedDataSize<nrow(temp.data)) {
+	          cat("***\nERROR: The number of observations read in the data exceeds the size of a balanced data.\n       Please check if the column for block is properly labeled.\n***\n")
+	        } else {
+	          if ((nrow(temp.data)/balancedDataSize) >= 0.90) {
+	            if (nrow(temp.data) == balancedDataSize) {
+	              anovaRemark <- "REMARK: Raw dataset is balanced."
+	              dataForAnova<-tempDataForAnova  
+	            } else {
+	              if (design == "CRD") {
+	                dataForAnova<-tempDataForAnova
+	                anovaRemark  <- "REMARK: Raw dataset is unbalanced."
+	              }
+	              if (design == "RCB") {
+	                dataForAnova<-estimateMissingData(design="RCB", data=balancedData, respvar[i], f2lines, tester, block)  
+	                anovaRemark  <- "REMARK: Raw data and estimates of the missing values are used."
+	              }
+	            }  
+	            
+	            if (design == "CRD") {myformula <- paste(respvar[i], " ~ ", tester, "*", f2lines, sep = "")  }
+	            if (design == "RCB") {myformula <- paste(respvar[i], " ~ ", block, " + ", tester, "*", f2lines, sep = "")  }
+	            anova.factorial<-summary(aov(formula(myformula), data=dataForAnova))  	
+	            
+	            #rerun aov using temp.data to get the original df's
+	            anova.factorial.temp<-summary(aov(formula(myformula), data=temp.data))
+	            if (design == "RCB") {
+	              anova.factorial.temp[[1]]$"Df"[length(anova.factorial.temp[[1]]$"Df")]<-anova.factorial[[1]]$"Df"[length(anova.factorial[[1]]$"Df")]-missingObs
+	            }
+	            anovaFormat<-adjustAnovaDf(anova.factorial, anova.factorial.temp[[1]]$"Df")
+	            anovaFormat<-formatAnovaTable(anovaFormat)
+	            print(anovaFormat)
+	            cat("-------\n")
+	            cat(anovaRemark)
+	            result[[i]]$site[[j]]$nc3.anova <- anovaFormat
+	            
+	          } else {anovaRemark <- "ERROR: Too many missing values. Cannot perform ANOVA for balanced data." 
+	                  cat(anovaRemark)
+	          }
+	        }
+	      }
+	      
+	      # --- LMER for the design --- #
+	      if (design == "CRD") {myformula1 <- paste(respvar[i], " ~ 1 + ", tester, " + (1|", f2lines, ") + (1|",tester,":",f2lines,")", sep = "") }
+	      if (design == "RCB") {myformula1 <- paste(respvar[i], " ~ 1 + ", tester, " + (1|", block, ") + (1|", f2lines, ") + (1|",tester,":",f2lines,")", sep = "") }
+	      if (design == "Alpha") {myformula1 <- paste(respvar[i], " ~ 1 + ", tester, " + (1|", rep, ") + (1|", block, ":", rep, ") + (1|", f2lines, ") + (1|",tester,":",f2lines,")", sep = "") }
+	      if (design == "RowColumn") {myformula1 <- paste(respvar[i], " ~ 1 + ", tester," + (1|", rep, ") + (1|", row, ":", rep, ") + (1|", column, ":", rep, ") + (1|", f2lines, ") + (1|",tester,":",f2lines,")", sep = "") }
+	      
+	      model <- lmer(formula(myformula1), data = temp.data)
+	      result[[i]]$site[[j]]$lmer.result <- summary(model)
+	      
+	      # --- edit format of lmer output before printing --- #
+	      fixeff.table<-round(summary(model)@coefs, digits=4)
+	      rownames(fixeff.table)<-c(" (Intercept)", paste("",rownames(fixeff.table)[2]))
+	      remat<-summary(model)@REmat
+	      Groups<-remat[,1]
+	      Variance<-formatC(as.numeric(remat[,3]), format="f")
+	      Std.Deviation<-formatC(as.numeric(remat[,4]), format="f")
+	      Variance2<-format(rbind("Variance", cbind(Variance)), justify="right")
+	      Std.Deviation2<-format(rbind("Std. Deviation", cbind(Std.Deviation)), justify="right")
+	      Groups2<-format(rbind("Groups",cbind(Groups)), justify="left")
+	      rematNew<-noquote(cbind(Groups2, Variance2, Std.Deviation2))
+	      colnames(rematNew)<-c("", "", "")
+	      rownames(rematNew)<-rep("",nrow(rematNew))
+	      cat("\n\n\nLINEAR MIXED MODEL FIT BY RESTRICTED MAXIMUM LIKELIHOOD:\n\n")
+	      cat(" Formula: ", myformula1,"\n\n")
+	      print(summary(model)@AICtab) 
+	      #cat("\n Fixed Effects:\n")
+	      #print(fixeff.table)
+	      cat("\n Random Effects:")
+	      print(rematNew)
+	      
+	      #--- Estimates of genetic variance components ---#
+	      varcomp <- summary(model)@REmat
+	      Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+	      Vf_m <- as.numeric(varcomp[varcomp[,1] == paste(tester,":",f2lines,sep=""), "Variance"])
+	      Vm <- as.numeric(varcomp[varcomp[,1] == f2lines, "Variance"])
+	      
+	      m <- nlevels(temp.data[,match(f2lines, names(temp.data))])
+	      r <- repHarmonicMean
+	      F<-0
+	      
+	      VA <- 4*Vm
+	      VD <- 2*Vf_m
+	      VE <- Ve
+	      if (VD < 0 || VD < 1e-10) VD <- 0
+	      if (VA < 0 || VA < 1e-10) VA <- 0
+	      
+	      # VE <- Ve -(1/4)*VA -(1/2)*VD      # formula for individual; taken form Kearsey and Pooni
+	      VP <- VA + VD + VE
+	      h2N <- VA / VP                      # individual based
+	      h2B <- (VA + VD) / VP               # individual based
+	      h2f <- Vm/(Vm+VE/r)                 # family heritability
+	      Dominance.ratio <- sqrt(2*VD/VA)    # will be undefined if VD is negative
+	      
+	      # --- format values to print in the table --- #
+	      VA_p<-formatNumericValue(VA)
+	      VD_p<-formatNumericValue(VD)
+	      h2N_p<-formatNumericValue(h2N)
+	      h2B_p<-formatNumericValue(h2B)
+	      h2f_p<-formatNumericValue(h2f)
+	      Dominance.ratio_p<-formatNumericValue(Dominance.ratio)
+	      Estimate <- rbind(VA_p, VD_p, h2N_p, h2B_p, h2f_p, Dominance.ratio_p)
+	      with.colheader<-format(rbind("Estimate", Estimate), justify="right")
+	      colnames(with.colheader) <- c("")
+	      rownames(with.colheader) <- c("", " VA", " VD", " h2-narrow sense", " H2-broad sense", " h2-family", " Dominance Ratio")
+	      TABLE <- as.table(with.colheader)
+	      cat("\n\nESTIMATES OF GENETIC VARIANCE COMPONENTS:\n")
+	      print(TABLE)
+	      cat("\n")
+	      result[[i]]$site[[j]]$genvar.components <- TABLE
+	    }
+		} ## end of for loop (j)
+	}## end of loop (i)
+	cat("\n==============================================================\n")
+	detach("package:lme4")
+	return(list(output = result))
+}
+

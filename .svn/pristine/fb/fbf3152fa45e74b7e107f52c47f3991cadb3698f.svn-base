@@ -1,0 +1,25 @@
+\name{GEOneStage_resid}
+\alias{GEOneStage_resid}
+\title{GEOneStage_resid}
+\description{
+residuals
+}
+\usage{
+GEOneStage_resid(ge1sout, exptl.design = c("RCB", "Alpha", "RowCol"), respvar, geno, row, column = NULL, rep = NULL, env, is.genoRandom = FALSE)
+}
+%- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{ge1sout}{a}
+  \item{exptl.design}{a}
+  \item{respvar}{a}
+  \item{geno}{a}
+  \item{row}{a}
+  \item{column}{a}
+  \item{rep}{a}
+  \item{env}{a}
+  \item{is.genoRandom}{a}
+}
+\author{
+Alaine A. Gulles
+}
+\keyword{residual}

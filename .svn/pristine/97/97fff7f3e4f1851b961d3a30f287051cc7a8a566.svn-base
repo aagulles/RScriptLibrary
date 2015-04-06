@@ -1,0 +1,20 @@
+\name{HWETest}
+\alias{HWETest}
+\alias{HWETest.default}
+\title{
+HWETest
+}
+\description{
+HWETest
+}
+\usage{
+HWETest(genindObject, display=c("full", "matrix"))
+}
+\arguments{
+  \item{genindObject}{genind object}
+  \item{display}{value is "full" if the list of complete tests will be displayed; value is "matrix" if matrix of p-values will be displayed}
+}
+\author{
+Nellwyn Sales
+}
+\keyword{HWE}

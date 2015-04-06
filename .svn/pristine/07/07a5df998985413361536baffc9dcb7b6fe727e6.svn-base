@@ -1,0 +1,24 @@
+\name{gge.analysis}
+\alias{gge.analysis}
+\alias{gge.analysis.default}
+\title{gge.analysis}
+\description{
+performs gge analysis
+}
+\usage{
+ammi.analysis(ENV, GEN, REP, Y, MSE = 0, number = TRUE, graph = "none", yVar = "Y1", f=0.5, ...)
+}
+\arguments{
+  \item{ENV}{a}
+  \item{GEN}{a}
+  \item{REP}{a}
+  \item{Y}{a}
+  \item{MSE}{a}
+  \item{number}{a}
+  \item{graph}{a}
+  \item{yVar}{a}
+  \item{f}{a}
+  \item{\dots}{a}
+}
+\author{Felipe de Mendiburu, Alaine A. Gulles, Nellwyn L. Sales, Violeta Bartolome}
+\keyword{gge}

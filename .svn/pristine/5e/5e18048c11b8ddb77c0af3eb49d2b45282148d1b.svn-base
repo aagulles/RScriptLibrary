@@ -1,0 +1,20 @@
+\name{GETwoStage.dataRecode}
+\alias{GETwoStage.dataRecode}
+\alias{GETwoStage.dataRecode.default}
+\title{GETwoStage.dataRecode}
+\description{
+persforms data recoding for genotype and environment columns for Multi-Env two stage analysis
+}
+\usage{
+GETwoStage.dataRecode(data, respvar, geno, env)
+}
+\arguments{
+  \item{data}{a}
+  \item{respvar}{a}
+  \item{geno}{a}
+  \item{env}{a}
+}
+\author{
+Nellwyn Sales
+}
+\keyword{ dataRecode }

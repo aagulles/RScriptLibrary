@@ -1,0 +1,22 @@
+\name{BIBDTest}
+\alias{BIBDTest}
+\alias{BIBDTest.default}
+\title{Balanced Incomplete Block Design}
+\description{
+ Perform analysis of variance for balanced incomplete block design where 
+ the treatments are treated as fixed factor.
+}
+\usage{
+BIBDTest(data, respvar, trmt, block, method = NULL, descriptive, alpha = 0.05)
+}
+\arguments{
+  \item{data}{a}
+  \item{respvar}{a}
+  \item{trmt}{a}
+  \item{block}{a}
+  \item{method}{a}
+  \item{descriptive}{a}
+  \item{alpha}{a}
+}
+\author{author1}
+\keyword{ analysis }

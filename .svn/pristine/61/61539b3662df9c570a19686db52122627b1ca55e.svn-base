@@ -1,0 +1,16 @@
+\name{fCovariances}
+\alias{fCovariances}
+\title{fCovariances}
+\description{
+a
+}
+\usage{
+fCovariances(data)
+}
+\arguments{
+  \item{data}{a}
+}
+\author{
+a
+}
+\keyword{a}

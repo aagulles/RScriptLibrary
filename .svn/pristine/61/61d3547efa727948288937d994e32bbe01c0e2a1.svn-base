@@ -1,0 +1,11 @@
+Package: STAR
+Type: Package
+Title: Statistical Tools for Agricultural Research
+Version: 2.0
+Date: 2013-10-31
+Author: Alaine A. Gulles <a.gulles@irri.org> and Christoffer Edd N. Relente <c.relente@irri.org> with contributions from Ms. Violeta I. Bartolome, Ms. Leilani A. Nora, Rose Imee Zhella A. Morantte and Dr. Guoyou Ye of International Rice Research Institute 
+Maintainer: Alaine A. Gulles <a.gulles@irri.org> and Christoffer Edd N. Relente <c.relente@irri.org>
+Description: A package for data management and basic statistical analysis of experimental data.
+Depends: R (>= 2.15.1), cluster, lme4, multcomp, fitdistrplus, leaps, vegan, lattice, permute, ade4, DiGGer, R.methodsS3, R.oo
+License: GPL (>= 2)
+LazyLoad: yes

@@ -1,0 +1,17 @@
+\name{GEOneStage_resid}
+\alias{GEOneStage_resid}
+\alias{GEOneStage_resid.default}
+\title{GEOneStage_resid}
+\description{
+function for consolidating residuals from multi-env one stage analysis
+}
+\usage{
+GEOneStage_resid(geOneResult, respvar, is.genoRandom = FALSE)
+}
+\arguments{
+  \item{geOneResult}{a}
+  \item{respvar}{a}
+  \item{is.genoRandom}{a}
+}
+\author{Nellwyn L. Sales}
+\keyword{residuals}

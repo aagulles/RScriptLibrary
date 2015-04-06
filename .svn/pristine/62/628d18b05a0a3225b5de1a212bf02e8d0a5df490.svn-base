@@ -1,0 +1,39 @@
+\name{GraphHist}
+\alias{GraphHist}
+\title{Histogram}
+\description{GraphHist}
+\usage{
+GraphHist(data, outputPath, nVar, mTitle = NULL, yAxisLab = NULL, xAxisLab = NULL, yMinValue = NULL, yMaxValue = NULL, xMinValue = NULL, xMaxValue = NULL, useFreq = TRUE, numBins = "Sturges", byVar = NULL, barColors, dispCurve = FALSE, lineTypes, lineColors, lineWidths, showLeg = FALSE, legPos = c("bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", "right", "center"), legTitle = NULL, boxed = TRUE, multGraphs = FALSE, numRowsGraphs = 1, numColsGraphs = 1, orientGraphs = c("left-right", "top-bottom"))
+}
+\arguments{
+  \item{data}{a}
+  \item{outputPath}{a}
+  \item{nVar}{a}
+  \item{mTitle}{a}
+  \item{yAxisLab}{a}
+  \item{xAxisLab}{a}
+  \item{yMinValue}{a}
+  \item{yMaxValue}{a}
+  \item{xMinValue}{a}
+  \item{xMaxValue}{a}
+  \item{useFreq}{a}
+  \item{numBins}{a}
+  \item{byVar}{a}
+  \item{barColors}{a}
+  \item{dispCurve}{a}
+  \item{lineTypes}{a}
+  \item{lineColors}{a}
+  \item{lineWidths}{a}
+  \item{showLeg}{a}
+  \item{legPos}{a}
+  \item{legTitle}{a}
+  \item{boxed}{a}
+  \item{multGraphs}{a}
+  \item{numRowsGraphs}{a}
+  \item{numColsGraphs}{a}
+  \item{orientGraphs}{a}
+}
+\author{
+Rose Imee Zhella A. Morantte
+}
+\keyword{histogram}

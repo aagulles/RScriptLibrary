@@ -1,0 +1,26 @@
+\name{diallel1Test}
+\alias{diallel1Test}
+\title{diallel1Test}
+\description{
+ performs analysis for Diallel I experiments using Griffing Method
+}
+\usage{
+diallel1Test(design = c("CRD", "RCB", "Alpha", "RowColumn"), data, respvar, p1, p2, rep = NULL, block = NULL, row = NULL, column = NULL, cross = TRUE, individual = NULL, environment = NULL, alpha = 0.05)
+}
+\arguments{
+  \item{design}{experiment design}
+  \item{data}{name of data frame}
+  \item{respvar}{vector of response variables}
+  \item{p1}{string, name of p1 factor}
+  \item{p2}{string, name of p2 factor}
+  \item{rep}{string, name of rep factor}
+  \item{block}{string, name of block factor}
+  \item{row}{string, name of row factor}
+  \item{column}{string, name of column factor}
+  \item{cross}{logical}
+  \item{individual}{string, name of individual factor}
+  \item{environment}{string, name of environment factor}
+  \item{alpha}{level of significance}
+}
+\author{Nellwyn L. Sales, Violeta Bartolome, Guoyou Ye}
+\keyword{diallel1}
