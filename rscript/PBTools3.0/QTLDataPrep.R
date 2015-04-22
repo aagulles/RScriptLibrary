@@ -63,7 +63,6 @@ QTLDataPrep.default <- function(P_data, G_data, M_data, P_geno) {
   if (length(P_diffGidNoSpace)!=0) {
     ##save new P_data as csv file
     write.table(P_dataRed,file=paste(getwd(),"/newPhenoData.csv", sep=""), quote = FALSE, sep = ",", row.names = FALSE, col.names=TRUE)
-    P_data <- P_dataRed
     isNewPhenoCreated<-TRUE
   }
   
@@ -98,7 +97,6 @@ QTLDataPrep.default <- function(P_data, G_data, M_data, P_geno) {
     ##save new M_data
     write.table(M_dataRed,file=paste(getwd(), "/newMapData.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE, col.names=FALSE)
     isNewMapCreated<-TRUE
-    M_data <- M_dataRed
   }
   
   isNewGenoCreated<-FALSE
@@ -106,18 +104,13 @@ QTLDataPrep.default <- function(P_data, G_data, M_data, P_geno) {
     #save new G_data 
     write.table(G_dataRed2,file=paste(getwd(), "/newGenoData.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE, col.names=FALSE)
     isNewGenoCreated<-TRUE
-    G_data <- G_dataRed2
   }
   
   return(list(G_diffGid = G_diffGid,
               P_diffGid = P_diffGid,
               M_diffMid = M_diffMid,
               G_diffMid = G_diffMid,
-              isNewPhenoCreated = isNewPhenoCreated,
-              isNewMapCreated = isNewMapCreated,
-              isNewGenoCreated = isNewGenoCreated,
-              P_data = P_data,
-              M_data = M_data,
-              G_data = G_data
-))
+              isNewPhenoCreated =isNewPhenoCreated,
+              isNewMapCreated =isNewMapCreated,
+              isNewGenoCreated =isNewGenoCreated))
 }

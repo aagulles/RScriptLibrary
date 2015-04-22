@@ -1,27 +1,24 @@
-#############################################################################
-#  doQTL_IM 
-#' Function for doing QTL analysis using Simple Interval Mapping
+##doQTL_IM - function for doing QTL analysis using Simple Interval Mapping
 #
-#  Parameters: 
-#' @param outputPath folder where graph(s) will be saved
-#' @param crossData2 cross object
-#' @param yVars traits to be analyzed
-#' @param stepCalc step size or the maximum distance in cM between positions at which genotype probabilities are calculated
-#' @param errCalc genotyping error rate used in the calculation of the penetrance Pr(observed|true genotype)
-#' @param mapCalc map function used when converting genetic distances into recombination fractions, whether "haldane","kosambi","c-f","morgan"
-#' @param lodCutoffM cutoff for error LOD scores
-#' @param phenoModel phenotype model, whether "normal","binary","2part","np"
-#' @param alMethod indicates whether to use "em","imp","hk","ehk"
-#' @param nPermutations number of permutation replicates
+# REQUIRED input: 
+# outputPath - folder where graph(s) will be saved
+# crossData2 - cross object
+# yVars - traits to be analyzed
+# stepCalc - step size or the maximum distance in cM between positions at which genotype probabilities are calculated
+# errCalc - genotyping error rate used in the calculation of the penetrance Pr(observed|true genotype)
+# mapCalc - map function used when converting genetic distances into recombination fractions, whether "haldane","kosambi","c-f","morgan"
+# lodCutoffM - cutoff for error LOD scores
+# phenoModel - phenotype model, whether "normal","binary","2part","np"
+# alMethod - indicates whether to use "em","imp","hk","ehk"
+# nPermutations - number of permutation replicates
 #
 # Packages required: qtl
-#############################################################################
 
-doQTL_IM <- function(outputPath, crossData2, yVars, stepCalc = 0, errCalc = 0.01, mapCalc = c("haldane","kosambi","c-f","morgan"),
+doIM <- function(outputPath, crossData2, yVars, stepCalc = 0, errCalc = 0.01, mapCalc = c("haldane","kosambi","c-f","morgan"),
                  lodCutoffM = 3, phenoModel = c("normal","binary","2part","np"), alMethod = c("em","imp","hk","ehk"),
-                 nPermutations = 100) UseMethod("doQTL_IM")
+                 nPermutations = 100) UseMethod("doIM")
 
-doQTL_IM.default <- function(outputPath, crossData2, yVars, stepCalc = 0, errCalc = 0.01, mapCalc = c("haldane","kosambi","c-f","morgan"),
+doIM.default <- function(outputPath, crossData2, yVars, stepCalc = 0, errCalc = 0.01, mapCalc = c("haldane","kosambi","c-f","morgan"),
                  lodCutoffM = 3, phenoModel = c("normal","binary","2part","np"), alMethod = c("em","imp","hk","ehk"),
                  nPermutations = 100) {
   

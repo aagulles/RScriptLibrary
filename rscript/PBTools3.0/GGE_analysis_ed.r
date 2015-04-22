@@ -272,101 +272,123 @@ gge.analysis.default <- function (ENV, GEN, REP, Y, MSE = 0, number = TRUE, yVar
         hull <- c(CH, CH[1])
         lines(bplot_new[hull,3:4], col="green")
         polygonPoints<-bplot_new[hull,3:4]
-        
+
+        ############ modifications made by vbartolome on april 10, 2015 ###################
         # add perpendicular lines
         for (l in 1:(nrow(polygonPoints)-1)) {
           slope <- (polygonPoints[l,2]-polygonPoints[l+1,2])/(polygonPoints[l,1]-polygonPoints[l+1,1])
-          perp.slope = -1/slope
-          yhat <- perp.slope*max(polygonPoints[l,1], polygonPoints[l+1,1])
-          yhat2 <- perp.slope*min(polygonPoints[l,1], polygonPoints[l+1,1])
+          #interc <- geno$PC2[hull[i]]-slope*geno$PC1[hull[i]]  ## added by vbartolome
+	  interc <- polygonPoints[l,2]-slope*polygonPoints[l,1]  ## added by vbartolome
+          m1 <- c(interc, slope)     ## added by vbartolome
           
-          if (polygonPoints[l,1]<0 && polygonPoints[l+1,1]<0) {
-            if (slope>0) {
-              if (yhat < max(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2>min(polygonPoints[l,2], polygonPoints[l+1,2])) {
-                xPoints <- seq(minx_new*1.7,0,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            } else {
-              if (yhat > min(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2<max(polygonPoints[l,2], polygonPoints[l+1,2])) {
-                xPoints <- seq(minx_new*1.7,0,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            }
-          } else if (polygonPoints[l,1]>0 && polygonPoints[l+1,1]>0) {
-            if (slope>0) {
-              if (yhat < max(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2>min(polygonPoints[l,2], polygonPoints[l+1,2])) {
-                xPoints <- seq(0,maxx_new*1.7,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            } else {
-              if (yhat > min(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2<max(polygonPoints[l,2], polygonPoints[l+1,2])) {
-                xPoints <- seq(0,maxx_new*1.7,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            }
-          } else if (polygonPoints[l,2]>0 && polygonPoints[l+1,2]>0) {
-            if (slope>0) {
-              if (yhat < max(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2>min(polygonPoints[l,2], polygonPoints[l+1,2])) {
-                xPoints <- seq(minx_new*1.7,0,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            } else {
-              if (yhat > min(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2<max(polygonPoints[l,2], polygonPoints[l+1,2])) {
-                xPoints <- seq(0,maxx_new*1.7,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            }
-          } else if (polygonPoints[l,2]<0 && polygonPoints[l+1,2]<0) {
-            if (slope>0) {
-              if (yhat < max(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2>min(polygonPoints[l,2], polygonPoints[l+1,2])) {
-                xPoints <- seq(0,maxx_new*1.7,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            } else {
-              if (yhat > min(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2<max(polygonPoints[l,2], polygonPoints[l+1,2])) {
-                xPoints <- seq(minx_new*1.7,0,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            }
-          } else {
-            yIntercept<-(-1*polygonPoints[l,2])-(slope*polygonPoints[l,1])
-            xIntercept<-((-1*polygonPoints[l,2])+(slope*polygonPoints[l,1]))/slope
+          perp.slope = -1/slope 
+          m2 <- c(0,perp.slope)     ## added by vbartolome
+
+          # point of intersection
+          a <- m1-m2     ## added by vbartolome
+          cm <- rbind(m1,m2) # Coefficient matrix   ## added by vbartolome
+          solu <- c(-solve(cbind(cm[,2],-1)) %*% cm[,1])   ## added by vbartolome
+
+	  xmin <- min(bplot_new[,3])
+	  xmax <- max(bplot_new[,3])
+   
+          if (solu[1] < 0)  x <- seq(xmin,0,length=10) else    ## added by vbartolom
+          x <- seq(0,xmax,length=10)                    ## added by vbartolome
+          y <- perp.slope*x           ## added by vbartolome
+          lines(x,y, lty=1, col=1)     ## added by vbartolome
+
+
+          #yhat <- perp.slope*max(polygonPoints[l,1], polygonPoints[l+1,1])
+          #yhat2 <- perp.slope*min(polygonPoints[l,1], polygonPoints[l+1,1])
+          
+          #if (polygonPoints[l,1]<0 && polygonPoints[l+1,1]<0) {
+          #  if (slope>0) {
+          #    if (yhat < max(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2>min(polygonPoints[l,2], polygonPoints[l+1,2])) {
+          #      xPoints <- seq(minx_new*1.7,0,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  } else {
+          #    if (yhat > min(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2<max(polygonPoints[l,2], polygonPoints[l+1,2])) {
+          #      xPoints <- seq(minx_new*1.7,0,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  }
+          #} else if (polygonPoints[l,1]>0 && polygonPoints[l+1,1]>0) {
+          #  if (slope>0) {
+          #    if (yhat < max(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2>min(polygonPoints[l,2], polygonPoints[l+1,2])) {
+          #      xPoints <- seq(0,maxx_new*1.7,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  } else {
+          #    if (yhat > min(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2<max(polygonPoints[l,2], polygonPoints[l+1,2])) {
+          #      xPoints <- seq(0,maxx_new*1.7,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  }
+          #} else if (polygonPoints[l,2]>0 && polygonPoints[l+1,2]>0) {
+          #  if (slope>0) {
+          #    if (yhat < max(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2>min(polygonPoints[l,2], polygonPoints[l+1,2])) {
+          #      xPoints <- seq(minx_new*1.7,0,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  } else {
+          #    if (yhat > min(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2<max(polygonPoints[l,2], polygonPoints[l+1,2])) {
+          #      xPoints <- seq(0,maxx_new*1.7,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  }
+          #} else if (polygonPoints[l,2]<0 && polygonPoints[l+1,2]<0) {
+          #  if (slope>0) {
+          #    if (yhat < max(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2>min(polygonPoints[l,2], polygonPoints[l+1,2])) {
+          #      xPoints <- seq(0,maxx_new*1.7,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  } else {
+          #    if (yhat > min(polygonPoints[l,2], polygonPoints[l+1,2]) && yhat2<max(polygonPoints[l,2], polygonPoints[l+1,2])) {
+          #      xPoints <- seq(minx_new*1.7,0,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  }
+          #} else {
+          #  yIntercept<-(-1*polygonPoints[l,2])-(slope*polygonPoints[l,1])
+          #  xIntercept<-((-1*polygonPoints[l,2])+(slope*polygonPoints[l,1]))/slope
             
-            if (slope>0) {
-              if (yIntercept > 0 && xIntercept < 0) {
-                xPoints <- seq(minx_new*1.7,0,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              } else {
-                xPoints <- seq(0,maxx_new*1.7,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            } else {
-              if (yIntercept < 0 && xIntercept < 0) {
-                xPoints <- seq(minx_new*1.7,0,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              } else {
-                xPoints <- seq(0,maxx_new*1.7,length=20)
-                yPoints <- perp.slope*xPoints
-                lines(xPoints,yPoints, lty=1, col=1)
-              }
-            }
-          }
+          #  if (slope>0) {
+          #    if (yIntercept > 0 && xIntercept < 0) {
+          #      xPoints <- seq(minx_new*1.7,0,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    } else {
+          #      xPoints <- seq(0,maxx_new*1.7,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  } else {
+          #    if (yIntercept < 0 && xIntercept < 0) {
+          #      xPoints <- seq(minx_new*1.7,0,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    } else {
+          #      xPoints <- seq(0,maxx_new*1.7,length=20)
+          #      yPoints <- perp.slope*xPoints
+          #      lines(xPoints,yPoints, lty=1, col=1)
+          #    }
+          #  }
+          #}
         }
         
         dev.off()
       } ##end of if (ncol(bplot_new)>3)
-      
+      #############  modification by vbartolome ends here  
+
       #if (ncol(bplot_new)>4) {
       #  png(filename = paste(getwd(),"/", forFilename, "_biplot_PC1_PC3_",yVar,".png",sep = ""))
       #  par(cex=0.8)

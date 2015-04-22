@@ -433,7 +433,7 @@ doQTL_CIM2.default <-function(crossobj=cross.data, QTL.path, geno, env.label=NUL
   
 #   save(QTL.result, file = fnam)
     #pdf(file = pdfFile,onefile=TRUE);
-    png(file = pngFile);
+    png(filename = pngFile);
     print(xyplot(-log10(outem[,4])~ outem[,3] | factor(outem[,2]), type="l", layout=c(nchr(file),1), col="red", xlab="Chromosome position", ylab="-log10(P)", main=paste("QTL mapping", method, sep=""), scales = list(x = "free"), ylim=c(0,max), lwd=3,panel = function(x,y,...) {panel.abline(h =-log10(threshold.f),lty=2);llines(x,y,col="red",lwd=2)}));
   
     dev.off()

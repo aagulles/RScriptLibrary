@@ -1,0 +1,34 @@
+#--------------------------------
+# Created by: Violeta Bartolome
+#--------------------------------
+
+ANOVA <-function (Y, data, cont=1, DESIGN, TRT, Block=NULL, Env) UseMethod("ANOVA")
+
+ANOVA.default <-function (Y, data, cont=1, DESIGN, TRT, Block=NULL, Env)  {
+	
+	if (DESIGN == "CRD")    {formula1<- paste(Y, " ~ ", Env, " + ", TRT, " + ", Env,":",TRT, sep="") }
+	if (DESIGN == "RCB")    {formula1<- paste(Y, " ~ ", Env, " + ", Block,":",Env," + ", TRT, " + ", Env,":",TRT, sep="") }
+	
+	model <- aov(formula(formula1), data=data)
+	out <- anova(model)
+	SSenv <- out[rownames(out)==Env, "Sum Sq"]/cont
+	SSg <- out[rownames(out)==TRT, "Sum Sq"]/cont
+	envtrt<-paste(Env,":",TRT, sep="")
+	SSgxenv <- out[rownames(out)==envtrt, "Sum Sq"]/cont
+	SSe <- out[rownames(out)=="Residuals", "Sum Sq"]/cont
+	
+	DFenv <- out[rownames(out)==Env, "Df"]
+	DFg <- out[rownames(out)==TRT, "Df"]
+	DFgxenv <- out[rownames(out)==envtrt, "Df"]
+	DFe <- out[rownames(out)=="Residuals", "Df"]
+	
+	MSenv <- SSenv/DFenv
+	MSg <- SSg/DFg
+	MSgxenv <- SSgxenv/DFgxenv
+	MSe <- SSe/DFe
+	
+	return (list(SSenv=SSenv, SSg=SSg, SSgxenv=SSgxenv, SSe=SSe, 
+					DFenv=DFenv, DFg=DFg, DFgxenv=DFgxenv, DFe=DFe, 
+					MSenv=MSenv, MSg=MSg, MSgxenv=MSgxenv, MSe=MSe))
+}
+

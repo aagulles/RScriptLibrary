@@ -3,7 +3,7 @@
 # This function performs multi-environment one stage test
 #
 # ARGUMENT:
-# exptl.design - RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol
+# exptl.design - RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol, AugAlpha, AugRowCol
 # data - a string; name of the dataframe
 # respvar - a vector of strings; variable names of the response variables
 # geno - a string; variable name of the treatment/genotype variable
@@ -14,17 +14,19 @@
 # is.genoRandom - logical; indicating whether genotype/treatment is random or not; default value is FALSE (FIXED factor)
 #
 # File Created by: Alaine A. Gulles 
-# File Modified by: Alaine A. Gulles 
+# File Modified by: Alaine A. Gulles 03.09.2015
 # Script Created by: Violeta Bartolome
 # Script Modified by: Violeta Bartolome
-#                     Alaine A. Gulles
+#                     Alaine A. Gulles 03.09.2015
 #                     Rose Imee Zhella Morantte
 #                     Nellwyn Sales
 # --------------------------------------------------------
 
-GEOneStage.test <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"),  data, respvar, geno, row, column = NULL, rep = NULL, env, is.genoRandom = FALSE) UseMethod("GEOneStage.test")
+GEOneStage.test <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol", "AugAlpha", "AugRowCol"),  
+                            data, respvar, geno, row, column = NULL, rep = NULL, env, is.genoRandom = FALSE) UseMethod("GEOneStage.test")
 
-GEOneStage.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"),  data, respvar, geno, row, column = NULL, rep = NULL, env, is.genoRandom = FALSE) {  
+GEOneStage.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol", "AugAlpha", "AugRowCol"),
+                                    data, respvar, geno, row, column = NULL, rep = NULL, env, is.genoRandom = FALSE) {  
 
      library(lme4) 
 	options(show.signif.stars=FALSE)
@@ -34,8 +36,8 @@ GEOneStage.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "
      # --- check if columns specified are in the data set --- #
      if (exptl.design == "RCB" || exptl.design == "AugRCB") 	{ if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }} 
      if (exptl.design == "AugLS") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(column, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
-     if (exptl.design == "Alpha" || exptl.design == "LatinAlpha") 	{ if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(rep, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
-	if (exptl.design == "RowCol" || exptl.design == "LatinRowCol") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(column, names(data))) || is.na(match(rep, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
+     if (exptl.design == "Alpha" || exptl.design == "LatinAlpha" || exptl.design == "AugAlpha" ) 	{ if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(rep, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
+	if (exptl.design == "RowCol" || exptl.design == "LatinRowCol" || exptl.design == "AugRowCol") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(column, names(data))) || is.na(match(rep, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
 
      # --- define all factors --- #
 	data[,match(geno, names(data))] <- factor(data[,match(geno, names(data))])
@@ -116,8 +118,8 @@ GEOneStage.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "
 		     if (is.genoRandom) trt.stmt <- paste("(1|", geno,")", sep = "") else trt.stmt <- paste(geno, sep = "")		
 		     if (exptl.design == "RCB" || exptl.design == "AugRCB")    myformula1 <- paste(respvar[i], " ~ 1 + ", trt.stmt, " + (1|", env,") + (1|", row,":", env,") + (1|", geno,":", env,")", sep = "") 
 		     if (exptl.design == "AugLS") myformula1 <- paste(respvar[i], " ~ 1 + ", trt.stmt," + (1|", env,") + (1|", row, ":", env,") + (1|", column, ":", env,") + (1|", geno,":", env,")", sep = "")
-               if (exptl.design == "Alpha")  myformula1 <- paste(respvar[i], " ~ 1 + ", trt.stmt, " + (1|", env,") + (1|", rep,":", env,") + (1|", rep,":", row,":", env,") + (1|", geno,":", env,")", sep = "")
-		     if (exptl.design == "RowCol") myformula1 <- paste(respvar[i], " ~ 1 + ", trt.stmt, " + (1|", env,") + (1|", rep,":", env,") + (1|", rep,":", row,":", env,") + (1|", rep,":", column,":", env,") + (1|", geno,":", env,")", sep = "")
+               if (exptl.design == "Alpha" || exptl.design == "AugAlpha")  myformula1 <- paste(respvar[i], " ~ 1 + ", trt.stmt, " + (1|", env,") + (1|", rep,":", env,") + (1|", rep,":", row,":", env,") + (1|", geno,":", env,")", sep = "")
+		     if (exptl.design == "RowCol" || exptl.design == "AugRowCol") myformula1 <- paste(respvar[i], " ~ 1 + ", trt.stmt, " + (1|", env,") + (1|", rep,":", env,") + (1|", rep,":", row,":", env,") + (1|", rep,":", column,":", env,") + (1|", geno,":", env,")", sep = "")
 		     if (exptl.design == "LatinAlpha")  myformula1 <- paste(respvar[i], " ~ 1 + ", trt.stmt, " + (1|", env,") + (1|", rep,":", env,") + (1|", row,":", env,") + (1|", rep,":", row,":", env,") + (1|", geno,":", env,")", sep = "")
 		     if (exptl.design == "LatinRowCol") { 
 		          if (longerRow) {

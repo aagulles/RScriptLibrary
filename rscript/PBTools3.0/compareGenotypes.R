@@ -1,14 +1,12 @@
 ##########################################################
-#  compareGenotypes
-#' Function for comparing genotypes
-#'
-#  Parameters:
-#' @param crossData R object of class cross
-#' @param outputPath path to where created graph will be saved
-#' @param cutOffP borderline probability value for Test of Segregation Distortion, below which the markers will be deleted
-#'
-#' @return list with the elements crossObj, simGenoOut, and graphName
-#  where:
+#compareGenotypes - function for comparing genotypes
+#
+# REQUIRED input: 
+# crossData - R object of class cross
+# outputPath - path to where created graph will be saved
+# pvalCutOff - borderline probability value for Test of Segregation Distortion, below which the markers will be deleted
+#
+# OUTPUT: a list with the following elements:
 #  crossObj - an R object of class "cross"
 #  simGenoOut - table of pairs of individuals with similar genotype data
 #  graphName - name of .png file of histogram of identical genotypes
@@ -24,6 +22,7 @@ compareGenotypes.default <- function(crossData, outputPath, cutoffP) {
   hist(cg, breaks = 200, xlab = "Proportion of identical genotypes", main = "")
   rug(cg)
   dev.off()
+#   simOut1 <- which(cg > cutoffP, arr.ind = TRUE)
   simOut <- which(cg > cutoffP, arr.ind = TRUE)  #show pairs of individuals with very similar genotype data
   
   # delete one of the similar genotypes
@@ -39,6 +38,7 @@ compareGenotypes.default <- function(crossData, outputPath, cutoffP) {
         if (simOut[i,2] == simOut[j,1])
           if (simOut[i,1] == simOut[j,2]) {
             simOut = simOut[-j,]
+#             nRows = dim(simOut)[1]
             if (!is.null(dim(simOut))) { nRows <- dim(simOut)[1]
             } else if (length(simOut) == 2) { nRows = 1
             } else nRows = 0

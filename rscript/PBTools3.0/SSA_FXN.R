@@ -1,17 +1,17 @@
 # -------------------------------------------------------
 # SINGLE SITE ANALYSIS
 # File Created by: Alaine A. Gulles 07.01.2011
-# File Modified by: Alaine A. Gulles 07.01.2011
+# File Modified by: Alaine A. Gulles 03.09.2015
 # Script Created by: Violeta Bartolome
 # Script Modified by: Violeta Bartolome
-#                     Alaine A. Gulles 07.01.2011
+#                     Alaine A. Gulles 03.09.2015
 #                     Rose Imee Zhella Morantte
 #                     Nellwyn L. Sales
 # --------------------------------------------------------
 
 # --------------------------------------------------------
 # ARGUMENTS:
-# exptl.design = RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol
+# exptl.design = RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol, AugAlpha, AugRowCol
 # data - a string; name of the dataframe
 # respvar - a string; variable name of the response variable
 # geno - a string; variable name of the treatment/genotype variable
@@ -26,9 +26,12 @@
 # checkList - vector of genotype levels considered as checks
 # --------------------------------------------------------
 
-ssa.test <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env = NULL, is.random = FALSE, excludeCheck=FALSE, checkList = NULL) UseMethod("ssa.test")
+ssa.test <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol", "AugAlpha", "AugRowCol"), 
+                     data, respvar, geno, row, column = NULL, rep = NULL, env = NULL, is.random = FALSE, excludeCheck=FALSE, checkList = NULL) UseMethod("ssa.test")
   
-ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env = NULL, is.random = FALSE, excludeCheck=FALSE, checkList = NULL) {
+ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol", "AugAlpha", "AugRowCol"),
+                             data, respvar, geno, row, column = NULL, rep = NULL, env = NULL, is.random = FALSE, excludeCheck=FALSE, 
+                             checkList = NULL) {
 	
      options(show.signif.stars=FALSE)
      library(lme4)
@@ -36,8 +39,8 @@ ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha",
      # --- check if columns specified are in the data set --- #	
 	if (exptl.design == "RCB" || exptl.design == "AugRCB") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }} 
 	if (exptl.design == "AugLS") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(column, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
-	if (exptl.design == "Alpha" || exptl.design == "LatinAlpha") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(rep, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
-	if (exptl.design == "RowCol" || exptl.design == "LatinRowCol") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(column, names(data))) || is.na(match(rep, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
+	if (exptl.design == "Alpha" || exptl.design == "LatinAlpha" || exptl.design == "AugAlpha") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(rep, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
+	if (exptl.design == "RowCol" || exptl.design == "LatinRowCol"|| exptl.design == "AugRowCol") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(column, names(data))) || is.na(match(rep, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
   
      # --- if env column is not specified, create EnvLevel column --- #
 	if (is.null(env)) {
@@ -78,10 +81,10 @@ ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha",
 			if (exptl.design == "AugLS") { 
 			  temp.data[,match(column, names(temp.data))] <- factor(trimStrings(temp.data[,match(column, names(temp.data))]))	
 			}
-			if (exptl.design == "Alpha" || exptl.design == "LatinAlpha") { 
+			if (exptl.design == "Alpha" || exptl.design == "LatinAlpha" || exptl.design == "AugAlpha") { 
 			  temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))	
 			}
-			if (exptl.design == "RowCol" || exptl.design == "LatinRowCol") { 
+			if (exptl.design == "RowCol" || exptl.design == "LatinRowCol" || exptl.design == "AugRowCol") { 
 			  temp.data[,match(column, names(temp.data))] <- factor(trimStrings(temp.data[,match(column, names(temp.data))]))	
 			  temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))	
 			}
@@ -152,8 +155,8 @@ ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha",
                     # --- CONSTRUCT THE MODEL: RANDOM FACTOR --- #
                     if (is.random) {
           
-                         # --- if design if AugRCB or AugLS, automatically define the vector newCheckList
-                         if (exptl.design == "AugRCB" | exptl.design == "AugLS") {
+                         # --- if design if AugRCB or AugLS or AugAlpha or AugRowCol, automatically define the vector newCheckList
+                         if (exptl.design == "AugRCB" | exptl.design == "AugLS" | exptl.design == "AugAlpha" | exptl.design == "AugRowCol") {
                               if (excludeCheck) {
                                    library(doBy)
                                    nobs <- summaryBy(formula(paste(respvar[i], " ~ ", geno, sep = "")), data=temp.data, FUN=length)
@@ -162,14 +165,14 @@ ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha",
                                    detach("package:doBy")
                               }
                               newExcludeCheck <- excludeCheck
-                         }
+                         } ## end stmt -- if (exptl.design == "AugRCB" | exptl.design == "AugLS" | exptl.design == "AugAlpha" | exptl.design == "AugRowCol")
           
                          if (!newExcludeCheck) {
                               # --- myformula1 uses geno column in the model --- #
                               if (exptl.design == "RCB" | exptl.design == "AugRCB") { myformula1 <- paste(respvar[i], " ~ 1 + (1|", row, ") + (1|", geno,")", sep = "") }
                               if (exptl.design == "AugLS") { myformula1 <- paste(respvar[i], " ~ 1 + (1|", row, ") + (1|", column, ") + (1|", geno,")", sep = "") }
-                              if (exptl.design == "Alpha") { myformula1 <- paste(respvar[i], " ~ 1 + (1|", rep,"/", row,") + (1|", geno,")", sep = "") } #by RIZAM
-                              if (exptl.design == "RowCol") { myformula1 <- paste(respvar[i], " ~ 1 + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|", geno,")", sep = "") } #by RIZAM
+                              if (exptl.design == "Alpha" || exptl.design == "AugAlpha") { myformula1 <- paste(respvar[i], " ~ 1 + (1|", rep,"/", row,") + (1|", geno,")", sep = "") } #by RIZAM
+                              if (exptl.design == "RowCol" || exptl.design == "AugRowCol") { myformula1 <- paste(respvar[i], " ~ 1 + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|", geno,")", sep = "") } #by RIZAM
                               if (exptl.design == "LatinAlpha") { myformula1 <- paste(respvar[i], " ~ 1 + (1|", rep,") + (1|", row,") + (1|", rep, ":", row, ") + (1|", geno,")", sep = "") } 
                               if (exptl.design == "LatinRowCol") { 
                               if (longerRow) {
@@ -177,7 +180,7 @@ ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha",
                               } else {
                                    myformula1 <- paste(respvar[i], " ~ 1 + (1|", rep,") + (1|", row, ") + (1|", rep,":", row,") + (1|", column, ") + (1|", geno,")", sep = "")
                               }
-                         }
+                         } ## end stmt -- if (!newExcludeCheck)
             
                     } else {
             
@@ -197,8 +200,8 @@ ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha",
                          # --- myformula1 uses Check and Test columns in the model --- #
                          if (exptl.design == "RCB" | exptl.design == "AugRCB") { myformula1 <- paste(respvar[i], " ~ 1 + Check + (1|", row, ") + (1|Test:Check)", sep = "") }
                          if (exptl.design == "AugLS") { myformula1 <- paste(respvar[i], " ~ 1 + Check + (1|", row, ") + (1|", column, ") + (1|Test:Check)", sep = "") }
-                         if (exptl.design == "Alpha") { myformula1 <- paste(respvar[i], " ~ 1 + Check + (1|", rep,"/", row,") + (1|Test:Check)", sep = "") }
-                         if (exptl.design == "RowCol") { myformula1 <- paste(respvar[i], " ~ 1 + Check + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|Test:Check)", sep = "") }
+                         if (exptl.design == "Alpha" | exptl.design == "AugAlpha") { myformula1 <- paste(respvar[i], " ~ 1 + Check + (1|", rep,"/", row,") + (1|Test:Check)", sep = "") }
+                         if (exptl.design == "RowCol" | exptl.design == "AugRowCol") { myformula1 <- paste(respvar[i], " ~ 1 + Check + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|Test:Check)", sep = "") }
                          if (exptl.design == "LatinAlpha") { myformula1 <- paste(respvar[i], " ~ 1 + Check + (1|", rep,") + (1|", row,") + (1|", rep, ":", row, ") + (1|Test:Check)", sep = "") } 
                          if (exptl.design == "LatinRowCol") { 
                               if (longerRow) {
@@ -216,8 +219,8 @@ ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha",
                     # --- myformula1 uses geno column in the model --- #
                     if (exptl.design == "RCB" | exptl.design == "AugRCB") { myformula1 <- paste(respvar[i], " ~ 1 + ", geno," + (1|", row, ")", sep = "") }
                     if (exptl.design == "AugLS") { myformula1 <- paste(respvar[i], " ~ 1 + ", geno," + (1|", row, ") + (1|", column, ")", sep = "") }
-                    if (exptl.design == "Alpha") { myformula1 <- paste(respvar[i], " ~ 1 + ", geno," + (1|", rep,"/", row,")", sep = "") }
-                    if (exptl.design == "RowCol") { myformula1 <- paste(respvar[i], " ~ 1 + ", geno," + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,")", sep = "") }
+                    if (exptl.design == "Alpha" | exptl.design == "AugAlpha") { myformula1 <- paste(respvar[i], " ~ 1 + ", geno," + (1|", rep,"/", row,")", sep = "") }
+                    if (exptl.design == "RowCol" | exptl.design == "AugRowCol") { myformula1 <- paste(respvar[i], " ~ 1 + ", geno," + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,")", sep = "") }
                     if (exptl.design == "LatinAlpha") { myformula1 <- paste(respvar[i], " ~ 1 + ", geno, " + (1|", rep,") + (1|", row,") + (1|", rep, ":", row, ")", sep = "") } 
                     if (exptl.design == "LatinRowCol") { 
                     if (longerRow) {
@@ -406,8 +409,8 @@ ssa.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha",
 		
 		if (exptl.design == "RCB" | exptl.design == "AugRCB") { byVariables <- c(env,geno,row)}
 		if (exptl.design == "AugLS") { byVariables <- c(env,geno,row,column)}
-		if (exptl.design == "Alpha" || exptl.design == "LatinAlpha") { byVariables <- c(env,geno,row,rep)}
-		if (exptl.design == "RowCol" || exptl.design == "LatinRowCol") { byVariables <- c(env,geno,row,column,rep)}
+		if (exptl.design == "Alpha" || exptl.design == "LatinAlpha" || exptl.design == "AugAlpha") { byVariables <- c(env,geno,row,rep)}
+		if (exptl.design == "RowCol" || exptl.design == "LatinRowCol" || exptl.design == "AugRowCol") { byVariables <- c(env,geno,row,column,rep)}
     
 		# --- to consolidate means and variances for fixed and random ---#
 		
