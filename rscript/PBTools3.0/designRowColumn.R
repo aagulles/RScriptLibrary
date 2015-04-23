@@ -3,11 +3,12 @@
 # Created by: Alaine A. Gulles 10.08.2013 for International Rice Research Institute 10.08.2013
 # Modified by: Alaine A. Gulles 05.29.2013
 # Note: Uses the DiGGer function from package DiGGer
+#     : allow several rows within row block
 # -----------------------------------------------------------------------------------------
 
-designRowColumn <- function(generate, r = 2, trial = 1, rowPerRep, numFieldRow, serpentine = FALSE, file = NULL) UseMethod("designRowColumn")
+designRowColumn <- function(generate, r = 2, trial = 1, rowblkPerRep, rowPerRowblk, colblkPerRep, numFieldRow, serpentine = FALSE, file = NULL) UseMethod("designRowColumn")
 
-designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFieldRow, serpentine = FALSE, file = NULL) {
+designRowColumn.default <- function(generate, r = 2, trial = 1, rowblkPerRep, rowPerRowblk, colblkPerRep, numFieldRow, serpentine = FALSE, file = NULL) {
 
      
      # --- CHECK INPUT
@@ -18,8 +19,8 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
      # create the levels of the treatment
      if (length(generate[[1]]) == 1) { tempComb <- FactorList(generate) } else { tempComb <- generate }
      
-     # check if rowPerRep is greater than 1 or
-     if (rowPerRep <= 1 || rowPerRep >= length(tempComb[[1]])) { stop("Number of row per replicate should not be equal to 1 or the number of treatments.") }
+     # check if rowblkPerRep is greater than 1 or
+     if (rowblkPerRep <= 1 || rowblkPerRep >= length(tempComb[[1]])) { stop("Number of row per replicate should not be equal to 1 or the number of treatments.") }
      
      # determine the total number of experimental units limitation of DiGGer package
      if ((r * length(tempComb[[1]])) > 1500) { stop("The maximum number of experimental units that can be generated is 1500.") }
@@ -27,18 +28,21 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
      if ((length(tempComb[[1]])*r)%%numFieldRow != 0) { stop("The total number of plots should be divisible by the number of field rows.") }
      numFieldCol <- (length(tempComb[[1]])*r)/numFieldRow    # determine the number of field column in the experiment
      
-     if (numFieldRow%%rowPerRep != 0) { stop("The total number of plots should be divisible by the number of field rows.") }
-     numRepRow <- numFieldRow/rowPerRep                     # determine the number of rep along the length of the field layout
+     if (numFieldRow%%(rowblkPerRep*rowPerRowblk) != 0) { stop("The total number of plots should be divisible by the number of field rows.") }
+     numRepRow <- numFieldRow/(rowblkPerRep*rowPerRowblk) # determine the number of rep along the length of the field layout
      
      if (!(numRepRow %in% allFactors(r))) { stop("The quotient of the number of field rows and number of rows in each replicate should be a factor of the number of the replicates.") }
 
      
      # determine the number of columns in each replicate
-     if ((length(tempComb[[1]]) %% rowPerRep) != 0) { stop("The total number of treatment levels should be divisible by the number of replicate.") }
-     colPerRep <- length(tempComb[[1]])/rowPerRep   # determine the number of columns per replicate
+     #if ((length(tempComb[[1]]) %% rowblkPerRep) != 0) { stop("The total number of treatment levels should be divisible by the number of replicate.") }
+     if ((length(tempComb[[1]]) %% (rowblkPerRep*rowPerRowblk)) != 0) { stop("The total number of treatment levels should be divisible by the number of replicate.") }
+     #colblkPerRep <- length(tempComb[[1]])/rowblkPerRep   # determine the number of columns per replicate
      
-     if (numFieldCol%%colPerRep != 0) { stop("The total number of plots should be divisible by the number of field rows.") }
-     numRepCol <- numFieldCol/colPerRep
+     colPerColblk <- length(tempComb[[1]])/(rowblkPerRep*rowPerRowblk*colblkPerRep)
+     
+     if (numFieldCol%%(colblkPerRep*colPerColblk) != 0) { stop("The total number of plots should be divisible by the number of field rows.") }
+     numRepCol <- numFieldCol/(colblkPerRep*colPerColblk)
 
      randomize <- NULL
      plan <- list()
@@ -53,8 +57,8 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
           result <- try(temp <- DiGGer(NumberOfTreatments = length(tempComb[[1]]), 
                                         RowsInDesign = numFieldRow, 
                                         ColumnsInDesign = numFieldCol, 
-                                        RowsInReplicate = rowPerRep, 
-                                        ColumnsInReplicate = colPerRep,
+                                        RowsInReplicate = rowblkPerRep*rowPerRowblk, 
+                                        ColumnsInReplicate = colblkPerRep*colPerColblk,
                                         TreatmentName = tempComb[[1]]), silent = TRUE)
          
           if(all(class(result) == "try-error")) {
@@ -63,7 +67,7 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
                cat("Error in DiGGer:", msg, "\n")
           }
           
-          setCorrelation(temp, phasenumber = c(1, rowPerRep, colPerRep)) ### --- added by AAGulles c/o VIBartolome 27May2014
+          setCorrelation(temp, phasenumber = c(1, rowblkPerRep*rowPerRowblk, colblkPerRep*colPerColblk)) ### --- added by AAGulles c/o VIBartolome 27May2014
                     
           capture.output(run(temp))
           if(all(class(result) == "try-error")) {
@@ -72,20 +76,20 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
                cat("Error in DiGGer:", msg, "\n")
           }
           result_mat <- getDesign(temp)
-          #des.plot(result_mat, rstr = "", cstr = "", bdef = cbind(rowPerRep, colPerRep))          
+          #des.plot(result_mat, rstr = "", cstr = "", bdef = cbind(rowblkPerRep, colblkPerRep))          
           plan[[i]] <- matrix(print(temp, option = "list")$ID, nrow(result_mat), ncol(result_mat))
           
           if (i == 1) {
                tempfbook <- print(temp, option = "list")
                plotNum <- matrix(as.numeric(paste(tempfbook$REP,paste(c(rep(0, max(nchar(1:length(tempComb[[1]]))))), collapse = ""), sep = "")), nrow(plan[[i]]), ncol(plan[[i]]))
-               tempPlotNum <- matrix(1:length(tempComb[[1]]), rowPerRep, colPerRep, byrow = TRUE)
-               if (serpentine) { for (k in seq(2, rowPerRep, by = 2)) { tempPlotNum[k,] <- rev(tempPlotNum[k,]) }}
+               tempPlotNum <- matrix(1:length(tempComb[[1]]), rowblkPerRep*rowPerRowblk, colblkPerRep*colPerColblk, byrow = TRUE)
+               if (serpentine) { for (k in seq(2, rowblkPerRep*rowPerRowblk, by = 2)) { tempPlotNum[k,] <- rev(tempPlotNum[k,]) }}
                for (j in 1:numRepRow) {
                     for (k in 1:numRepCol) {
-                         rowIndexLL <- (j * rowPerRep) - rowPerRep + 1
-                         rowIndexUL <- rowIndexLL + rowPerRep - 1
-                         colIndexLL <- (k * colPerRep) - colPerRep + 1
-                         colIndexUL <- colIndexLL + colPerRep - 1
+                         rowIndexLL <- (j * (rowblkPerRep*rowPerRowblk)) - (rowblkPerRep*rowPerRowblk) + 1
+                         rowIndexUL <- rowIndexLL + (rowblkPerRep*rowPerRowblk) - 1
+                         colIndexLL <- (k * (colblkPerRep*colPerColblk)) - (colblkPerRep*colPerColblk) + 1
+                         colIndexUL <- colIndexLL + (colblkPerRep*colPerColblk) - 1
                          plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <- plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL]+tempPlotNum 
                     }
                }
@@ -101,9 +105,17 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
 
      dimnames(plotNum) <- dimnames(plan[[1]])
      names(plan) <- paste("Trial", 1:trial, sep = "")
-     randomize$RowBlk <- randomize$ROW%%rowPerRep
-     randomize[randomize[,"RowBlk"] == 0, "RowBlk"] <- rowPerRep
-     randomize$ColBlk <- randomize$RANGE
+     rowblkNum <- matrix(rep(1:rowblkPerRep, each = rowPerRowblk), nrow = numFieldRow, ncol = numFieldCol)
+     dimnames(rowblkNum) <- dimnames(plan[[1]])
+     colblkNum <- matrix(rep(1:colblkPerRep, each = colPerColblk), nrow = numFieldRow, ncol = numFieldCol, byrow = TRUE)
+     dimnames(colblkNum) <- dimnames(plan[[1]])
+     randomize <- randomize[order(randomize$ROW, randomize$RANGE),]
+     randomize$RowBlk <- rep(1:rowblkPerRep, each = colblkPerRep*colPerColblk*rowPerRowblk)
+     randomize$ColBlk <- rep(1:colblkPerRep, each = colPerColblk)
+     #randomize$RowBlk <- randomize$ROW%%(rowblkPerRep*rowPerRowblk)
+     #randomize[randomize[,"RowBlk"] == 0, "RowBlk"] <- (rowblkPerRep*rowPerRowblk)
+     #randomize$RowBlk%%rowblkPerRep
+     #randomize$ColBlk <- randomize$RANGE%%(colblkPerRep*colPerColblk)
      randomize <- randomize[,c("Trial", "REP", "RowBlk", "ColBlk", "ID", "PlotNum", "ROW", "RANGE")]
      names(randomize) <- c("Trial", "Rep", "RowBlk", "ColBlk", names(tempComb)[1], "PlotNum", "FieldRow", "FieldCol")
      randomize <- randomize[order(randomize$Trial, randomize$PlotNum),]
@@ -112,7 +124,6 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
 	randomize[,"FieldRow"] <- as.numeric(randomize[,"FieldRow"])
 	randomize[,"FieldCol"] <- as.numeric(randomize[,"FieldCol"])
 	rownames(randomize) <- 1:nrow(randomize)
-
 	
 	cat(toupper("Design Properties:"),"\n",sep = "")
 	cat("\t","Incomplete Block Design","\n",sep = "") 
@@ -121,8 +132,8 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
 	cat("\t","Number of Trials = ", trial, "\n",sep = "")
 	cat("\t","Number of Treatments = ", length(tempComb[[1]]), "\n",sep = "")
 	cat("\t","Number of Replicates = ", r, "\n",sep = "")
-     cat("\t","Number of Rows per Replicate = ", rowPerRep, "\n",sep = "")
-     cat("\t","Number of Columns per Replicate = ", colPerRep, "\n",sep = "")
+     cat("\t","Number of Row Block per Replicate = ", rowblkPerRep, "\n",sep = "")
+     cat("\t","Number of Columns per Replicate = ", colblkPerRep, "\n",sep = "")
      cat("\t","Number of Field Rows = ", numFieldRow, "\n",sep = "")
      cat("\t","Number of Field Columns = ", numFieldCol, "\n\n",sep = "")
      
@@ -140,6 +151,6 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
 		cat("Results of Randomization:\n")
 		printDataFrame(randomize)
 	}
-	return(invisible(list(fieldbook = randomize, layout = plan, plotNum = plotNum)))
+	return(invisible(list(fieldbook = randomize, layout = plan, plotNum = plotNum, rowblkNum = rowblkNum, colblkNum = colblkNum)))
 }
 

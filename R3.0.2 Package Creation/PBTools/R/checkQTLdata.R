@@ -1,34 +1,23 @@
-####################################################################################
-#  checkQTLdata 
-#' Function for data quality checking
-#'
-#  Parameters:
-#' @param outputPath folder where graph(s) will be saved
-#' @param crossData cross object
-#' @param crossType type of cross used, whether "f2", "bc", "risib", "riself", "bcsft"
-#' @param bcNum bc generation, if crosstype is "bcsft"
-#' @param fNum filial generation, if crosstype is "bcsft"
-#' @param doMissing logical; whether to manage missing genotypic data or not
-#' @param deleteMiss logical; whether to delete missing data or perform imputation
-#' @param cutOff percentage cutoff for deleting rows/columns with missing data
-#' @param doDistortionTest logical; whether to perform Segregation Distortion Test or not
-#' @param pvalCutOff borderline probability value for Test of Segregation Distortion, below which the markers will be deleted
-#' @param doCompareGeno logical; whether to compare genotypes or not
-#' @param cutoffP cutoff probability for comparing genotypes #?
-#' @param doCheckMarkerOrder logical; whether to check marker orders or not
-#' @param lodThreshold minimum increase in maximum 2-point LOD that will be flagged
-#' @param doCheckGenoErrors logical; whether to check for genotyping errors or not
-#' @param lodCutOff cutoff for error LOD scores
-#' @param errorProb genotyping error rate  
-#' 
-#' @return list with the elements crossObj, cross, bcGen, fGen
-#  where:
-#  crossObj - an R object of class "cross"
-#  cross - type of cross
-#  bcGen - bc generation
-#  fGen - filial generation
+##checkQTLdata - function for data quality checking
 #
-#####################################################################################
+# REQUIRED input: 
+# outputPath - folder where graph(s) will be saved
+# crossData - cross object
+# crossType - type of cross used, whether "f2", "bc", "risib", "riself", "bcsft"
+# bcNum - bc generation, if crosstype is "bcsft"
+# fNum - filial generation, if crosstype is "bcsft"
+# doMissing - logical; whether to manage missing genotypic data or not
+# deleteMiss - logical; whether to delete missing data or perform imputation
+# cutOff - percentage cutoff for deleting rows/columns with missing data
+# doDistortionTest -  logical; whether to perform Segregation Distortion Test or not
+# pvalCutOff - borderline probability value for Test of Segregation Distortion, below which the markers will be deleted
+# doCompareGeno -  logical; whether to compare genotypes or not
+# cutoffP - cutoff probability for comparing genotypes #?
+# doCheckMarkerOrder - logical; whether to check marker orders or not
+# lodThreshold - minimum increase in maximum 2-point LOD that will be flagged
+# doCheckGenoErrors - logical; whether to check for genotyping errors or not
+# lodCutOff - cutoff for error LOD scores
+# errorProb - genotyping error rate  
 
 checkQTLdata <- function(outputPath, crossData, crossType, bcNum, fNum,
                          doMissing = FALSE, deleteMiss = FALSE, cutOff = NULL,
@@ -42,6 +31,9 @@ checkQTLdata.default <- function(outputPath, crossData, crossType, bcNum, fNum,
                          doCheckMarkerOrder, lodThreshold, doCheckGenoErrors, lodCutOff, errorProb
                          ) {
 
+  #assume crossData is already available
+  #read cross file and convert into cross object 
+  ## crossData <- read.cross(format = "csv", file = datFile, crosstype = crossType, BC.gen = bcNum, F.gen = fNum)  
   
   cat("QTL ANALYSIS\n\nDATA QUALITY CHECK\n\n")
   

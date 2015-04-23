@@ -1,15 +1,15 @@
 \name{QTL.analysis}
 \alias{QTL.analysis}
-\alias{QTL.analysis.default}
 \title{QTL.analysis}
-\description{QTL.analysis}
+\description{
+performs QTL analysis
+}
 \usage{
-QTL.analysis(crossobj = cross.data, QTL.path, geno, env.label = NULL, env = NULL, trait = "pred", step, method, threshold, distance, cofactors, window.size)
+QTL.analysis(crossobj = cross.data, QTL.path, env.label = NULL, env = NULL, trait = "pred", step, method, threshold, distance, cofactors, window.size)
 }
 \arguments{
   \item{crossobj}{a}
   \item{QTL.path}{a}
-  \item{geno}{a}
   \item{env.label}{a}
   \item{env}{a}
   \item{trait}{a}
@@ -20,5 +20,5 @@ QTL.analysis(crossobj = cross.data, QTL.path, geno, env.label = NULL, env = NULL
   \item{cofactors}{a}
   \item{window.size}{a}
 }
-\author{Rose Imee Zhella Morantte}
-\keyword{analysis}
+\author{Paul Eilers, Gerrit Gort, Sabine Schnabel, Lucia Gutierrez, Marcos Malosetti, Joost van Heerwaarden, Fred van Eeuwijk}
+\keyword{qtl}

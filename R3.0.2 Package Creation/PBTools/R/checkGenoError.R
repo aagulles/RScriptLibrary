@@ -1,18 +1,14 @@
-##############################################################
-#  checkGenoError
-#' Function for identifying genotyping errors
-#'
-#  Parameters:
-#' @param crossData R object of class cross
-#' @param lodCutOff cutoff for error LOD scores
-#' @param errorProb genotyping error rate
-#'
-#' @return list with the elements crossObj and topOut
-#   where:
-#   crossObj - an R object of class "cross"
-#   topOut - table of genotypes with errorlods above cut-off
+# checkGenoError - function for identifying genotyping errors
 #
-# Package required: qtl
+# REQUIRED input: 
+# crossData - R object of class cross
+# lodCutOff - cutoff for error LOD scores
+# errorProb - genotyping error rate
+
+#
+# OUTPUT: a list with the following elements:
+#  crossObj - an R object of class "cross"
+
 ##########################################################
 
 checkGenoError <- function(crossData, lodCutOff, errorProb) UseMethod("checkGenoError")

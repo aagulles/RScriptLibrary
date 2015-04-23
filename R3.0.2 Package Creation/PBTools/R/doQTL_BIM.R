@@ -1,26 +1,23 @@
-##################################################################################################
-#  doQTL_BIM 
-#' Function for QTL analysis using BIM
-#'
-#  Parameters: 
-#' @param outputPath - folder where graph(s) will be saved
-#' @param crossData2 - cross object
-#' @param traitType - type of traits to be analyzed, whether "Continuous", "Binary", or "Ordinal"
-#' @param yVars - traits to be analyzed
-#' @param lodCutoffM - cutoff for error LOD scores
-#' @param nPermutations - number of permutation replicates
-#' @param setupModel - logical; whether to set-up QTL model or not
-#' @param includeEpistasis - logical; whether epistasis is included in the model or not
-#' @param useDepPrior - logical; whether to use dependent prior for indicating variables of epistatic effects or not
-#' @param priorMain - prior expected number of main effect QTLs 
-#' @param priorAll - prior expected number for all QTLs on all chromosomes including QTLs with main effects, epistatic 
-#'               effects and gene-environment interactions; default is priorMain + 3
-#' @param maxQTLs - maximum number of QTLs allowed in the model
-#' @param priorProb - prior inclusion probabilities for epistatic effects: 0.5, 0.1 or 0.05 when both (default), one or none
-#'               of the main effects of the two interacting QTL are included in the model           
+##doQTL_BIM - function for QTL analysis using BIM
+#
+# REQUIRED input: 
+# outputPath - folder where graph(s) will be saved
+# crossData2 - cross object
+# traitType - type of traits to be analyzed, whether "Continuous", "Binary", or "Ordinal"
+# yVars - traits to be analyzed
+# lodCutoffM - cutoff for error LOD scores
+# nPermutations - number of permutation replicates
+# setupModel - logical; whether to set-up QTL model or not
+# includeEpistasis - logical; whether epistasis is included in the model or not
+# useDepPrior - logical; whether to use dependent prior for indicating variables of epistatic effects or not
+# priorMain - prior expected number of main effect QTLs 
+# priorAll - prior expected number for all QTLs on all chromosomes including QTLs with main effects, epistatic 
+#               effects and gene-environment interactions; default is priorMain + 3
+# maxQTLs - maximum number of QTLs allowed in the model
+# priorProb - prior inclusion probabilities for epistatic effects: 0.5, 0.1 or 0.05 when both (default), one or none
+#               of the main effects of the two interacting QTL are included in the model           
 #
 # Packages required: qtl, qtlbim
-##################################################################################################
 
 doQTL_BIM <- function(outputPath, crossData2, traitType = c("Continuous", "Binary", "Ordinal"), yVars, lodCutoffM = 3,
                       nPermutations = 100, setupModel = TRUE, includeEpistasis = FALSE, useDepPrior = FALSE,

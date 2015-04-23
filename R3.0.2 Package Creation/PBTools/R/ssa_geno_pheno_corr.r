@@ -3,6 +3,7 @@
 # File Created by: Alaine A. Gulles 
 # Script Modified by: Rose Imee Zhella A. Morantte
 #                     Nellwyn L. Sales
+#                     Alaine A. Gulles 
 # --------------------------------------------------------
 
 # --------------------------------------------------------
@@ -21,9 +22,9 @@
 # excludeList - vector of genotype levels to exclude
 # --------------------------------------------------------
 
-genoNpheno.corr <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env, excludeLevels=FALSE, excludeList = NULL) UseMethod("genoNpheno.corr") 
+genoNpheno.corr <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol", "AugAlpha", "AugRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env, excludeLevels=FALSE, excludeList = NULL) UseMethod("genoNpheno.corr") 
 
-genoNpheno.corr.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env, excludeLevels=FALSE, excludeList = NULL){
+genoNpheno.corr.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol","AugAlpha", "AugRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env, excludeLevels=FALSE, excludeList = NULL){
 
   library(lme4) 
   
@@ -39,8 +40,8 @@ genoNpheno.corr.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "
 	if (length(respvar) <= 1) stop("Correlation cannot be performed. At least two response variables are required.")
 	if (exptl.design == "RCB" || exptl.design == "AugRCB") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }} 
 	if (exptl.design == "AugLS") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(column, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
-	if (exptl.design == "Alpha" || exptl.design == "LatinAlpha") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(rep, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
-	if (exptl.design == "RowCol" || exptl.design == "LatinRowCol") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(column, names(data))) || is.na(match(rep, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
+	if (exptl.design == "Alpha" || exptl.design == "LatinAlpha" || exptl.design == "AugAlpha") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(rep, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
+	if (exptl.design == "RowCol" || exptl.design == "LatinRowCol" || exptl.design == "AugRowCol") { if ( is.na(match(respvar, names(data))) ||  is.na(match(geno, names(data))) || is.na(match(row, names(data))) || is.na(match(column, names(data))) || is.na(match(rep, names(data))) || is.na(match(env, names(data)))) { stop("At least one variable name does not match a column in the data frame.") }}
 
 	data[,match(geno, names(data))] <- factor(trimStrings(data[,match(geno, names(data))]))
 	data[,match(env, names(data))] <- factor(trimStrings(data[,match(env, names(data))]))
@@ -77,8 +78,8 @@ genoNpheno.corr.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "
 		if (!excludeLevels) {
 		  if (exptl.design == "RCB" | exptl.design == "AugRCB") { myformula3 <- paste("Ysum ~ 1 + (1|", row, ") + (1|", geno,")", sep = "") }
 		  if (exptl.design == "AugLS") { myformula3 <- paste("Ysum ~ 1 + (1|", row, ") + (1|", column, ") + (1|", geno,")", sep = "") }
-		  if (exptl.design == "Alpha") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,"/", row,") + (1|", geno,")", sep = "") }
-		  if (exptl.design == "RowCol") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|", geno,")", sep = "") }
+		  if (exptl.design == "Alpha" | exptl.design == "AugAlpha") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,"/", row,") + (1|", geno,")", sep = "") }
+		  if (exptl.design == "RowCol"| exptl.design == "AugRowCol") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|", geno,")", sep = "") }
 		  if (exptl.design == "LatinAlpha") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,") + (1|", row,") + (1|", rep, ":", row, ") + (1|", geno,")", sep = "") } 
 		  if (exptl.design == "LatinRowCol") { 
 		    if (longerRow) {
@@ -90,8 +91,8 @@ genoNpheno.corr.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "
 		}else {
 		  if (exptl.design == "RCB" | exptl.design == "AugRCB") { myformula3 <- paste("Ysum ~ 1 + Check + (1|", row, ") + (1|Test:Check)", sep = "") }
 		  if (exptl.design == "AugLS") { myformula3 <- paste("Ysum ~ 1 + Check + (1|", row, ") + (1|", column, ") + (1|Test:Check)", sep = "") }
-		  if (exptl.design == "Alpha") { myformula3 <- paste("Ysum ~ 1 + Check + (1|", rep,"/", row,") + (1|Test:Check)", sep = "") }
-		  if (exptl.design == "RowCol") { myformula3 <- paste("Ysum ~ 1 + Check + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|Test:Check)", sep = "") }
+		  if (exptl.design == "Alpha" | exptl.design == "AugAlpha") { myformula3 <- paste("Ysum ~ 1 + Check + (1|", rep,"/", row,") + (1|Test:Check)", sep = "") }
+		  if (exptl.design == "RowCol" | exptl.design == "AugRowCol") { myformula3 <- paste("Ysum ~ 1 + Check + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|Test:Check)", sep = "") }
 		  if (exptl.design == "LatinAlpha") { myformula3 <- paste("Ysum ~ 1 + Check + (1|", rep,") + (1|", row,") + (1|", rep, ":", row, ") + (1|Test:Check)", sep = "") } 
 		  if (exptl.design == "LatinRowCol") { 
 		    if (longerRow) {
@@ -124,7 +125,7 @@ genoNpheno.corr.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "
 				    mydata <- subset(temp.data, subset = (is.na(Ysum) == F))
 				    
 				    # --- if design if AugRCB or AugLS, automatically define the vector newCheckList
-				    if (exptl.design == "AugRCB" | exptl.design == "AugLS") {
+				    if (exptl.design == "AugRCB" | exptl.design == "AugLS" | exptl.design == "AugAlpha" | exptl.design == "AugRowCol") {
 				      library(doBy)
 				      nobs <- summaryBy(formula(paste(respvar[j], " ~ ", geno, sep = "")), data=mydata, FUN=length)
 				      excludeList <- as.vector(nobs[nobs[,match(paste(respvar[j],".length", sep=""), names(nobs))]>1, geno])
@@ -142,8 +143,8 @@ genoNpheno.corr.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "
                 trmt.label <- geno 
                 if (exptl.design == "RCB" | exptl.design == "AugRCB") { myformula3 <- paste("Ysum ~ 1 + (1|", row, ") + (1|", geno,")", sep = "") }
                 if (exptl.design == "AugLS") { myformula3 <- paste("Ysum ~ 1 + (1|", row, ") + (1|", column, ") + (1|", geno,")", sep = "") }
-                if (exptl.design == "Alpha") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,"/", row,") + (1|", geno,")", sep = "") }
-                if (exptl.design == "RowCol") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|", geno,")", sep = "") }
+                if (exptl.design == "Alpha" | exptl.design == "AugAlpha") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,"/", row,") + (1|", geno,")", sep = "") }
+                if (exptl.design == "RowCol" | exptl.design == "AugRowCol") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,") + (1|", rep,":", row,") + (1|", rep, ":", column,") + (1|", geno,")", sep = "") }
                 if (exptl.design == "LatinAlpha") { myformula3 <- paste("Ysum ~ 1 + (1|", rep,") + (1|", row,") + (1|", rep, ":", row, ") + (1|", geno,")", sep = "") } 
                 if (exptl.design == "LatinRowCol") { 
                   if (longerRow) {

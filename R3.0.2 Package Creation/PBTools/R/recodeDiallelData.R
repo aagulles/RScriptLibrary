@@ -1,0 +1,99 @@
+#----------------------------------------------------------------
+# Description: This function recodes the input data to be suitable for diallel analysis.
+# Output: recoded data and the coding used
+#
+# ARGUMENTS:
+# design - experiment design
+# data - name of data frame
+# p1 - string, name of p1 factor
+# p2 - string, name of p2 factor
+# rep - string, name of rep factor
+# block - string, name of block factor
+# row - string, name of row factor
+# column - string, name of column factor
+# respvar - vector of response variables
+#  
+# Authors: Nellwyn L. Sales and Guoyou Ye
+#----------------------------------------------------------------
+
+recodeDiallelData<-function(design=c("diallel1", "diallel2", "diallel3", "diallel4"), data, p1, p2, rep, block=NULL, row=NULL, column=NULL, respvar) UseMethod("recodeDiallelData")
+
+recodeDiallelData.default<-function(design=c("diallel1", "diallel2", "diallel3", "diallel4"), data, p1, p2, rep, block=NULL, row=NULL, column=NULL, respvar) {
+  
+  data<-data[,match(c(p1,p2,rep, block, row, column, respvar), names(data))]
+  
+  data[,p1]<-factor(data[,p1])
+  data[,p2]<-factor(data[,p2])
+  data[,rep]<-factor(data[,rep])
+  
+  # --- STEP 1: get levels of parents and rep --- #
+  p1Levels<-levels(data[,p1])
+  p2Levels<-levels(data[,p2])
+  levelsRep<-levels(data[,rep])
+  levelsParents<-unique(c(p1Levels, p2Levels))
+  
+  if (!any(is.na(as.numeric(levelsParents)))) {
+    levelsParents<-levels(factor(as.numeric(levelsParents)))
+  }
+  
+  # --- STEP 2: assign new labels to levelsParents --- #
+  newCoding<-data.frame(levelsParents=levelsParents, newCodeParents=seq(1:length(levelsParents)))
+  
+  # --- STEP 3: double the raw data, interchanging p1 and p2 columns --- #
+  data2<-data.frame(data[,p2], data[,p1], data[,rep], data[,block], data[,row], data[,column], data[,respvar])
+  names(data2)<-c(p1, p2, rep, block, row, column, respvar)
+  
+  if (design=="diallel1" | design=="diallel3") {
+    doubleData<-data
+  } else {
+    doubleData<-unique(rbind(data, data2))
+  }
+  
+  # --- STEP 4: attach the new labels to raw data --- #
+  doubleData$newCodeP1 <- newCoding$newCodeParents[match(doubleData[,p1], newCoding$levelsParents)]
+  doubleData$newCodeP2 <- newCoding$newCodeParents[match(doubleData[,p2], newCoding$levelsParents)]
+  
+  # --- STEP 5: generate treatment combinations for balanced data --- #
+  fullTrtCombi=NULL
+  for (i in 1:length(levelsParents)){
+    for (j in 1:length(levelsParents)) {
+      for (k in 1:length(levelsRep)) {
+        if (design == "diallel1") {
+          newRow<-c(i, j, levelsRep[k])
+          fullTrtCombi<- rbind(fullTrtCombi, newRow)
+        }
+        if (design == "diallel2") {
+          if (i <= j) {
+            newRow<-c(i, j, levelsRep[k])
+            fullTrtCombi<- rbind(fullTrtCombi, newRow)
+          }
+        }
+        if (design == "diallel3") {
+          if (i != j) {
+            newRow<-c(i, j, levelsRep[k])
+            fullTrtCombi<- rbind(fullTrtCombi, newRow)
+          }
+        }
+        if (design == "diallel4") {
+          if (i < j) {
+            newRow<-c(i, j, levelsRep[k])
+            fullTrtCombi<- rbind(fullTrtCombi, newRow)
+          }
+        }	
+      }
+    }
+  }
+  colnames(fullTrtCombi) <- c("newCodeP1", "newCodeP2", rep)
+  rownames(fullTrtCombi) <- c(1:nrow(fullTrtCombi))
+  fullTrtCombi<-data.frame(fullTrtCombi)
+  
+  # --- STEP 6: get values of respvar from data/doubleData and paste it to fullTrtCombi data --- #
+  tempData <- merge(fullTrtCombi, doubleData, by = colnames(fullTrtCombi), all.x = TRUE, all.y = FALSE)
+  tempData <- tempData[-c(match(c(p1,p2), names(tempData)))]
+  tempData$Cross <- tempData[,"newCodeP1"]:tempData[,"newCodeP2"]
+  
+  # --- STEP 7: return tempData and newCoding --- #
+  return(list(tempData=tempData, newCoding=newCoding))
+}
+
+

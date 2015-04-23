@@ -1,13 +1,11 @@
 ##########################################################
-#  testQTLSegregation 
-#' Function for performing test for segregation distortion
-#'
-#  Parameters:
-#' @param crossData R object of class cross
-#' @param pvalCutOff borderline probability value for Test of Segregation Distortion, below which the markers will be deleted
-#'
-#' @return list with the elements crossObj and distTable
-#  where:
+#testQTLSegregation - function for performing test for segregation distortion
+#
+# REQUIRED input: 
+# crossData - R object of class cross
+# pvalCutOff - borderline probability value for Test of Segregation Distortion, below which the markers will be deleted
+#
+# OUTPUT: a list with the following elements:
 #  crossObj - an R object of class "cross"
 #  distTable - table of markers and corresponding columns deleted from the data))#
 ##########################################################

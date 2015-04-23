@@ -1,0 +1,25 @@
+\name{estimateNA}
+\alias{estimateNA}
+\alias{estimateNA.default}
+\title{estimateNA}
+\description{
+estimates missing values for alpha and row column designs for data without missing treatment combination 
+}
+\usage{
+estimateNA(design = c("Alpha", "RowColumn"), fullData, respvar, parent1, parent2, rep, block = NULL, row = NULL, column = NULL)
+}
+\arguments{
+  \item{design}{a}
+  \item{fullData}{a}
+  \item{respvar}{a}
+  \item{parent1}{a}
+  \item{parent2}{a}
+  \item{rep}{a}
+  \item{block}{a}
+  \item{row}{a}
+  \item{column}{a}
+}
+\author{
+Nellwyn L. Sales
+}
+\keyword{estimateAlpha}

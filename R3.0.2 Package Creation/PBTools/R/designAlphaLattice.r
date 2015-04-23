@@ -17,6 +17,8 @@ designAlphaLattice.default <- function(generate, blksize, r = 2, trial = 1, rowP
      if (r < 2) { stop("The number of replicates should be greater than or equal to 2.")}
      if (length(generate[[1]]) == 1) { tempComb <- FactorList(generate) } else { tempComb <- generate }
      
+     if (rowPerBlk == 1) serpentine <- FALSE
+     
      # determine the total number of experimental units
      if ((r * length(tempComb[[1]])) > 1500) { stop("The maximum number of experimental units that can be generated is 1500.") }
      

@@ -6,10 +6,10 @@
 outputs genotypic and phenotypic correlation
 }
 \usage{
-genoNpheno.corr(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env, excludeLevels = FALSE, excludeList = NULL)
+genoNpheno.corr(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol", "AugAlpha", "AugRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env, excludeLevels = FALSE, excludeList = NULL)
 }
 \arguments{
-  \item{exptl.design}{RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol}
+  \item{exptl.design}{RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol, "AugAlpha", "AugRowCol"}
   \item{data}{a dataframe}
   \item{respvar}{a vector of strings containing variable names of the response variable}
   \item{geno}{a string; variable name of the treatment/genotype variable}

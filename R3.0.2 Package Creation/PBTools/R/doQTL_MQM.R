@@ -1,21 +1,18 @@
-#########################################################################
-#  doQTL_MQM
-#' Function for QTL analysis using MQM
+##doQTL_MQM - function for QTL analysis using MQM
 #
-#  Parameters:
-#' @param outputPath folder where graph(s) will be saved
-#' @param crossData2 cross object
-#' @param yVars traits to be analyzed
-#' @param lodCutoffM cutoff for error LOD scores
-#' @param nPermutations number of permutation replicates
-#' @param winSize window size in cM
-#' @param stepSize step size used in interval mapping
-#' @param addModel logical; whether "additive" (not "dominance" model) is used
-#' @param numCofac number of cofactors to set
-#' @param mlAlgo logical; whether to use maximum likelihood instead of the default REML as statistical method to use to estimate variance components
+# REQUIRED input: 
+# outputPath - folder where graph(s) will be saved
+# crossData2 - cross object
+# yVars - traits to be analyzed
+# lodCutoffM - cutoff for error LOD scores
+# nPermutations - number of permutation replicates
+# winSize - window size in cM
+# stepSize - step size used in interval mapping
+# addModel - logical; whether "additive" (not "dominance" model) is used
+# numCofac - number of cofactors to set
+# mlAlgo - logical; whether to use maximum likelihood instead of the default REML as statistical method to use to estimate variance components
 #
-#  Packages required: qtl
-#########################################################################
+# Packages required: qtl
 
 doQTL_MQM <- function(outputPath, crossData2, yVars, lodCutoffM = 3, nPermutations = 100, winSize = 10, stepSize = 5.0,
                       addModel = TRUE, numCofac = 1, mlAlgo = TRUE) 

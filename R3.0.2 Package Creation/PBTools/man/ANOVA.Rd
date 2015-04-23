@@ -1,0 +1,21 @@
+\name{ANOVA}
+\alias{ANOVA}
+\alias{ANOVA.default}
+\title{ANOVA}
+\description{
+ returns computed values from aov needed for TTC Multi-env analysis 
+}
+\usage{
+ANOVA(Y, data, cont = 1, DESIGN, TRT, Block=NULL, Env)
+}
+\arguments{
+  \item{Y}{string, name of response var}
+  \item{data}{data frame}
+  \item{cont}{numeric}
+  \item{DESIGN}{experimental design}
+  \item{TRT}{string, name of treatment}
+  \item{Block}{string, name of block}
+  \item{Env}{string, name of environment}
+}
+\author{Nellwyn L. Sales, Violeta Bartolome}
+\keyword{ttcaov}
