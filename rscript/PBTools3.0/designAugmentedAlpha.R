@@ -113,11 +113,12 @@ designAugmentedAlpha.default <- function(numCheck, numNew, trmtName = NULL, blks
           #         bdef = cbind(rowPerRep, colPerRep), bwd = 4)
           
           
-          des.plot(augAlpha_mat, seq(numNew), col = 8, new = TRUE, label = TRUE, chtdiv = 3, bwd = 4, bcol = 4,
+          des.plot(augAlpha_mat, seq(numNew), col = 8, new = TRUE, label = TRUE, chtdiv = 3,
                    cstr = paste("Layout for Trial ",i,":\n\nFieldCol", sep = ""), rstr = "FieldRow")
           des.plot(augAlpha_mat, seq(numCheck)+numNew, col = 7, new = FALSE, label = TRUE, chtdiv = 3,
-                   bdef = cbind(rowPerBlk, colPerBlk), bwd = 4)
-          
+                   bdef = cbind(rowPerBlk, colPerBlk), bwd = 4, bcol = 4)
+          des.plot(augAlpha_mat, NULL, new = FALSE, label = TRUE, chtdiv = 3,
+                   bdef = cbind(rowPerRep, colPerRep), bwd = 4)
           
           if (!is.null(file)) { dev.off() }           
           
