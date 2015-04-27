@@ -196,8 +196,9 @@ GEOneStage.test.default <- function(exptl.design = c("RCB", "AugRCB", "AugLS", "
 		     if (is.genoRandom) {
 		    
 		          # --- ESTIMATE HERITABILITY --- #
-		          no.reps <- data.frame(n = tapply(eval(parse(text = paste("temp.data$", respvar[i], sep = ""))), eval(parse(text = paste("temp.data$", geno, sep = ""))), FUN = length))
-		          no.reps <- as.numeric(1/mean(1/no.reps)) 
+		          #no.reps <- data.frame(n = tapply(eval(parse(text = paste("temp.data$", respvar[i], sep = ""))), eval(parse(text = paste("temp.data$", geno, sep = ""))), FUN = length))
+		          no.reps <- tapply(eval(parse(text = paste("temp.data$", respvar[i], sep = ""))), eval(parse(text = paste("temp.data$", geno, sep = ""))), FUN = length)
+		          no.reps <- as.numeric(1/mean(1/no.reps))
 		          genetic.var <- varcomp[varcomp[,1] == geno, "Variance"]
 		          ge.var <- varcomp[varcomp[,1] == paste(geno, ":", env, sep = ""), "Variance"]
 		          resid.var <- varcomp[varcomp[,1] == "Residual", "Variance"]
