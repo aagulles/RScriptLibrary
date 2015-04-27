@@ -289,14 +289,26 @@ gge.analysis.default <- function (ENV, GEN, REP, Y, MSE = 0, number = TRUE, yVar
           cm <- rbind(m1,m2) # Coefficient matrix   ## added by vbartolome
           solu <- c(-solve(cbind(cm[,2],-1)) %*% cm[,1])   ## added by vbartolome
 
-	  xmin <- min(bplot_new[,3])
-	  xmax <- max(bplot_new[,3])
-   
-          if (solu[1] < 0)  x <- seq(xmin,0,length=10) else    ## added by vbartolom
-          x <- seq(0,xmax,length=10)                    ## added by vbartolome
-          y <- perp.slope*x           ## added by vbartolome
-          lines(x,y, lty=1, col=1)     ## added by vbartolome
+          
+          #### test if point of intersection is within the segment  ## added by vbartolome
+         #if ( (min(geno$PC1[hull[i]],geno$PC1[hull[i+1]])  <=  solu[1])   &
+          if ( (min(polygonPoints[l,1],polygonPoints[l+1,1])  <=  solu[1])   &
 
+            # (solu[1] <= max(geno$PC1[hull[i]],geno$PC1[hull[i+1]]))  &
+              (solu[1] <= max(polygonPoints[l,1],polygonPoints[l+1,1]))  &
+
+            # (min(geno$PC2[hull[i]],geno$PC2[hull[i+1]]) <= solu[2]) & 
+              (min(polygonPoints[l,2],polygonPoints[l+1,2]) <= solu[2]) & 
+
+            # (solu[2]<=max(geno$PC2[hull[i]],geno$PC2[hull[i+1]])) )  {
+              (solu[2]<=max(polygonPoints[l,2],polygonPoints[l+1,2])) )  {
+
+     
+               if (solu[1] < 0)  x <- seq(1.2*xmin,0,length=10) else    ## added by vbartolom
+                  x <- seq(0,1.2*xmax,length=10)                    ## added by vbartolome
+                  y <- perp.slope*x           ## added by vbartolome
+                  lines(x,y, lty=1, col=1)     ## added by vbartolome
+          }
 
           #yhat <- perp.slope*max(polygonPoints[l,1], polygonPoints[l+1,1])
           #yhat2 <- perp.slope*min(polygonPoints[l,1], polygonPoints[l+1,1])
