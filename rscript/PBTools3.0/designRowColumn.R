@@ -133,7 +133,7 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowblkPerRep, ro
 	cat("\t","Number of Treatments = ", length(tempComb[[1]]), "\n",sep = "")
 	cat("\t","Number of Replicates = ", r, "\n",sep = "")
      cat("\t","Number of Row Block per Replicate = ", rowblkPerRep, "\n",sep = "")
-     cat("\t","Number of Columns per Replicate = ", colblkPerRep, "\n",sep = "")
+     cat("\t","Number of Column Blocks per Replicate = ", colblkPerRep, "\n",sep = "")
      cat("\t","Number of Field Rows = ", numFieldRow, "\n",sep = "")
      cat("\t","Number of Field Columns = ", numFieldCol, "\n\n",sep = "")
      
