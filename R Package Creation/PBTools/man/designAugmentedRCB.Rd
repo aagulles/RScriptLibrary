@@ -1,26 +1,25 @@
 \name{designAugmentedRCB}
 \alias{designAugmentedRCB}
 \alias{designAugmentedRCB.default}
-\title{Randomization for Augmented Randomized Complete Block Design}
-\description{Randomization for Augmented Randomized Complete Block Design}
+\title{Augmented Design for Randomized Complete Block}
+\description{
+  Randomization for augmented design in Randomized Complete Block
+}
 \usage{
-designAugmentedRCB(numCheck, numNew, trmtName = NULL, r = 2, trial = 1, rowPerBlk, numFieldRow, serpentine = FALSE, trmtLabel = NULL, checkTrmt = NULL, newTrmt = NULL, file = NULL)
+designAugmentedRCB(checkTrmt, newTrmt, r = 2, trial = 1, numFieldRow = 2, serpentine = FALSE, factorName = NULL, display = TRUE, file = NULL)
 }
 \arguments{
-  \item{numCheck}{numeric}
-  \item{numNew}{numeric}
-  \item{trmtName}{NULL or character string}
-  \item{r}{numeric}
-  \item{trial}{numeric}
-  \item{rowPerBlk}{numeric}
-  \item{numFieldRow}{numeric}
-  \item{serpentine}{boolean}
-  \item{trmtLabel}{string}
-  \item{checkTrmt}{string}
-  \item{newTrmt}{string}
+  \item{checkTrmt}{a}
+  \item{newTrmt}{a}
+  \item{r}{a}
+  \item{trial}{a}
+  \item{numFieldRow}{a}
+  \item{serpentine}{a}
+  \item{factorName}{a}
+  \item{display}{a}
   \item{file}{a}
 }
-\author{Violeta I. Bartolome, Alaine Gulles}
-\keyword{randomization}
-\keyword{augmented}
-\keyword{rcbd}
+\author{
+ Alaine A. Gulles
+}
+\keyword{ randomization }

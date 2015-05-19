@@ -10,9 +10,7 @@
 #                 - possible values: c("both", "left", "right")
 # -------------------------------------------------------------------------------
 
-trimStrings <- function(text, side = "both") UseMethod("trimStrings")
-
-trimStrings.default <- function(text, side = "both") {
+trimStrings <- function(text, side = "both") {
 	if (length(side) != 1) side <- side[1]
 	if (is.na(match(side, c("both", "left", "right")))) { side <- "both" }
 	if (side == "right") { gsub("\ *$", "", text)	}

@@ -11,7 +11,7 @@
 # Modifications made by: Nellwyn L. Sales
 #----------------------------------------------------------------
 
-AMMI.contour <-
+`AMMI.contour` <-
 function(model,distance,shape,...)
 {
 G<- subset(model,model$type=="GEN")

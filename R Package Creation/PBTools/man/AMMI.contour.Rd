@@ -29,4 +29,19 @@ It is only valid for the BIPLOT function but not for the TRIPLOT one.
 \note{ 
  Complement graphics AMMI 
 }
+\seealso{\code{\link{AMMI}} }
+\examples{
+library(agricolae)
+# see AMMI.
+data(sinRepAmmi)
+Environment <- sinRepAmmi$ENV
+Genotype <- sinRepAmmi$GEN
+Yield <- sinRepAmmi$YLD
+REP <- 3
+MSerror <- 93.24224
+#startgraph
+model<-AMMI(Environment, Genotype, REP, Yield, MSerror)
+AMMI.contour(model,distance=0.7,shape=8,col="red",lwd=2,lty=5)
+#endgraph
+}
 \keyword{ aplot }% __ONLY ONE__ keyword per line

@@ -112,7 +112,7 @@ nc1TestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), dat
 		  temp.data<-temp.data[-c(match("cross", names(temp.data)))]
 		  
 		  # --- data summary --- #
-		  funcTrialSum <- class.information(names(temp.data),temp.data)
+		  funcTrialSum <- class.information2(names(temp.data),temp.data)
 		  cat("\nDATA SUMMARY: ","\n\n", sep="")
 		  print(funcTrialSum)
 		  cat("\n Number of observations read: ",nrow(data), sep="")
@@ -223,48 +223,33 @@ nc1TestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), dat
 		  result[[i]]$lmer.result <- summary(model)
 		  
 		  # --- edit format of lmer output before printing --- #
-		  #remat<-summary(model)@REmat
-		  #Groups<-remat[,1]
-		  #Variance<-formatC(as.numeric(remat[,3]), format="f")
-		  #Std.Deviation<-formatC(as.numeric(remat[,4]), format="f")
-		  #Variance2<-format(rbind("Variance", cbind(Variance)), justify="right")
-		  #Std.Deviation2<-format(rbind("Std. Deviation", cbind(Std.Deviation)), justify="right")
-		  #Groups2<-format(rbind("Groups",cbind(Groups)), justify="left")
-		  #rematNew<-noquote(cbind(Groups2, Variance2, Std.Deviation2))
-		  #colnames(rematNew)<-c("", "", "")
-		  #rownames(rematNew)<-rep("",nrow(rematNew))
-            
-		  # the above code was replace by the followng line for R version 3.0.2 by AAGulles 09.11.2014
-		  rematNew <- ConstructVarCorrTable(model)
-            
+		  remat<-summary(model)@REmat
+		  Groups<-remat[,1]
+		  Variance<-formatC(as.numeric(remat[,3]), format="f")
+		  Std.Deviation<-formatC(as.numeric(remat[,4]), format="f")
+		  Variance2<-format(rbind("Variance", cbind(Variance)), justify="right")
+		  Std.Deviation2<-format(rbind("Std. Deviation", cbind(Std.Deviation)), justify="right")
+		  Groups2<-format(rbind("Groups",cbind(Groups)), justify="left")
+		  rematNew<-noquote(cbind(Groups2, Variance2, Std.Deviation2))
+		  colnames(rematNew)<-c("", "", "")
+		  rownames(rematNew)<-rep("",nrow(rematNew))
 		  cat("\n\n\nLINEAR MIXED MODEL FIT BY RESTRICTED MAXIMUM LIKELIHOOD:\n\n")
 		  cat(" Formula: ", myformula1,"\n\n")
-		  # print(summary(model)@AICtab) # hide by AAGulles 09.11.2014
-            AICtab <- data.frame(AIC = AIC(model), BIC = BIC(model), logLik = logLik(model), REMLdev = summary(model)$AICtab) # added by AAGulles
-		  printDataFrame(AICtab, border = FALSE, digits = 4) # added by AAGulles
-		  
-            #cat("\n Fixed Effects:\n")
+		  print(summary(model)@AICtab) 
+		  #cat("\n Fixed Effects:\n")
 		  #print(round(summary(model)@coefs, digits=4))
-		  cat("\nRandom Effects:\n")
-		  # print(rematNew) # hide by AAGulles 09.11.2014
-		  printDataFrame(rematNew, border = FALSE, digits = 4) # added by AAGulles
+		  cat("\n Random Effects:")
+		  print(rematNew)
 		  
 		  #--- Estimates of genetic variance components ---#
-		  #varcomp <- summary(model)@REmat
-		  #Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
-		  #Vef_m <- as.numeric(varcomp[varcomp[,1] == paste(environment,":", female,":",male, sep=""), "Variance"])
-		  #Vem <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",male, sep=""), "Variance"])
-		  #Vf_m <- as.numeric(varcomp[varcomp[,1] == paste(female,":",male, sep=""), "Variance"])
-		  #Vm <- as.numeric(varcomp[varcomp[,1] == male, "Variance"])
+		  varcomp <- summary(model)@REmat
+		  Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+		  Vef_m <- as.numeric(varcomp[varcomp[,1] == paste(environment,":", female,":",male, sep=""), "Variance"])
+		  Vem <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",male, sep=""), "Variance"])
+		  Vf_m <- as.numeric(varcomp[varcomp[,1] == paste(female,":",male, sep=""), "Variance"])
+		  Vm <- as.numeric(varcomp[varcomp[,1] == male, "Variance"])
 		  
-		  # the above code was replaced by the following command for R version 3.0.2 by AAGulles
-		  Ve <- rematNew[rematNew[, "Groups"] == "Residual","Variance"]
-		  Vef_m <- rematNew[rematNew[, "Groups"] == paste(environment, ":", female, ":", male, sep = ""),"Variance"]
-		  Vem <- rematNew[rematNew[, "Groups"] == paste(environment, ":", male, sep = ""),"Variance"]
-		  Vf_m <- rematNew[rematNew[, "Groups"] == paste(female, ":", male, sep = ""),"Variance"]
-		  Vm <- rematNew[rematNew[, "Groups"] == male,"Variance"]
-		  
-            if (inbred) {
+		  if (inbred) {
 		    F<-1
 		  } else {F<-0}
 		  

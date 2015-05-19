@@ -105,8 +105,7 @@ nc2TestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), dat
 		  nBalance<-f*m*e*nlevelsRep
 		  
 		  # --- data summary --- #
-		  #funcTrialSum <- class.information2(names(temp.data),temp.data)
-		  funcTrialSum <- class.information(names(temp.data),temp.data)
+		  funcTrialSum <- class.information2(names(temp.data),temp.data)
 		  cat("\nDATA SUMMARY: ","\n\n", sep="")
 		  print(funcTrialSum)
 		  cat("\n Number of observations read: ",nrow(data), sep="")
@@ -197,50 +196,34 @@ nc2TestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), dat
 		  result[[i]]$lmer.result <- summary(model)
 		  
 		  # --- edit format of lmer output before printing --- #
-		  #remat<-summary(model)@REmat
-		  #Groups<-remat[,1]
-		  #Variance<-formatC(as.numeric(remat[,3]), format="f")
-		  #Std.Deviation<-formatC(as.numeric(remat[,4]), format="f")
-		  #Variance2<-format(rbind("Variance", cbind(Variance)), justify="right")
-		  #Std.Deviation2<-format(rbind("Std. Deviation", cbind(Std.Deviation)), justify="right")
-		  #Groups2<-format(rbind("Groups",cbind(Groups)), justify="left")
-		  #rematNew<-noquote(cbind(Groups2, Variance2, Std.Deviation2))
-		  #colnames(rematNew)<-c("", "", "")
-		  #rownames(rematNew)<-rep("",nrow(rematNew))
-            
-		  # the above code was replace by the followng line for R version 3.0.2 by AAGulles
-		  rematNew <- ConstructVarCorrTable(model)
-            
+		  remat<-summary(model)@REmat
+		  Groups<-remat[,1]
+		  Variance<-formatC(as.numeric(remat[,3]), format="f")
+		  Std.Deviation<-formatC(as.numeric(remat[,4]), format="f")
+		  Variance2<-format(rbind("Variance", cbind(Variance)), justify="right")
+		  Std.Deviation2<-format(rbind("Std. Deviation", cbind(Std.Deviation)), justify="right")
+		  Groups2<-format(rbind("Groups",cbind(Groups)), justify="left")
+		  rematNew<-noquote(cbind(Groups2, Variance2, Std.Deviation2))
+		  colnames(rematNew)<-c("", "", "")
+		  rownames(rematNew)<-rep("",nrow(rematNew))
 		  cat("\n\n\nLINEAR MIXED MODEL FIT BY RESTRICTED MAXIMUM LIKELIHOOD:\n\n")
 		  cat(" Formula: ", myformula1,"\n\n")
-		  # print(summary(model)@AICtab) # hide by AAGulles 09.11.2014
-		  AICtab <- data.frame(AIC = AIC(model), BIC = BIC(model), logLik = logLik(model), REMLdev = summary(model)$AICtab) # added by AAGulles
-		  printDataFrame(AICtab, border = FALSE, digits = 4) # added by AAGulles
-		  
+		  print(summary(model)@AICtab) 
 		  #cat("\n Fixed Effects:\n")
 		  #print(round(summary(model)@coefs, digits=4))
-		  cat("\nRandom Effects:\n")
-		  # print(rematNew) # hide by AAGulles 09.11.2014
-		  printDataFrame(rematNew, border = FALSE, digits = 4) # added by AAGulles 09.11.2014
+		  cat("\n Random Effects:")
+		  print(rematNew)
 		  
 		  #--- Estimates of variance components ---#
-		  #varcomp <- summary(model)@REmat
-		  #Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
-		  #Vm_f <- as.numeric(varcomp[varcomp[,1] == paste(male,":",female, sep=""), "Variance"])
-		  #Vf <- as.numeric(varcomp[varcomp[,1] == female, "Variance"])
-		  #Vm <- as.numeric(varcomp[varcomp[,1] == male, "Variance"])
-		  #Vem_f <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",male,":",female, sep=""), "Variance"])
-		  #Vef <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",female, sep=""), "Variance"])
-		  #Vem <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",male, sep=""), "Variance"])
+		  varcomp <- summary(model)@REmat
+		  Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+		  Vm_f <- as.numeric(varcomp[varcomp[,1] == paste(male,":",female, sep=""), "Variance"])
+		  Vf <- as.numeric(varcomp[varcomp[,1] == female, "Variance"])
+		  Vm <- as.numeric(varcomp[varcomp[,1] == male, "Variance"])
+		  Vem_f <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",male,":",female, sep=""), "Variance"])
+		  Vef <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",female, sep=""), "Variance"])
+		  Vem <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",male, sep=""), "Variance"])
 		  
-		  # the above code was replaced by the following command for R version 3.0.2 by AAGulles 09.11.2014
-		  Ve <- rematNew[rematNew[, "Groups"] == "Residual","Variance"]
-		  Vm_f <- rematNew[rematNew[, "Groups"] == paste(male, ":", female, sep = ""),"Variance"]
-		  Vf <- rematNew[rematNew[, "Groups"] == female,"Variance"]
-            Vm <- rematNew[rematNew[, "Groups"] == male,"Variance"]
-		  Vem_f <- rematNew[rematNew[, "Groups"] == paste(environment, ":", male, ":", female, sep = ""),"Variance"]
-		  Vef <- rematNew[rematNew[, "Groups"] == paste(environment, ":", female, sep = ""),"Variance"]
-		  Vem <- rematNew[rematNew[, "Groups"] == paste(environment, ":", male, sep = ""),"Variance"]
 		  N <- NROW(temp.data)
 		  
 		  #--- Genetic Variance Components ---# 

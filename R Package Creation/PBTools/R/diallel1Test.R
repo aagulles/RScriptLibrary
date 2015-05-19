@@ -188,8 +188,7 @@ diallel1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	      result[[i]]$site[[j]]$tooManyNAWarning <- "NO"
         
 	      # --- data summary --- #
-	      #funcTrialSum <- class.information2(names(temp.data),temp.data)
-	      funcTrialSum <- class.information(names(temp.data),temp.data)
+	      funcTrialSum <- class.information2(names(temp.data),temp.data)
 	      cat("\nDATA SUMMARY: ","\n\n", sep="")
 	      print(funcTrialSum)
 	      cat("\nNumber of observations read: ",obsread, sep="")
@@ -365,10 +364,8 @@ diallel1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	            cat("\nFormula for Model 2: ", myformula2,"\n\n", sep="")
 	            
 	            # get MSE
-	            #varcomp <- summary(model1)@REmat # hide by AAGulles 09.11.2014
-                 varcomp <- ConstructVarCorrTable(model1) # added by AAGulles 09.11.2014
-                 #EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"]) # hide by AAGulles 09.11.2014
-                 EMS <- varcomp[varcomp[,1] == "Residual", "Variance"] # added by AAGulles 09.11.2014
+	            varcomp <- summary(model1)@REmat
+	            EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
 	            EDF <- (((p*p)-1)*(r-1)) - missingObs
 	            
 	            print(anova_print)
@@ -392,10 +389,8 @@ diallel1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	            cat("\nFormula for Model 2: ", myformula2,"\n\n", sep="")
 	            
 	            #get MSE
-	            #varcomp <- summary(model1)@REmat
-	            varcomp <- ConstructVarCorrTable(model1) # added by AAGulles 09.11.2014
-	            #EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"]) # hide by AAGulles 09.11.2014
-	            EMS <- varcomp[varcomp[,1] == "Residual", "Variance"] # added by AAGulles 09.11.2014
+	            varcomp <- summary(model1)@REmat
+	            EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
 	            EDF <- (((r*p*p)-1)-(r-1)-(r*(nBlocksWithinRep-1))-((p*p)-1)) - missingObs
 	            
 	            print(anova_print)
@@ -419,10 +414,8 @@ diallel1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	            cat("\nFormula for Model 2: ", myformula2,"\n\n", sep="")
 	            
 	            #get MSE
-	            #varcomp <- summary(model1)@REmat # hide by AAGulles 09.11.2014
-	            varcomp <- ConstructVarCorrTable(model1) # added by AAGulles 09.11.2014
-	            #EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"]) # hide by AAGulles 09.11.2014
-	            EMS <- varcomp[varcomp[,1] == "Residual", "Variance"] # added by AAGulles 09.11.2014
+	            varcomp <- summary(model1)@REmat
+	            EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
 	            numberTrt<-p*p
 	            EDF <- (((numberTrt*r)-1)-(numberTrt-1)-(r-1)-((rowWithinRep-1)*r)-((columnWithinRep-1)*r)) - missingObs
 	            
@@ -743,7 +736,7 @@ diallel1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 		} ## end of for loop (j)
 	}## end of loop (i)
 	cat("\n==============================================================\n")
-	#detach("package:doBy")
+	detach("package:doBy")
 	return(list(output = result))
 }
 

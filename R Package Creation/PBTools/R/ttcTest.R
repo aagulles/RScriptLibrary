@@ -134,8 +134,7 @@ ttcTest.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data,
 	      temp.data<-temp.data[-c(match("cross", names(temp.data)))]
 	      
 	      # --- data summary --- #
-	      #funcTrialSum <- class.information2(names(temp.data),temp.data)
-	      funcTrialSum <- class.information(names(temp.data),temp.data)
+	      funcTrialSum <- class.information2(names(temp.data),temp.data)
 	      cat("\nDATA SUMMARY: ","\n\n", sep="")
 	      print(funcTrialSum)
 	      cat("\nNumber of observations read: ",obsread, sep="")

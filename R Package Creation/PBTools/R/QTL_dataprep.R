@@ -1,23 +1,27 @@
+#-------------------------------------------------
 # QTLdataPrep.R
-# QTL analysis 
-# DATA PREPARATION
-
+# DATA PREPARATION for QTL analysis 
+# Author: Rose Imee Zhella Morantte
+#
 # REQUIRED input: 
 #	P_data - phenotypic data set (R data format)
 #	Gdatafile - text file containing genotypic data
 #	Mdatafile - text file containing map information
 # 	P_geno - name of genotype variable in P_data
+#-------------------------------------------------
 
-QTL.dataprep <- function(P_data, Gdatafile, Mdatafile, P_geno) {
+QTL.dataprep <- function(P_data, Gdatafile, Mdatafile, P_geno) UseMethod("QTL.dataprep")
+
+QTL.dataprep.default <- function(P_data, Gdatafile, Mdatafile, P_geno) {
 
 	#read in datasets
 	G_data <-read.table(Gdatafile,header=FALSE, na.strings = c("NA","."), blank.lines.skip=TRUE, sep = "\t")
 	M_data <-read.table(Mdatafile,header=FALSE, na.strings = c("NA","."), blank.lines.skip=TRUE, sep = "\t")
   
   #trim the strings of genotype and Markers ID
-	P_data[match(P_geno, names(P_data))]<-trim.strings(as.matrix(P_data[match(P_geno, names(P_data))]))
-	G_data[,1]<-trim.strings(G_data[,1])
-	M_data[,1]<-trim.strings(M_data[,1])
+	P_data[match(P_geno, names(P_data))]<-trimStrings(as.matrix(P_data[match(P_geno, names(P_data))]))
+	G_data[,1]<-trimStrings(G_data[,1])
+	M_data[,1]<-trimStrings(M_data[,1])
   
 	G_dataMat <- as.matrix(G_data) 
 	

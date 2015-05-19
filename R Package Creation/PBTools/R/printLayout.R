@@ -6,7 +6,7 @@
 # ---------------------------------------------------------
 
 printLayout <- function(trmt, plotNum, RowLabel = NULL, ColLabel = NULL, title = NULL) UseMethod("printLayout")
-     
+
 printLayout.default <- function(trmt, plotNum, RowLabel = NULL, ColLabel = NULL, title = NULL) {
      
      if (is.null(RowLabel)) { RWidth <- 2 } else { RWidth <- max(nchar(RowLabel)) + 2 }

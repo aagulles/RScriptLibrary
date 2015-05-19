@@ -59,255 +59,254 @@ diallel2Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
   
 	result <- list()
 	for (i in (1:length(respvar))) {
-	     result[[i]] <- list()
-	     cat("\n-----------------------------")
-	     cat("\nRESPONSE VARIABLE: ", respvar[i], "\n", sep="")
-	     cat("-----------------------------\n")
-	     for (j in (1:envNumLevels)) {
-	          result[[i]]$site[[j]] <- list()
-	          if (!is.null(environment)) {
-	               crdVars<-c(respvar[i], p1, p2, environment)
-	               rcbVars<-c(respvar[i], p1, p2, block, environment)
-	               alphaVars<-c(respvar[i], p1, p2, rep, block, environment)
-	               rowcolVars<-c(respvar[i], p1, p2, rep, row, column, environment)
+	  result[[i]] <- list()
+	  cat("\n-----------------------------")
+	  cat("\nRESPONSE VARIABLE: ", respvar[i], "\n", sep="")
+	  cat("-----------------------------\n")
+	  for (j in (1:envNumLevels)) {
+	    result[[i]]$site[[j]] <- list()
+	    if (!is.null(environment)) {
+	      crdVars<-c(respvar[i], p1, p2, environment)
+	      rcbVars<-c(respvar[i], p1, p2, block, environment)
+	      alphaVars<-c(respvar[i], p1, p2, rep, block, environment)
+	      rowcolVars<-c(respvar[i], p1, p2, rep, row, column, environment)
+	    } else {
+	      crdVars<-c(respvar[i], p1, p2)
+	      rcbVars<-c(respvar[i], p1, p2, block)
+	      alphaVars<-c(respvar[i], p1, p2, rep, block)
+	      rowcolVars<-c(respvar[i], p1, p2, rep, row, column)
+	    }
+	    if (design == "CRD") {temp.data <- data[,match(crdVars, names(data))]}
+	    if (design == "RCB") {temp.data <- data[,match(rcbVars, names(data))]}
+	    if (design == "Alpha") {temp.data <- data[,match(alphaVars, names(data))]}
+	    if (design == "RowColumn") {temp.data <- data[,match(rowcolVars, names(data))]}
+      
+	    if (!is.null(environment)) {
+	      cat("-----------------------------")
+	      cat("\nANALYSIS FOR: ",environment, " = " ,levels(temp.data[,match(environment, names(temp.data))])[j],"\n", sep="")
+	      cat("-----------------------------\n")
+        
+	      result[[i]]$site[[j]]$env <- levels(temp.data[,match(environment, names(temp.data))])[j]
+        
+	      temp.data <- temp.data[temp.data[,match(environment, names(temp.data))] == levels(temp.data[,match(environment, names(temp.data))])[j],]
+        temp.data[,match(environment, names(temp.data))] <- factor(trimStrings(temp.data[,match(environment, names(temp.data))]))
+	    }
+	    
+	    # --- define factors and number of levels --- #
+	    obsread<-nrow(temp.data)
+	    temp.data[,match(p1, names(temp.data))] <- factor(trimStrings(temp.data[,match(p1, names(temp.data))]))
+	    temp.data[,match(p2, names(temp.data))] <- factor(trimStrings(temp.data[,match(p2, names(temp.data))]))
+	    p <- length(unique(c(levels(temp.data[,match(p1, names(temp.data))]), levels(temp.data[,match(p2, names(temp.data))]))))
+	    
+	    # --- create new column containing treatment combinations --- #
+	    temp.data$cross<-factor(paste(temp.data[,p1], ":", temp.data[,p2], sep=""))
+	    temp.data<-temp.data[order(temp.data$cross),]
+	    
+	    # --- compute harmonic mean that will be used later in the estimation of genetic variances --- #
+	    lengthPerCross<-tapply(temp.data[,respvar[i]], temp.data$cross, length)
+	    repHarmonicMean<-1/mean((1/lengthPerCross), na.rm=TRUE)
+	    
+	    if (design == "CRD") {
+	      # --- add column Rep --- #
+	      temp.data<-data.frame(temp.data, Rep=sequence(lengthPerCross))
+	      
+	      nlevelsRep<-max(lengthPerCross, na.rm=TRUE)
+	    }
+	    if (design == "RCB") {
+	      temp.data[,match(block, names(temp.data))] <- factor(trimStrings(temp.data[,match(block, names(temp.data))]))
+	      nlevelsRep <- nlevels(temp.data[,match(block, names(temp.data))])
+	    }
+	    if (design == "Alpha") {
+	      temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))
+	      temp.data[,match(block, names(temp.data))] <- factor(trimStrings(temp.data[,match(block, names(temp.data))]))
+	      nlevelsRep <- nlevels(temp.data[,match(rep, names(temp.data))])
+	      if (!is.null(environment)) {
+	        blockSizeFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(environment, rep, block)], length))
+	      } else {
+	        blockSizeFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(rep, block)], length))
+	      }
+	      blockSize<-max(blockSizeFrame$Freq, na.rm=TRUE)
+	      nBlocksWithinRep<-(ncol(combn(p,2))+p)/blockSize
+	    }
+	    if (design == "RowColumn") {
+	      temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))
+	      temp.data[,match(row, names(temp.data))] <- factor(trimStrings(temp.data[,match(row, names(temp.data))]))
+	      temp.data[,match(column, names(temp.data))] <- factor(trimStrings(temp.data[,match(column, names(temp.data))]))
+	      nlevelsRep <- nlevels(temp.data[,match(rep, names(temp.data))])
+	      
+	      if (!is.null(environment)) {
+	        rowWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(environment, rep, row)], length))
+	      } else {
+	        rowWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(rep, row)], length))
+	      }
+	      rowWithinRep<-max(rowWithinRepFrame$Freq, na.rm=TRUE)
+	      
+	      if (!is.null(environment)) {
+	        columnWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(environment, rep, column)], length))
+	      } else {
+	        columnWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(rep, column)], length))
+	      }
+	      columnWithinRep<-max(columnWithinRepFrame$Freq, na.rm=TRUE)
+	    }
+	    temp.data<-temp.data[-c(match("cross", names(temp.data)))]
+      nBalance<-(ncol(combn(p,2))+p)*nlevelsRep
+      
+	    # --- check if max of lengthPerCross is equal to nlevelsRep --- #
+	    result[[i]]$site[[j]]$maxLengthPerCross <- max(lengthPerCross, na.rm=TRUE)
+	    result[[i]]$site[[j]]$nlevelsRep <- nlevelsRep
+	    
+	    if (max(lengthPerCross, na.rm=TRUE) > nlevelsRep) {
+	      if (design == "RCB") {
+	        blockLabelError <- paste("The number of levels of the blocking factor is", nlevelsRep, "but at least one treatment combination is replicated", max(lengthPerCross, na.rm=TRUE), "times.")
+	        blockLabelError2 <- paste("Please check if the column for block is properly labeled.")
+	      } else {
+	        blockLabelError <- paste("The number of levels of the replicate factor is", nlevelsRep, "but at least one treatment combination is replicated", max(lengthPerCross, na.rm=TRUE), "times.")
+	        blockLabelError2 <- paste("Please check if the column for replicate is properly labeled.")
+	      }
+	      result[[i]]$site[[j]]$blockLabelError <- blockLabelError
+	      result[[i]]$site[[j]]$blockLabelError2 <- blockLabelError2
+	      cat("\n ERROR:", blockLabelError)
+	      cat("\n       ", blockLabelError2, "\n\n\n")
+	      break
+	    }
+      
+	    if (design == "Alpha" || design == "RowColumn") {
+	      temp.data.withNA <- temp.data
+	    }
+      
+	    # --- call recodeDiallelData to recode p1 and p2 to standard notation and generate balancedData --- #
+	    if (design == "CRD") {
+	    	outRecode<-recodeDiallelData(design="diallel2", data=temp.data, p1=p1, p2=p2, rep="Rep", respvar=respvar[i])
+        balancedData<-outRecode$tempData
+        codingGuide<-outRecode$newCoding
+	    }
+	    if (design == "RCB") {
+	      outRecode<-recodeDiallelData(design="diallel2", data=temp.data, p1=p1, p2=p2, rep=block, respvar=respvar[i])
+	      balancedData<-outRecode$tempData
+	      codingGuide<-outRecode$newCoding
+	    }
+	    if (design == "Alpha") {
+	      if (nrow(temp.data.withNA)==nBalance) {
+	        outRecode<-recodeDiallelData(design="diallel2", data=temp.data.withNA, p1=p1, p2=p2, rep=rep, block=block, respvar=respvar[i])
+	        balancedData<-outRecode$tempData
+	        codingGuide<-outRecode$newCoding
+	      } else stop("The dataset has missing row(s). PBTools cannot supply the value(s) of block factor for the missing row(s).")
+	    }
+	    if (design == "RowColumn") {
+	      if (nrow(temp.data.withNA)==nBalance) {
+	        outRecode<-recodeDiallelData(design="diallel2", data=temp.data.withNA, p1=p1, p2=p2, rep=rep, row=row, column=column, respvar=respvar[i])
+	        balancedData<-outRecode$tempData
+	        codingGuide<-outRecode$newCoding
+	      } else stop("The dataset has missing row(s). PBTools cannot supply the values of row and column factors for the missing row(s).")
+	    }
+      
+	    # --- compute response rate --- #
+	    temp.data <- temp.data[(is.na(temp.data[,match(respvar[i], names(temp.data))]) == FALSE),]
+      obsused <- nrow(temp.data)
+	    responseRate<-(obsused/nrow(balancedData))
+	    
+	    if (responseRate < 0.80) {
+	      cat("\nToo many missing observations. Cannot proceed with the analysis.\n\n\n")
+	      result[[i]]$site[[j]]$tooManyNAWarning <- "YES"
+	      next
+	    } else {
+	      result[[i]]$site[[j]]$tooManyNAWarning <- "NO"
+        
+	      # --- data summary --- #
+	      funcTrialSum <- class.information2(names(temp.data),temp.data)
+	      cat("\nDATA SUMMARY: ","\n\n", sep="")
+	      print(funcTrialSum)
+	      cat("\nNumber of observations read: ",obsread, sep="")
+	      cat("\nNumber of observations used: ",obsused, "\n", sep="")
+	      missingObs<-nrow(balancedData)-obsused
+        
+	      result[[i]]$site[[j]]$funcTrialSum <- funcTrialSum
+	      result[[i]]$site[[j]]$obsread <- obsread
+	      result[[i]]$site[[j]]$obsused <- obsused
+	      
+        if (nrow(balancedData)<nrow(temp.data)) {
+	        cat("\n\n***\nERROR: The number of observations read in the data exceeds the size of a balanced data.\n       Please check if the column for block/replicate is properly labeled.\n***\n\n")
+	        result[[i]]$site[[j]]$exceededWarning <- "YES"
+	      } else {
+	        result[[i]]$site[[j]]$exceededWarning <- "NO"
+          
+	        # --- ANOVA for Diallel Method 2 experiment --- #
+	        estimatedMissing <- FALSE
+          
+	        result[[i]]$site[[j]]$responseRate <- (nrow(temp.data)/nrow(balancedData))
+          
+	        if ((nrow(temp.data)/nBalance) >= 0.90) {
+	          if (nrow(temp.data) == nBalance) {
+	            anovaRemark1 <- "Raw dataset is balanced."
+	            dataForAnova<-balancedData   
 	          } else {
-	               crdVars<-c(respvar[i], p1, p2)
-	               rcbVars<-c(respvar[i], p1, p2, block)
-	               alphaVars<-c(respvar[i], p1, p2, rep, block)
-	               rowcolVars<-c(respvar[i], p1, p2, rep, row, column)
+	            if (design == "CRD") {
+	              #dataForAnova<-estimateMissingData(design="CRD", data=balancedData, respvar[i], "newCodeP1", "newCodeP2", "Rep")
+	              anovaRemark1 <- "Raw dataset is unbalanced."
+	            }
+	            if (design == "RCB") {
+	              dataForAnova<-estimateMissingData(design="RCB", data=balancedData, respvar[i], "newCodeP1", "newCodeP2", block)
+	              anovaRemark1 <- "Raw data and estimates of the missing values are used."
+	            }
+	            if (design == "Alpha") {
+	              dataForAnova<-estimateNA(design="Alpha", fullData=balancedData, respvar[i], "newCodeP1", "newCodeP2", rep, block, row=NULL, column=NULL)
+	              anovaRemark1 <- "Raw data and estimates of the missing values are used."
+	            }
+	            if (design == "RowColumn") {
+	              dataForAnova<-estimateNA(design="RowColumn", fullData=balancedData, respvar[i], "newCodeP1", "newCodeP2", rep, block=NULL, row=row, column=column)
+	              anovaRemark1 <- "Raw data and estimates of the missing values are used."
+	            }
+	            estimatedMissing <- TRUE
 	          }
-	          if (design == "CRD") {temp.data <- data[,match(crdVars, names(data))]}
-	          if (design == "RCB") {temp.data <- data[,match(rcbVars, names(data))]}
-	          if (design == "Alpha") {temp.data <- data[,match(alphaVars, names(data))]}
-	          if (design == "RowColumn") {temp.data <- data[,match(rowcolVars, names(data))]}
-      
-	          if (!is.null(environment)) {
-	               cat("-----------------------------")
-	               cat("\nANALYSIS FOR: ",environment, " = " ,levels(temp.data[,match(environment, names(temp.data))])[j],"\n", sep="")
-	               cat("-----------------------------\n")
-        
-	               result[[i]]$site[[j]]$env <- levels(temp.data[,match(environment, names(temp.data))])[j]
-        
-	               temp.data <- temp.data[temp.data[,match(environment, names(temp.data))] == levels(temp.data[,match(environment, names(temp.data))])[j],]
-                    temp.data[,match(environment, names(temp.data))] <- factor(trimStrings(temp.data[,match(environment, names(temp.data))]))
-	          }
-	    
-	          # --- define factors and number of levels --- #
-	          obsread<-nrow(temp.data)
-	          temp.data[,match(p1, names(temp.data))] <- factor(trimStrings(temp.data[,match(p1, names(temp.data))]))
-	          temp.data[,match(p2, names(temp.data))] <- factor(trimStrings(temp.data[,match(p2, names(temp.data))]))
-	          p <- length(unique(c(levels(temp.data[,match(p1, names(temp.data))]), levels(temp.data[,match(p2, names(temp.data))]))))
-	    
-	          # --- create new column containing treatment combinations --- #
-	          temp.data$cross<-factor(paste(temp.data[,p1], ":", temp.data[,p2], sep=""))
-	          temp.data<-temp.data[order(temp.data$cross),]
-	    
-	          # --- compute harmonic mean that will be used later in the estimation of genetic variances --- #
-	          lengthPerCross<-tapply(temp.data[,respvar[i]], temp.data$cross, length)
-	          repHarmonicMean<-1/mean((1/lengthPerCross), na.rm=TRUE)
-	    
+	        } else {
 	          if (design == "CRD") {
-	               # --- add column Rep --- #
-	               temp.data<-data.frame(temp.data, Rep=sequence(lengthPerCross))
-	      
-	               nlevelsRep<-max(lengthPerCross, na.rm=TRUE)
-	          }
-	          if (design == "RCB") {
-	               temp.data[,match(block, names(temp.data))] <- factor(trimStrings(temp.data[,match(block, names(temp.data))]))
-	               nlevelsRep <- nlevels(temp.data[,match(block, names(temp.data))])
-	          }
-	          if (design == "Alpha") {
-	               temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))
-	               temp.data[,match(block, names(temp.data))] <- factor(trimStrings(temp.data[,match(block, names(temp.data))]))
-	               nlevelsRep <- nlevels(temp.data[,match(rep, names(temp.data))])
-	               if (!is.null(environment)) {
-	                    blockSizeFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(environment, rep, block)], length))
-	               } else {
-	                    blockSizeFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(rep, block)], length))
-	               }
-	               blockSize<-max(blockSizeFrame$Freq, na.rm=TRUE)
-	               nBlocksWithinRep<-(ncol(combn(p,2))+p)/blockSize
-	          }
-	          if (design == "RowColumn") {
-	               temp.data[,match(rep, names(temp.data))] <- factor(trimStrings(temp.data[,match(rep, names(temp.data))]))
-	               temp.data[,match(row, names(temp.data))] <- factor(trimStrings(temp.data[,match(row, names(temp.data))]))
-	               temp.data[,match(column, names(temp.data))] <- factor(trimStrings(temp.data[,match(column, names(temp.data))]))
-	               nlevelsRep <- nlevels(temp.data[,match(rep, names(temp.data))])
-	      
-	               if (!is.null(environment)) {
-	                    rowWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(environment, rep, row)], length))
-	               } else {
-	                    rowWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(rep, row)], length))
-	               }
-	               rowWithinRep<-max(rowWithinRepFrame$Freq, na.rm=TRUE)
-	      
-	               if (!is.null(environment)) {
-	                    columnWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(environment, rep, column)], length))
-	               } else {
-	                    columnWithinRepFrame<-as.data.frame.table(tapply(temp.data[,respvar[i]], temp.data[,c(rep, column)], length))
-	               }
-	               columnWithinRep<-max(columnWithinRepFrame$Freq, na.rm=TRUE)
-	          } 
-          
-               temp.data<-temp.data[-c(match("cross", names(temp.data)))]
-               nBalance<-(ncol(combn(p,2))+p)*nlevelsRep
-      
-	          # --- check if max of lengthPerCross is equal to nlevelsRep --- #
-	          result[[i]]$site[[j]]$maxLengthPerCross <- max(lengthPerCross, na.rm=TRUE)
-	          result[[i]]$site[[j]]$nlevelsRep <- nlevelsRep
-	    
-	          if (max(lengthPerCross, na.rm=TRUE) > nlevelsRep) {
-	               if (design == "RCB") {
-	                    blockLabelError <- paste("The number of levels of the blocking factor is", nlevelsRep, "but at least one treatment combination is replicated", max(lengthPerCross, na.rm=TRUE), "times.")
-	                    blockLabelError2 <- paste("Please check if the column for block is properly labeled.")
-	               } else {
-	                    blockLabelError <- paste("The number of levels of the replicate factor is", nlevelsRep, "but at least one treatment combination is replicated", max(lengthPerCross, na.rm=TRUE), "times.")
-	                    blockLabelError2 <- paste("Please check if the column for replicate is properly labeled.")
-	               }
-	               result[[i]]$site[[j]]$blockLabelError <- blockLabelError
-	               result[[i]]$site[[j]]$blockLabelError2 <- blockLabelError2
-	               cat("\n ERROR:", blockLabelError)
-	               cat("\n       ", blockLabelError2, "\n\n\n")
-	               break
-	          }
-      
-               if (design == "Alpha" || design == "RowColumn") {
-	               temp.data.withNA <- temp.data
-	          }
-      
-	          # --- call recodeDiallelData to recode p1 and p2 to standard notation and generate balancedData --- #
-	          if (design == "CRD") {
-	    	          outRecode<-recodeDiallelData(design="diallel2", data=temp.data, p1=p1, p2=p2, rep="Rep", respvar=respvar[i])
-                    balancedData<-outRecode$tempData
-                    codingGuide<-outRecode$newCoding
-	          }
-	          if (design == "RCB") {
-	               outRecode<-recodeDiallelData(design="diallel2", data=temp.data, p1=p1, p2=p2, rep=block, respvar=respvar[i])
-	               balancedData<-outRecode$tempData
-	               codingGuide<-outRecode$newCoding
-	          }
-	          if (design == "Alpha") {
-	               if (nrow(temp.data.withNA)==nBalance) {
-	                    outRecode<-recodeDiallelData(design="diallel2", data=temp.data.withNA, p1=p1, p2=p2, rep=rep, block=block, respvar=respvar[i])
-	                    balancedData<-outRecode$tempData
-	                    codingGuide<-outRecode$newCoding
-	               } else stop("The dataset has missing row(s). PBTools cannot supply the value(s) of block factor for the missing row(s).")
-	          }
-	          if (design == "RowColumn") {
-	               if (nrow(temp.data.withNA)==nBalance) {
-	                    outRecode<-recodeDiallelData(design="diallel2", data=temp.data.withNA, p1=p1, p2=p2, rep=rep, row=row, column=column, respvar=respvar[i])
-	                    balancedData<-outRecode$tempData
-	                    codingGuide<-outRecode$newCoding
-	               } else stop("The dataset has missing row(s). PBTools cannot supply the values of row and column factors for the missing row(s).")
-	          }
-      
-	          # --- compute response rate --- #
-	          temp.data <- temp.data[(is.na(temp.data[,match(respvar[i], names(temp.data))]) == FALSE),]
-               obsused <- nrow(temp.data)
-	          responseRate<-(obsused/nrow(balancedData))
-	    
-	          if (responseRate < 0.80) {
-	               cat("\nToo many missing observations. Cannot proceed with the analysis.\n\n\n")
-	               result[[i]]$site[[j]]$tooManyNAWarning <- "YES"
-	               next
+	            anovaRemark1 <- "Raw dataset is unbalanced."
 	          } else {
-	               result[[i]]$site[[j]]$tooManyNAWarning <- "NO"
-                    # --- data summary --- #
-     	          #funcTrialSum <- class.information2(names(temp.data),temp.data)
-	               funcTrialSum <- class.information(names(temp.data),temp.data)
-	               cat("\nDATA SUMMARY: ","\n\n", sep="")
-	               print(funcTrialSum)
-	               cat("\nNumber of observations read: ",obsread, sep="")
-	               cat("\nNumber of observations used: ",obsused, "\n", sep="")
-	               missingObs<-nrow(balancedData)-obsused
-        
-	               result[[i]]$site[[j]]$funcTrialSum <- funcTrialSum
-	               result[[i]]$site[[j]]$obsread <- obsread
-	               result[[i]]$site[[j]]$obsused <- obsused
-	      
-                    if (nrow(balancedData)<nrow(temp.data)) {
-	                    cat("\n\n***\nERROR: The number of observations read in the data exceeds the size of a balanced data.\n       Please check if the column for block/replicate is properly labeled.\n***\n\n")
-	                    result[[i]]$site[[j]]$exceededWarning <- "YES"
-	               } else {
-	                    result[[i]]$site[[j]]$exceededWarning <- "NO"
-          
-	                    # --- ANOVA for Diallel Method 2 experiment --- #
-	                    estimatedMissing <- FALSE
-          
-	                    result[[i]]$site[[j]]$responseRate <- (nrow(temp.data)/nrow(balancedData))
-          
-	                    if ((nrow(temp.data)/nBalance) >= 0.90) {
-	                         if (nrow(temp.data) == nBalance) {
-	                              anovaRemark1 <- "Raw dataset is balanced."
-	                              dataForAnova<-balancedData   
-	                         } else {
-	                              if (design == "CRD") {
-	                                   #dataForAnova<-estimateMissingData(design="CRD", data=balancedData, respvar[i], "newCodeP1", "newCodeP2", "Rep")
-	                                   anovaRemark1 <- "Raw dataset is unbalanced."
-	                              }
-	                              if (design == "RCB") {
-	                                   dataForAnova<-estimateMissingData(design="RCB", data=balancedData, respvar[i], "newCodeP1", "newCodeP2", block)
-	                                   anovaRemark1 <- "Raw data and estimates of the missing values are used."
-	                              }
-	                              if (design == "Alpha") {
-	                                   dataForAnova<-estimateNA(design="Alpha", fullData=balancedData, respvar[i], "newCodeP1", "newCodeP2", rep, block, row=NULL, column=NULL)
-	                                   anovaRemark1 <- "Raw data and estimates of the missing values are used."
-	                              }
-	                              if (design == "RowColumn") {
-	                                   dataForAnova<-estimateNA(design="RowColumn", fullData=balancedData, respvar[i], "newCodeP1", "newCodeP2", rep, block=NULL, row=row, column=column)
-	                                   anovaRemark1 <- "Raw data and estimates of the missing values are used."
-	                              }
-	                              estimatedMissing <- TRUE
-	                         }
-	                    } else {
-	                         if (design == "CRD") {
-	                              anovaRemark1 <- "Raw dataset is unbalanced."
-	                         } else {
-	                              anovaRemark1 <- "ERROR: Too many missing values. Cannot perform the analysis."
-	                         }
-	                    } # end if-else stmt -- if ((nrow(temp.data)/nBalance) >= 0.90)
-	                    result[[i]]$site[[j]]$anovaRemark1 <- anovaRemark1
+	            anovaRemark1 <- "ERROR: Too many missing values. Cannot perform the analysis."
+	          }
+	        }
+	        result[[i]]$site[[j]]$anovaRemark1 <- anovaRemark1
 	        
-	                    if (design == "RCB") {
-	                         cat("\n\nANOVA TABLE FOR THE EXPERIMENT: \n", sep="")
-	                         if ((nrow(temp.data)/nBalance) >= 0.90) {
-	                              myformula0 <- paste(respvar[i], " ~ ", block," + newCodeP1:newCodeP2", sep = "")
-	                              model0 <- aov(formula(myformula0), data = dataForAnova)
-	                              anovaFixed<-summary(model0)
+	        if (design == "RCB") {
+	          cat("\n\nANOVA TABLE FOR THE EXPERIMENT: \n", sep="")
+	          if ((nrow(temp.data)/nBalance) >= 0.90) {
+	            myformula0 <- paste(respvar[i], " ~ ", block," + newCodeP1:newCodeP2", sep = "")
+	            model0 <- aov(formula(myformula0), data = dataForAnova)
+	            anovaFixed<-summary(model0)
               
-	                              rownames(anovaFixed[[1]])[match("newCodeP1:newCodeP2", trimStrings(rownames(anovaFixed[[1]])))]<-paste(p1,":",p2, sep="")
-	                              rownames(anovaFixed[[1]]) <- trimStrings(rownames(anovaFixed[[1]]))
+	            rownames(anovaFixed[[1]])[match("newCodeP1:newCodeP2", trimStrings(rownames(anovaFixed[[1]])))]<-paste(p1,":",p2, sep="")
+	            rownames(anovaFixed[[1]]) <- trimStrings(rownames(anovaFixed[[1]]))
 	            
-	                              #rerun aov using temp.data to get the original df's
-	                              anovaFixed.temp<-summary(aov(formula(myformula0), data=balancedData))
-	                              anovaFixed.temp[[1]]$"Df"[length(anovaFixed.temp[[1]]$"Df")]<-anovaFixed[[1]]$"Df"[length(anovaFixed[[1]]$"Df")]-missingObs
-	                              anovaFormat<-adjustAnovaDf(anovaFixed, anovaFixed.temp[[1]]$"Df")
-	                              anovaFormat<-formatAnovaTable(anovaFormat)
+	            #rerun aov using temp.data to get the original df's
+	            anovaFixed.temp<-summary(aov(formula(myformula0), data=balancedData))
+	            anovaFixed.temp[[1]]$"Df"[length(anovaFixed.temp[[1]]$"Df")]<-anovaFixed[[1]]$"Df"[length(anovaFixed[[1]]$"Df")]-missingObs
+	            anovaFormat<-adjustAnovaDf(anovaFixed, anovaFixed.temp[[1]]$"Df")
+	            anovaFormat<-formatAnovaTable(anovaFormat)
 	            
-	                              cat("\nFormula: ", myformula0,"\n\n")
-	                              print(anovaFormat)
-	                              cat("-------\n")
-	                              cat(paste("REMARK: ",anovaRemark1, sep=""))
-	                              result[[i]]$site[[j]]$diallel1.anova <-anovaFormat
-	                         } else {
-                                   cat(anovaRemark1)
-	                         }
-                         }
+	            cat("\nFormula: ", myformula0,"\n\n")
+	            print(anovaFormat)
+	            cat("-------\n")
+	            cat(paste("REMARK: ",anovaRemark1, sep=""))
+	            result[[i]]$site[[j]]$diallel1.anova <-anovaFormat
+	          } else {
+              cat(anovaRemark1)
+	          }
+          }
 	        	        
-	                    # --- testing for genotypic effect --- #
-	                    if (design == "CRD") {
-	                         Crosses <- balancedData[,match("newCodeP1", names(balancedData))]:balancedData[,match("newCodeP2", names(balancedData))]
-	                    } else {
-	                         if ((nrow(temp.data)/nBalance) >= 0.90) {
-	                              Crosses <- dataForAnova[,match("newCodeP1", names(dataForAnova))]:dataForAnova[,match("newCodeP2", names(dataForAnova))]
-	                         }
-	                    }
+	        # --- testing for genotypic effect --- #
+	        if (design == "CRD") {
+	          Crosses <- balancedData[,match("newCodeP1", names(balancedData))]:balancedData[,match("newCodeP2", names(balancedData))]
+	        } else {
+	          if ((nrow(temp.data)/nBalance) >= 0.90) {
+	            Crosses <- dataForAnova[,match("newCodeP1", names(dataForAnova))]:dataForAnova[,match("newCodeP2", names(dataForAnova))]
+	          }
+	        }
           
-	                    pValue <- 0
-	                    cat("\n\nTESTING FOR THE SIGNIFICANCE OF CROSS EFFECT: (Crosses = ", p1,":", p2, ")\n", sep="")
+	        pValue <- 0
+	        cat("\n\nTESTING FOR THE SIGNIFICANCE OF CROSS EFFECT: (Crosses = ", p1,":", p2, ")\n", sep="")
 	        
-	                    # --- assign value for r --- #
-	                    r<-nlevelsRep
+	        # --- assign value for r --- #
+	        r<-nlevelsRep
 	        
 	        if (design == "CRD") {
 	          myformula1 <- paste(respvar[i], " ~ Crosses",sep = "") 
@@ -346,10 +345,8 @@ diallel2Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	            cat("\nFormula for Model 2: ", myformula2,"\n\n", sep="")
 	            
 	            # get MSE
-	            #varcomp <- summary(model1)@REmat
-                 varcomp <- ConstructVarCorrTable(model1) # added by AAGulles 09.11.2014
-                 #EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"]) # hide by AAGulles 09.11.2014
-	            EMS <- varcomp[varcomp[,1] == "Residual", "Variance"] # revised by AAGulles 09.11.2014
+	            varcomp <- summary(model1)@REmat
+	            EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
 	            numberTrt<-(ncol(combn(p,2))+p)
 	            EDF <- (((numberTrt*r)-1)-(numberTrt-1)-(r-1))- missingObs
 	            
@@ -374,11 +371,8 @@ diallel2Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	            cat("\nFormula for Model 2: ", myformula2,"\n\n", sep="")
 	            
 	            #get MSE
-	            #varcomp <- summary(model1)@REmat
-	            #EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
-                 varcomp <- ConstructVarCorrTable(model1) # added by AAGulles 09.11.2014
-	            EMS <- varcomp[varcomp[,1] == "Residual", "Variance"] # added by AAGulles 09.11.2014
-                 
+	            varcomp <- summary(model1)@REmat
+	            EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
 	            numberTrt<-(ncol(combn(p,2))+p)
 	            EDF <- (((r*numberTrt)-1)-(r-1)-(r*(nBlocksWithinRep-1))-((numberTrt)-1))- missingObs
 	            
@@ -403,10 +397,8 @@ diallel2Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	            cat("\nFormula for Model 2: ", myformula2,"\n\n", sep="")
 	            
 	            #get MSE
-	            #varcomp <- summary(model1)@REmat
-	            #EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
-	            varcomp <- ConstructVarCorrTable(model1) # added by AAGulles 09.11.2014
-	            EMS <- varcomp[varcomp[,1] == "Residual", "Variance"] # added by AAGulles 09.11.2014
+	            varcomp <- summary(model1)@REmat
+	            EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
 	            numberTrt<-(ncol(combn(p,2))+p)
 	            EDF <- (((numberTrt*r)-1)-(numberTrt-1)-(r-1)-((rowWithinRep-1)*r)-((columnWithinRep-1)*r))- missingObs
 	            
@@ -687,7 +679,7 @@ diallel2Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 		} ## end of for loop (j)
 	}## end of loop (i)
 	cat("\n==============================================================\n")
-	#detach("package:doBy")
+	detach("package:doBy")
 	return(list(output = result))
 }
 

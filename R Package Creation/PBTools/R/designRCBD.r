@@ -13,20 +13,20 @@ designRCBD.default <- function(generate, r = 2, trial = 1, numFieldRow = 1, rowP
 	if (is.null(r) || r < 2 || is.character(r) || length(r) > 1) { stop("The argument 'r' should be a single value greater than or equal to 2.") }
 	if (missing(generate)) { stop("The argument 'generate' is missing.") }
 	if (!is.list(generate)) { stop("The argument 'generate' must be a list.") }
-     if (rowPerBlk > numFieldRow) { stop("Number of field row should be equal to greater than the number or row per rep.") }
+     if (rowPerBlk > numFieldRow) { stop("Number of field row should be equal to greater than the number or row per block.") }
 	
 	tempComb <- GenerateFactor(generate, times = 1)
 	randomize <- NULL
      #plotNum <- list()
      plan <- list()
      
-     if (rowPerBlk == 1) serpentine <- FALSE
+     if (numFieldRow == 1) serpentine <- FALSE
      
      numBlkRow <- numFieldRow/rowPerBlk
 	numBlkCol <- r/numBlkRow
 	colPerBlk <- (nrow(tempComb)/rowPerBlk)
      
-     if (nrow(tempComb)%%rowPerBlk != 0) { stop("Total number of plots per replicate should be divisible by the number of rows within replicate.") }
+     if (nrow(tempComb)%%rowPerBlk != 0) { stop("Total number of plots per block should be divisible by the number of rows within block.") }
 	if ((nrow(tempComb)*r)%%numFieldRow != 0) { stop("Total number of plots should be divisible by the number of field rows.") }
 
 	for (i in (1:trial)) {
@@ -35,7 +35,7 @@ designRCBD.default <- function(generate, r = 2, trial = 1, numFieldRow = 1, rowP
 		for (j in (1:r)) {
 		     tempPlan <- NULL
 		     tempPlotNum <- NULL
-			temp <- data.frame(Trial = as.character(i), Rep = as.character(j), tempComb, tempPlotNum = sample(nrow(tempComb), nrow(tempComb), replace = FALSE))
+			temp <- data.frame(Trial = as.character(i), Block = as.character(j), tempComb, tempPlotNum = sample(nrow(tempComb), nrow(tempComb), replace = FALSE))
 			temp <- temp[order(temp[,"tempPlotNum"]),]
 			plotLabel <- as.numeric(paste(j, paste(c(rep(0, max(nchar(1:nrow(tempComb))))), collapse = ""), sep = ""))+1:nrow(tempComb)
 			if (ncol(tempComb) > 1) { trmtLabel <- eval(parse(text = paste("paste(temp[,'", paste(names(temp)[3:(ncol(temp)-1)], collapse = "'],' ',temp[,'", sep = ""),"'], sep = '')", sep = "")))
@@ -64,7 +64,7 @@ designRCBD.default <- function(generate, r = 2, trial = 1, numFieldRow = 1, rowP
      names(plan) <- paste("Trial", 1:trial, sep = "")
      randomize <- randomize[,-I(c(match(c("trmtLabel", "tempPlotNum"), names(randomize))))]
      names(randomize)[(ncol(randomize)-2):ncol(randomize)] <- c("PlotNum", "FieldRow", "FieldCol")
-	randomize <- randomize[order(randomize$Trial, randomize$Rep, randomize$FieldRow, randomize$FieldCol),]
+	randomize <- randomize[order(randomize$Trial, randomize$Block, randomize$FieldRow, randomize$FieldCol),]
 	rownames(randomize) <- 1:nrow(randomize)
 
 	if (display) {
@@ -73,7 +73,7 @@ designRCBD.default <- function(generate, r = 2, trial = 1, numFieldRow = 1, rowP
 		cat("\t","Randomized Complete Block Design","\n\n",sep = "")
 		cat(toupper("Design Parameters:"),"\n",sep = "")
 		cat("\t","Number of Trials = ", trial, "\n",sep = "")
-		cat("\t","Number of Replicates = ", r, "\n",sep = "")
+		cat("\t","Number of Blocks = ", r, "\n",sep = "")
 		if (ncol(tempComb) == 1) {
 			cat("\t","Treatment Name = ", names(tempComb)[1], "\n",sep = "")
 			cat("\t","Treatment Levels = ", sep = "")

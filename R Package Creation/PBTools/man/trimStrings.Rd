@@ -1,8 +1,7 @@
 \name{trimStrings}
 \alias{trimStrings}
-\alias{trimStrings.default}
-\title{trimStrings}
-\description{trimStrings}
+\title{title1}
+\description{description1}
 \usage{
 trimStrings(text, side = "both")
 }

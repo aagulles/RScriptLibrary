@@ -6,7 +6,7 @@
 This function performs multi-environment one stage test
 }
 \usage{
-GEOneStage.test(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol", "AugAlpha", "AugRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env, is.genoRandom = FALSE)
+GEOneStage.test(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env, is.genoRandom = FALSE)
 }
 \arguments{
   \item{exptl.design}{RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol}

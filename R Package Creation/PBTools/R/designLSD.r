@@ -7,7 +7,7 @@
 
 designLSD <- function(generate, trial = 1, serpentine = FALSE, display = TRUE, file = NULL) UseMethod("designLSD")
 
-designLSD.default <- function(generate, trial = 1, serpentine = TRUE, display = TRUE, file = NULL) {
+designLSD.default <- function(generate, trial = 1, serpentine = FALSE, display = TRUE, file = NULL) {
      
      if (is.null(trial) || trial < 1 || is.character(trial) || length(trial) > 1) { stop("The argument 'trial' should be a single numeric value greater than or equal to 1.") }
      if (missing(generate)) { stop("The argument 'generate' is missing.") }
@@ -45,7 +45,6 @@ designLSD.default <- function(generate, trial = 1, serpentine = TRUE, display = 
           }
           randomize <- rbind(randomize, tempSample)
      }
-     randomize <- randomize[order(randomize$Trial, randomize$PlotNum),]
      rownames(randomize) <- 1:nrow(randomize)
      randomize$Trial <- factor(randomize$Trial)
      randomize$Row <- factor(randomize$Row)

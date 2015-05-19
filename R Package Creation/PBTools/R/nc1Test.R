@@ -22,7 +22,6 @@
 # Script Modified by: Nellwyn Sales and Guoyou Ye
 #----------------------------------------------------------------
 
-
 nc1Test <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data, respvar, female, male, rep=NULL, block=NULL, row=NULL, column=NULL, inbred=TRUE, individual=NULL, environment=NULL) UseMethod("nc1Test")
 
 nc1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data, respvar, female, male, rep=NULL, block=NULL, row=NULL, column=NULL, inbred=TRUE, individual=NULL, environment=NULL) {
@@ -42,9 +41,9 @@ nc1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data,
 	if (!is.null(individual)) {individual <- trimStrings(individual) }
 	if (!is.null(environment)) {environment <-trimStrings(environment) }
 	
-     # --- create titles --- #
-     if (design == "CRD") { designName<-"CRD"}
-     if (design == "RCB") { designName<-"RCB"}
+  # --- create titles --- #
+  if (design == "CRD") { designName<-"CRD"}
+  if (design == "RCB") { designName<-"RCB"}
 	if (design == "Alpha") { designName<-"ALPHA-LATTICE"}
 	if (design == "RowColumn") { designName<-"ROW-COLUMN"}
   
@@ -86,10 +85,10 @@ nc1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data,
 				cat("\nANALYSIS FOR: ",environment, " = " ,levels(temp.data[,match(environment, names(temp.data))])[j],"\n", sep="")
 				cat("-----------------------------\n")
 				
-                    # --- create temp.data that contains data for one environment level only --- #
-                    #temp.data <- subset(temp.data, temp.data[,match(environment, names(temp.data))] == levels(temp.data[,match(environment, names(temp.data))])[j])
+        # --- create temp.data that contains data for one environment level only --- #
+        #temp.data <- subset(temp.data, temp.data[,match(environment, names(temp.data))] == levels(temp.data[,match(environment, names(temp.data))])[j])
 				temp.data <- temp.data[temp.data[,match(environment, names(temp.data))] == levels(temp.data[,match(environment, names(temp.data))])[j],]
-                    temp.data[,match(environment, names(temp.data))] <- factor(trimStrings(temp.data[,match(environment, names(temp.data))]))
+        temp.data[,match(environment, names(temp.data))] <- factor(trimStrings(temp.data[,match(environment, names(temp.data))]))
 			}
 
 			# --- define factors --- #
@@ -108,7 +107,7 @@ nc1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data,
 			}
       
 			# --- check if raw data is balanced. If not, generate estimates for missing values --- #
-               # --- remove rows with missing observations --- #
+      # --- remove rows with missing observations --- #
 			#temp.data <- subset(temp.data, subset = (is.na(temp.data[,match(respvar[i], names(temp.data))]) == FALSE))
 			temp.data <- temp.data[(is.na(temp.data[,match(respvar[i], names(temp.data))]) == FALSE),]
 			obsused<-nrow(temp.data)
@@ -145,7 +144,7 @@ nc1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data,
 			  temp.data<-temp.data[-c(match("cross", names(temp.data)))]
 			  
 			  # --- data summary --- #
-			  funcTrialSum <- class.information(names(temp.data),temp.data)
+			  funcTrialSum <- class.information2(names(temp.data),temp.data)
 			  cat("\nDATA SUMMARY: ","\n\n", sep="")
 			  print(funcTrialSum)
 			  cat("\nNumber of observations read: ",obsread, sep="")
@@ -225,45 +224,30 @@ nc1Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), data,
 			  result[[i]]$site[[j]]$lmer.result <- summary(model)
 			  
 			  # --- edit format of lmer output before printing --- #
-                 # --- the following code was hidden for R verison 3.0.2 by AAGulles
-			  #remat<-summary(model)@REmat
-			  #Groups<-remat[,1]
-			  #Variance<-formatC(as.numeric(remat[,3]), format="f")
-			  #Std.Deviation<-formatC(as.numeric(remat[,4]), format="f")
-			  #Variance2<-format(rbind("Variance", cbind(Variance)), justify="right")
-			  #Std.Deviation2<-format(rbind("Std. Deviation", cbind(Std.Deviation)), justify="right")
-			  #Groups2<-format(rbind("Groups",cbind(Groups)), justify="left")
-			  #rematNew<-noquote(cbind(Groups2, Variance2, Std.Deviation2))
-			  #colnames(rematNew)<-c("", "", "")
-			  #rownames(rematNew)<-rep("",nrow(rematNew))
-                 
-                 # the above code was replace by the followng line for R version 3.0.2 by AAGulles
-                 rematNew <- ConstructVarCorrTable(model)
-                 
+			  remat<-summary(model)@REmat
+			  Groups<-remat[,1]
+			  Variance<-formatC(as.numeric(remat[,3]), format="f")
+			  Std.Deviation<-formatC(as.numeric(remat[,4]), format="f")
+			  Variance2<-format(rbind("Variance", cbind(Variance)), justify="right")
+			  Std.Deviation2<-format(rbind("Std. Deviation", cbind(Std.Deviation)), justify="right")
+			  Groups2<-format(rbind("Groups",cbind(Groups)), justify="left")
+			  rematNew<-noquote(cbind(Groups2, Variance2, Std.Deviation2))
+			  colnames(rematNew)<-c("", "", "")
+			  rownames(rematNew)<-rep("",nrow(rematNew))
 			  cat("\n\n\nLINEAR MIXED MODEL FIT BY RESTRICTED MAXIMUM LIKELIHOOD:\n\n")
 			  cat(" Formula: ", myformula1,"\n\n")
-			  # print(summary(model)@AICtab) # hide by AAGulles
-			  AICtab <- data.frame(AIC = AIC(model), BIC = BIC(model), logLik = logLik(model), REMLdev = summary(model)$AICtab) # added by AAGulles
-			  printDataFrame(AICtab, border = FALSE, digits = 4) # added by AAGulles
-                 
+			  print(summary(model)@AICtab) 
 			  #cat("\n Fixed Effects:\n")
 			  #print(round(summary(model)@coefs, digits=4))
-			  cat("\nRandom Effects:\n")
-			  # print(rematNew) # hide by AAGulles 
-                 printDataFrame(rematNew, border = FALSE, digits = 4) # added by AAGulles
+			  cat("\n Random Effects:")
+			  print(rematNew)
 			  
 			  # --- Estimates of genetic variance components --- #
-			  # --- the following code was hidden for R verison 3.0.2 by AAGulles 
-			  # varcomp <- summary(model)@REmat
-			  # Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
-			  # Vf_m <- as.numeric(varcomp[varcomp[,1] == paste(female,":",male,sep=""), "Variance"])
-			  # Vm <- as.numeric(varcomp[varcomp[,1] == male, "Variance"])
+			  varcomp <- summary(model)@REmat
+			  Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+			  Vf_m <- as.numeric(varcomp[varcomp[,1] == paste(female,":",male,sep=""), "Variance"])
+			  Vm <- as.numeric(varcomp[varcomp[,1] == male, "Variance"])
 			  
-                 # the above code was replaced by the following command for R version 3.0.2 by AAGulles
-                 Ve <- rematNew[rematNew[, "Groups"] == "Residual","Variance"]
-                 Vf_m <- rematNew[rematNew[, "Groups"] == paste(female, ":", male, sep = ""),"Variance"]
-                 Vm <- rematNew[rematNew[, "Groups"] == male,"Variance"]
-                 
 			  f <- nlevels(temp.data[,match(female, names(temp.data))])
 			  m <- nlevels(temp.data[,match(male, names(temp.data))])
 			  r <- repHarmonicMean
