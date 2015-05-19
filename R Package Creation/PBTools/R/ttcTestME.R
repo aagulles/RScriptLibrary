@@ -99,7 +99,8 @@ ttcTestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), dat
 		  temp.data<-temp.data[-c(match("crossEnv", names(temp.data)))]
 		  
 		  # --- data summary --- #
-		  funcTrialSum <- class.information2(names(temp.data),temp.data)
+		  #funcTrialSum <- class.information2(names(temp.data),temp.data)
+		  funcTrialSum <- class.information(names(temp.data),temp.data)
 		  cat("\nDATA SUMMARY: ","\n\n", sep="")
 		  print(funcTrialSum)
 		  cat("\n Number of observations read: ",nrow(data), sep="")
@@ -389,8 +390,11 @@ ttcTestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), dat
 		    if (sigma2D < 0) sigma2D<-0
 		    
 		    #--- Genetic variance estimates ---#
-		    varcomp <- summary(model1)@REmat
-		    Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+		    #varcomp <- summary(model1)@REmat
+		    #Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+              varcomp <- ConstructVarCorrTable(model1)
+              Ve <- varcomp[varcomp[,1] == "Residual", "Variance"]
+        
 		    VA <- 4*sigma2A
 		    VVA <- (32/(9*(r^2)))*(((ANOVA.s$MSg^2)/(m-1+2))+((ANOVA.s$MSe^2)/((m-1)*(r-1)+2)))
 		    
@@ -425,7 +429,7 @@ ttcTestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), dat
 		    print(TABLE)
 		    cat("\n")
 		    result[[i]]$genVar <- TABLE
-		    detach("package:doBy")
+		    #detach("package:doBy")
 		    #}
 		    cat("\n")
 		  }

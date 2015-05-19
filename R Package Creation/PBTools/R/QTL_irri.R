@@ -4,7 +4,7 @@
 #-------------------------------------------------
 
 load.cross.data<-function(P.data, G.data, map.data, cross, heterozygotes=TRUE, genotype, env.label = NULL, env=NULL, ST=NULL){
-  library(qtl)  
+  #library(qtl)  
 
   #Import the genotypic data file
   G.data<-read.table(G.data, header=TRUE,as.is=TRUE,check.names=FALSE)
@@ -86,7 +86,7 @@ load.cross.data<-function(P.data, G.data, map.data, cross, heterozygotes=TRUE, g
   #cross.data<-NULL
   #cross.data<-data.prueba
   
-  detach("package:qtl")
+  #detach("package:qtl")
   return(data.prueba)
   
 } #end of load.cross.data function 
@@ -110,7 +110,7 @@ MQ.marker.diag<-function(crossobj, QTL.path, estmarker=FALSE, thresholdMQ=0.1,qu
   MQ.markermap.plot <- function(crossobj, out=MQ.markermap.file){
     #To plot markermap 
     #pdf(file = paste(out,".pdf",sep=""), onefile=FALSE)
-    png(file = paste(out,".png",sep=""))
+    png(filename = paste(out,".png",sep=""))
     par(mfrow = c(1,1))
     plot.map(crossobj)
     dev.off()
@@ -120,7 +120,7 @@ MQ.marker.diag<-function(crossobj, QTL.path, estmarker=FALSE, thresholdMQ=0.1,qu
     #To estimate and plot new markermap 
     newmap <- est.map(crossobj)
     #pdf(file = paste(out,".pdf",sep=""), onefile=FALSE)
-    png(file = paste(out,".png",sep=""))
+    png(filename = paste(out,".png",sep=""))
     par(mfrow = c(1,1))
     plot.map(newmap, crossobj)
     dev.off()
@@ -128,7 +128,7 @@ MQ.marker.diag<-function(crossobj, QTL.path, estmarker=FALSE, thresholdMQ=0.1,qu
   
   MQ.genotype.plot <- function(crossobj, out=MQ.genotype.file){
     #pdf(file = paste(out,".pdf",sep=""), onefile=FALSE)
-    png(file = paste(out,".png",sep=""))
+    png(filename = paste(out,".png",sep=""))
     par(mfrow = c(1,1))
     geno.image(crossobj)
     dev.off()
@@ -136,7 +136,7 @@ MQ.marker.diag<-function(crossobj, QTL.path, estmarker=FALSE, thresholdMQ=0.1,qu
   
   MQ.missinggenotype.plot <- function(crossobj, out=MQ.missinggenotype.file){
     #pdf(file = paste(out,".pdf",sep=""), onefile=FALSE)
-    png(file = paste(out,".png",sep=""))
+    png(filename = paste(out,".png",sep=""))
     par(mfrow = c(1,1))
     plot.missing(crossobj)
     dev.off()
@@ -145,7 +145,7 @@ MQ.marker.diag<-function(crossobj, QTL.path, estmarker=FALSE, thresholdMQ=0.1,qu
   MQ.comparegenotypes.plot <- function(crossobj, out=MQ.comparegenotypes.file){
     #To compare pairs of genotypes
     #pdf(file = paste(out,".pdf",sep=""), onefile=FALSE)
-    png(file = paste(out,".png",sep=""))
+    png(filename = paste(out,".png",sep=""))
     par(mfrow = c(1,1))
     output <- comparegeno(crossobj)
     n.ind <- nind(crossobj)
@@ -157,7 +157,7 @@ MQ.marker.diag<-function(crossobj, QTL.path, estmarker=FALSE, thresholdMQ=0.1,qu
   MQ.cf.plot <- function(crossobj, out=MQ.cf.file){
     #To compare pairs of genotypes
     #pdf(file = paste(out,".pdf",sep=""), onefile=FALSE)
-    png(file = paste(out,".png",sep=""))
+    png(filename = paste(out,".png",sep=""))
     par(mfrow = c(1,1))
     plot.rf(crossobj, alternate.chrid=FALSE)
     dev.off()
@@ -224,7 +224,7 @@ MQ.marker.diag<-function(crossobj, QTL.path, estmarker=FALSE, thresholdMQ=0.1,qu
     gt2<-data.frame(gt, ch, a, -log10(gt$P.value))
     
     #pdf(file=paste(out,".pdf",sep=""), onefile=FALSE)
-    png(file=paste(out,".png",sep=""))
+    png(filename=paste(out,".png",sep=""))
     if(nchr(crossobj)<4) par(mfrow=c(1,nchr(crossobj)))
     if(nchr(crossobj)>4 & nchr(crossobj)<8) par(mfrow=c(2,((round(nchr(crossobj))/2)+1)))
     if(nchr(crossobj)>8 ) par(mfrow=c(3,((round(nchr(crossobj))/3)+1)))
@@ -254,7 +254,7 @@ MQ.marker.diag<-function(crossobj, QTL.path, estmarker=FALSE, thresholdMQ=0.1,qu
 
   MQ.list.problems<-function(crossobj, thresholdMQ=FALSE, quant=FALSE,out=MQ.identical.genotypes){
     #pdf(file=paste(out,".pdf",sep=""), onefile=FALSE)
-    png(file=paste(out,".png",sep=""))
+    png(filename=paste(out,".png",sep=""))
     par(mfrow=c(1,1))
     cg<- comparegeno(crossobj)
     hist(cg, breaks=200, xlab="Proportion of shared alleles", col="red", main="Identical genotypes")
@@ -357,7 +357,7 @@ MQ.marker.diag<-function(crossobj, QTL.path, estmarker=FALSE, thresholdMQ=0.1,qu
   
   MQ.summary.markers(cross.data,p.val=p.val,na.cutoff=na.cutoff)
   
-  detach("package:qtl")
+  #detach("package:qtl")
   detach("package:stringr")
 } #end of MQ.marker.diag function 
 
@@ -643,7 +643,7 @@ QTL.analysis<-function(crossobj=cross.data, QTL.path, env.label=NULL, env = NULL
   
   if(length(levels(ENV))>1){
      #pdf(file=paste(QTL.path,"QTLxE heatmap.pdf",sep=""), onefile=TRUE)                        
-     png(file=paste(QTL.path,"QTLxE heatmap.png",sep=""))
+     png(filename=paste(QTL.path,"QTLxE heatmap.png",sep=""))
      par(mfrow = c(1,1))
      heatmap(rescale, Rowv=NA, Colv=NA, scale="none", col=colorRampPalette(c("yellow","blue"))(50)) 
      dev.off()
@@ -652,7 +652,7 @@ QTL.analysis<-function(crossobj=cross.data, QTL.path, env.label=NULL, env = NULL
      rownames(rescale)<-unique(all.means$ENV)
      
      #pdf(file=paste(QTL.path,"QTLxE effects by location and marker.pdf",sep=""), onefile=TRUE)
-     png(file=paste(QTL.path,"QTLxE effects by location and marker.png",sep=""))
+     png(filename=paste(QTL.path,"QTLxE effects by location and marker.png",sep=""))
      par(mfrow=c(2,1))
      barplot(rescale, beside=TRUE, legend.text=TRUE, xlim=c(0,dim(rescale)[1]*dim(rescale)[2]+30), col=heat.colors(dim(rescale)[1],alpha=1), main="QTL specific effects sorted by Marker and Location")
      barplot(t(rescale), beside=TRUE, legend.text=TRUE, xlim=c(0,dim(rescale)[1]*dim(rescale)[2]+30), col=colorRampPalette(c("dark blue","light blue"))(dim(rescale)[2]))
@@ -744,7 +744,7 @@ QTL.analysis<-function(crossobj=cross.data, QTL.path, env.label=NULL, env = NULL
   
   dev.off()
   
-  detach("package:qtl")
+  #detach("package:qtl")
   return(QTL.result)
   
 } #end of QTL analysis

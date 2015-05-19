@@ -40,7 +40,8 @@ graph.mea1s.diagplots.default <- function(data, respvar, is.random = FALSE, resu
       hist(result$output[[i]]$residuals, main = "Histogram of Residuals",  col = cc, xlab = "Residual", ylab = 'Frequency' )
       
       #create blank plot
-      plot(seq(1:10)~seq(1:10), type="n", boxed=FALSE, axes=FALSE, xlab="", ylab="")
+      #plot(seq(1:10)~seq(1:10), type="n", boxed = FALSE, axes=FALSE, xlab="", ylab="")
+      plot(seq(1:10)~seq(1:10), type="n", bty = "n", axes=FALSE, xlab="", ylab="")
       if (is.random) {
         noteString <- paste("NOTE: Residuals plotted are taken from the model where genotype is random and response variable = ", respvar[i], ".", sep="")
       } else {

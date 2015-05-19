@@ -99,7 +99,8 @@ nc3TestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), dat
 		  nBalance<-2*m*e*nlevelsRep
 		  
 		  # --- data summary --- #
-		  funcTrialSum <- class.information2(names(temp.data),temp.data)
+		  #funcTrialSum <- class.information2(names(temp.data),temp.data)
+		  funcTrialSum <- class.information(names(temp.data),temp.data)
 		  cat("\nDATA SUMMARY: ","\n\n", sep="")
 		  print(funcTrialSum)
 		  cat("\n Number of observations read: ",nrow(data), sep="")
@@ -190,35 +191,53 @@ nc3TestME.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), dat
 		    result[[i]]$lmer.result <- summary(model)
 		    
 		    # --- edit format of lmer output before printing --- #
-		    fixeff.table<-round(summary(model)@coefs, digits=4)
-        rownames(fixeff.table) <- paste(" ", rownames(fixeff.table), sep="")
-		    remat<-summary(model)@REmat
-		    Groups<-remat[,1]
-		    Variance<-formatC(as.numeric(remat[,3]), format="f")
-		    Std.Deviation<-formatC(as.numeric(remat[,4]), format="f")
-		    Variance2<-format(rbind("Variance", cbind(Variance)), justify="right")
-		    Std.Deviation2<-format(rbind("Std. Deviation", cbind(Std.Deviation)), justify="right")
-		    Groups2<-format(rbind("Groups",cbind(Groups)), justify="left")
-		    rematNew<-noquote(cbind(Groups2, Variance2, Std.Deviation2))
-		    colnames(rematNew)<-c("", "", "")
-		    rownames(rematNew)<-rep("",nrow(rematNew))
-		    cat("\n\n\nLINEAR MIXED MODEL FIT BY RESTRICTED MAXIMUM LIKELIHOOD:\n\n")
-		    cat(" Formula: ", myformula1,"\n\n")
-		    print(summary(model)@AICtab) 
+		    #fixeff.table<-round(summary(model)@coefs, digits=4) # hide by AAGulles 09.11.2014
+		    fixeff.table<-round(summary(model)$coefficients, digits=4)
+              rownames(fixeff.table) <- paste(" ", rownames(fixeff.table), sep="")
+		    
+              #remat<-summary(model)@REmat
+		    #Groups<-remat[,1]
+		    #Variance<-formatC(as.numeric(remat[,3]), format="f")
+		    #Std.Deviation<-formatC(as.numeric(remat[,4]), format="f")
+		    #Variance2<-format(rbind("Variance", cbind(Variance)), justify="right")
+		    #Std.Deviation2<-format(rbind("Std. Deviation", cbind(Std.Deviation)), justify="right")
+		    #Groups2<-format(rbind("Groups",cbind(Groups)), justify="left")
+		    #rematNew<-noquote(cbind(Groups2, Variance2, Std.Deviation2))
+		    #colnames(rematNew)<-c("", "", "")
+		    #rownames(rematNew)<-rep("",nrow(rematNew))
+		    
+		    # the above code was replace by the followng line for R version 3.0.2 by AAGulles 09.11.2014
+		    rematNew <- ConstructVarCorrTable(model)
+              
+              cat("\n\n\nLINEAR MIXED MODEL FIT BY RESTRICTED MAXIMUM LIKELIHOOD:\n\n")
+		    cat(" Formula: ", myformula1,"\n\n") 
+		    # print(summary(model)@AICtab) # hide by AAGulles 09.11.2014
+		    AICtab <- data.frame(AIC = AIC(model), BIC = BIC(model), logLik = logLik(model), REMLdev = summary(model)$AICtab) # added by AAGulles
+		    printDataFrame(AICtab, border = FALSE, digits = 4) # added by AAGulles
+		    
 		    #cat("\n Fixed Effects:\n")
 		    #print(fixeff.table)
-		    cat("\n Random Effects:")
-		    print(rematNew)
+		    cat("\nRandom Effects:\n")
+		    #print(rematNew) # hide by AAGulles 09.11.2014
+		    printDataFrame(rematNew, border = FALSE, digits = 4) # added by AAGulles
 		    
 		    #--- Estimates of genetic variance components ---#
-		    varcomp <- summary(model)@REmat
-		    Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
-		    Vf_m <- as.numeric(varcomp[varcomp[,1] == paste(tester,":",f2lines,sep=""), "Variance"])
-		    Vm <- as.numeric(varcomp[varcomp[,1] == f2lines, "Variance"])
-		    Vef_m <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",tester,":",f2lines,sep=""), "Variance"])
-		    Vem <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",f2lines,sep=""), "Variance"])
-		    Vef <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",tester,sep=""), "Variance"])
+		    #varcomp <- summary(model)@REmat
+		    #Ve <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+		    #Vf_m <- as.numeric(varcomp[varcomp[,1] == paste(tester,":",f2lines,sep=""), "Variance"])
+		    #Vm <- as.numeric(varcomp[varcomp[,1] == f2lines, "Variance"])
+		    #Vef_m <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",tester,":",f2lines,sep=""), "Variance"])
+		    #Vem <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",f2lines,sep=""), "Variance"])
+		    #Vef <- as.numeric(varcomp[varcomp[,1] == paste(environment,":",tester,sep=""), "Variance"])
 		    
+		    # the above code was replaced by the following command for R version 3.0.2 by AAGulles
+		    Ve <- rematNew[rematNew[, "Groups"] == "Residual","Variance"]
+		    Vf_m <- rematNew[rematNew[, "Groups"] == paste(tester, ":", f2lines, sep = ""),"Variance"]
+		    Vm <- rematNew[rematNew[, "Groups"] == f2lines,"Variance"]
+		    Vef_m <- rematNew[rematNew[, "Groups"] == paste(environment, ":", tester, ":", f2lines, sep = ""),"Variance"]
+		    Vem <- rematNew[rematNew[, "Groups"] == paste(environment, ":", f2lines, sep = ""),"Variance"]
+		    Vef <- rematNew[rematNew[, "Groups"] == paste(environment, ":", tester, sep = ""),"Variance"]
+              
 		    F<-0
 		    r<-repHarmonicMean
 		    

@@ -186,7 +186,8 @@ diallel4TestME.default <- function(design = c("CRD", "RCB", "Alpha", "RowColumn"
         }
         
         # --- data summary --- #
-        funcTrialSum <- class.information2(names(temp.data),temp.data)
+        #funcTrialSum <- class.information2(names(temp.data),temp.data)
+        funcTrialSum <- class.information(names(temp.data),temp.data)
         cat("\nDATA SUMMARY: ","\n\n", sep="")
         print(funcTrialSum)
         cat("\n Number of observations read: ",nrow(data), sep="")
@@ -695,7 +696,7 @@ diallel4TestME.default <- function(design = c("CRD", "RCB", "Alpha", "RowColumn"
       } ## end of else (if ((nrow(temp.data)/nrow(data)) < 0.80))
     }## end of loop (z)
     cat("\n==============================================================\n")
-    detach("package:doBy")
+    #detach("package:doBy")
     return(list(output = result))
   }
 

@@ -6,10 +6,10 @@
 performs single environment analysis
 }
 \usage{
-ssa.test(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env = NULL, is.random = FALSE, excludeCheck=FALSE, checkList = NULL)
+ssa.test(exptl.design = c("RCB", "AugRCB", "AugLS", "Alpha", "RowCol", "LatinAlpha", "LatinRowCol","AugAlpha", "AugRowCol"), data, respvar, geno, row, column = NULL, rep = NULL, env = NULL, is.random = FALSE, excludeCheck=FALSE, checkList = NULL)
 }
 \arguments{
-  \item{exptl.design}{RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol}
+  \item{exptl.design}{RCB, AugRCB, AugLS, Alpha, RowCol, LatinAlpha, LatinRowCol, AugAlpha, AugRowCol}
   \item{data}{a string; name of the dataframe}
   \item{respvar}{a string; variable name of the response variable}
   \item{geno}{a string; variable name of the treatment/genotype variable}

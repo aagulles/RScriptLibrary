@@ -89,7 +89,7 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
                          plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <- plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL]+tempPlotNum 
                     }
                }
-          }
+          } ## end stmt -- if (i == 1)
           
           tempFieldOrder <- as.data.frame.table(plotNum)
           tempFieldOrder[,"Var1"] <- as.numeric(tempFieldOrder[,"Var1"]) 
@@ -97,12 +97,15 @@ designRowColumn.default <- function(generate, r = 2, trial = 1, rowPerRep, numFi
           colnames(tempFieldOrder)[3] <- "PlotNum"
           randomize <- rbind(randomize, cbind(Trial = i, merge(print(temp, option = "list"), tempFieldOrder, by.x = c("ROW", "RANGE"), by.y = c("Var1", "Var2"))))
           dimnames(plan[[i]]) <- list(paste("FieldRow", 1:nrow(plan[[i]]),sep = ""), paste("FieldCol", 1:ncol(plan[[i]]), sep = ""))
-     }
+     } ## end stmt -- for (i in (1:trial))
 
      dimnames(plotNum) <- dimnames(plan[[1]])
      names(plan) <- paste("Trial", 1:trial, sep = "")
-     randomize <- randomize[,c("Trial", "REP", "ID", "PlotNum", "ROW", "RANGE")]
-     names(randomize) <- c("Trial", "Rep", names(tempComb)[1], "PlotNum", "FieldRow", "FieldCol")
+     randomize$RowBlk <- randomize$ROW%%rowPerRep
+     randomize[randomize[,"RowBlk"] == 0, "RowBlk"] <- rowPerRep
+     randomize$ColBlk <- randomize$RANGE
+     randomize <- randomize[,c("Trial", "REP", "RowBlk", "ColBlk", "ID", "PlotNum", "ROW", "RANGE")]
+     names(randomize) <- c("Trial", "Rep", "RowBlk", "ColBlk", names(tempComb)[1], "PlotNum", "FieldRow", "FieldCol")
      randomize <- randomize[order(randomize$Trial, randomize$PlotNum),]
      randomize[,"Trial"] <- factor(randomize[,"Trial"])
 	randomize[,"Rep"] <- factor(randomize[,"Rep"])

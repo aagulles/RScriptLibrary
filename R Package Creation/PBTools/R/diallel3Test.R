@@ -215,7 +215,8 @@ diallel3Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	      
 	      
 	      # --- data summary --- #
-	      funcTrialSum <- class.information2(names(temp.data),temp.data)
+	      #funcTrialSum <- class.information2(names(temp.data),temp.data)
+	      funcTrialSum <- class.information(names(temp.data),temp.data)
 	      cat("\nDATA SUMMARY: ","\n\n", sep="")
 	      print(funcTrialSum)
 	      cat("\nNumber of observations read: ",obsread, sep="")
@@ -347,8 +348,10 @@ diallel3Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	            cat("\nFormula for Model 2: ", myformula2,"\n\n", sep="")
 	            
 	            # get MSE
-	            varcomp <- summary(model1)@REmat
-	            EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+	            #varcomp <- summary(model1)@REmat
+	            #EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+	            varcomp <- ConstructVarCorrTable(model1)
+	            EMS <- varcomp[varcomp[,1] == "Residual", "Variance"]
 	            numberTrt<-(p*p)-p
 	            EDF <- (((numberTrt*r)-1)-(numberTrt-1)-(r-1))- missingObs
 	            
@@ -373,8 +376,10 @@ diallel3Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	            cat("\nFormula for Model 2: ", myformula2,"\n\n", sep="")
 	            
 	            #get MSE
-	            varcomp <- summary(model1)@REmat
-	            EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+	            #varcomp <- summary(model1)@REmat
+	            #EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+                 varcomp <- ConstructVarCorrTable(model1)
+	            EMS <- varcomp[varcomp[,1] == "Residual", "Variance"]
 	            numberTrt<-(p*p)-p
 	            EDF <- (((r*numberTrt)-1)-(r-1)-(r*(nBlocksWithinRep-1))-((numberTrt)-1))- missingObs
 	            
@@ -399,8 +404,10 @@ diallel3Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	            cat("\nFormula for Model 2: ", myformula2,"\n\n", sep="")
 	            
 	            #get MSE
-	            varcomp <- summary(model1)@REmat
-	            EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+	            #varcomp <- summary(model1)@REmat
+	            #EMS <- as.numeric(varcomp[varcomp[,1] == "Residual", "Variance"])
+	            varcomp <- ConstructVarCorrTable(model1)
+	            EMS <- varcomp[varcomp[,1] == "Residual", "Variance"]
 	            numberTrt<-(p*p)-p
 	            EDF <- (((numberTrt*r)-1)-(numberTrt-1)-(r-1)-((rowWithinRep-1)*r)-((columnWithinRep-1)*r))- missingObs
 	            
@@ -690,7 +697,7 @@ diallel3Test.default <-function(design = c("CRD", "RCB", "Alpha", "RowColumn"), 
 	  } ## end of for loop (j)
 	}## end of loop (i)
 	cat("\n==============================================================\n")
-	detach("package:doBy")
+	#detach("package:doBy")
 	return(list(output = result))
 }
 

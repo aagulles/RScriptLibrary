@@ -2,7 +2,7 @@
 # designAlphaLattice: Generate randomization for alpha lattice design using the 4 series
 #             formulated by Patterson and Williams
 # Created by: Alaine A. Gulles 07.16.2013 for International Rice Research Institute
-# Modified by: Alaine A. Gulles 05.29.2014
+# Modified by: Alaine A. Gulles 08.29.2014
 # Note: Uses the DiGGer function from package DiGGer
 # -----------------------------------------------------------------------------------------
 
@@ -16,6 +16,8 @@ designAlphaLattice.default <- function(generate, blksize, r = 2, trial = 1, rowP
      # check if r greater than 2    
      if (r < 2) { stop("The number of replicates should be greater than or equal to 2.")}
      if (length(generate[[1]]) == 1) { tempComb <- FactorList(generate) } else { tempComb <- generate }
+     
+     if (rowPerBlk == 1) serpentine <- FALSE
      
      # determine the total number of experimental units
      if ((r * length(tempComb[[1]])) > 1500) { stop("The maximum number of experimental units that can be generated is 1500.") }
@@ -92,7 +94,17 @@ designAlphaLattice.default <- function(generate, blksize, r = 2, trial = 1, rowP
           if (i == 1) {
                tempfbook <- print(temp, option = "list")
                blkNumTemp <- matrix(0, rowPerRep, colPerRep)
+               blkPlotNumTemp <- matrix(0, rowPerRep, colPerRep)
+               
+               
+               #tempPlotNum <- matrix(1:length(tempComb[[1]]), rowPerRep, colPerRep, byrow = TRUE)
+               #if (serpentine) { for (k in seq(2, rowPerRep, by = 2)) { tempPlotNum[k,] <- rev(tempPlotNum[k,]) }}
+               
+               tempPlotNumBlk <- matrix(1:blksize, rowPerBlk, colPerBlk, byrow = TRUE)
+               if (serpentine) { for (k in seq(2, rowPerBlk, by = 2)) { tempPlotNumBlk[k,] <- rev(tempPlotNumBlk[k,]) }}
+               
                blkcode <- 1
+               index <- tempPlotNumBlk
                for (j in 1:numBlkRow) {
                     for (k in 1:numBlkCol) {
                          rowIndexLL <- (j * rowPerBlk) - rowPerBlk + 1
@@ -100,20 +112,22 @@ designAlphaLattice.default <- function(generate, blksize, r = 2, trial = 1, rowP
                          colIndexLL <- (k * colPerBlk) - colPerBlk + 1
                          colIndexUL <- colIndexLL + colPerBlk - 1
                          blkNumTemp[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <-  blkcode
+                         blkPlotNumTemp[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <- index
                          blkcode <- blkcode + 1
+                         index <- index + blksize
                     }
                }
                blkNum <- matrix(0, nrow(plan[[i]]), ncol(plan[[i]]))
                plotNum <- matrix(as.numeric(paste(tempfbook$REP,paste(c(rep(0, max(nchar(1:length(tempComb[[1]]))))), collapse = ""), sep = "")), nrow(plan[[i]]), ncol(plan[[i]]))
-               tempPlotNum <- matrix(1:length(tempComb[[1]]), rowPerRep, colPerRep, byrow = TRUE)
-               if (serpentine) { for (k in seq(2, rowPerRep, by = 2)) { tempPlotNum[k,] <- rev(tempPlotNum[k,]) }}
+                                        
                for (j in 1:numRepRow) {
                     for (k in 1:numRepCol) {
                          rowIndexLL <- (j * rowPerRep) - rowPerRep + 1
                          rowIndexUL <- rowIndexLL + rowPerRep - 1
                          colIndexLL <- (k * colPerRep) - colPerRep + 1
                          colIndexUL <- colIndexLL + colPerRep - 1
-                         plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <- plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL]+tempPlotNum 
+                         #plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <- plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL]+tempPlotNum 
+                         plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <- plotNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL]+blkPlotNumTemp 
                          blkNum[rowIndexLL:rowIndexUL, colIndexLL:colIndexUL] <- blkNumTemp
                     }
                }

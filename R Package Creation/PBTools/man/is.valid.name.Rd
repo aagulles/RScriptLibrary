@@ -11,6 +11,6 @@ is.valid.name(x)
   \item{x}{R object}
 }
 \author{
-  from package Rcmdr
+  author1
 }
 \keyword{misc}

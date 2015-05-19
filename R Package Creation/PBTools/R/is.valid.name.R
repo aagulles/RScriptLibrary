@@ -1,8 +1,6 @@
 # --------------------------------------------------------
 # RCropStat Beta Menu
 # Functions obtained from package Rcmdr
-# 
-# Author: Alaine Gulles
 # --------------------------------------------------------
 
 is.valid.name <- function(x) { 

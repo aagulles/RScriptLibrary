@@ -18,5 +18,5 @@ designRowColumn(generate, r = 2, trial = 1, rowPerRep, numFieldRow, serpentine =
 \references{
   DiGGer package
 }
-\author{AAGulles}
+\author{VIBartolome, AAGulles}
 \keyword{design}
