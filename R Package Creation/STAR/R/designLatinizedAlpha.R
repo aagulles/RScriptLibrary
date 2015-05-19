@@ -71,7 +71,7 @@ designLatinizedAlpha.default <- function(generate, blksize, r = 2, trial = 1, nu
                                             ColumnsInReplicate = blksize,
                                             #BlockIn2D =c(1, blksize * r),
                                             RowsInBlockSequence = c(numBlk, 1),
-                                            ColumnsInBlockSequence = c(blksize*r, blksize),
+                                            ColumnsInBlockSequence = c(blksize, blksize * r),
                                             TreatmentName = tempComb[[1]]),
                              silent = TRUE)
           }

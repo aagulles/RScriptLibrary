@@ -1,6 +1,5 @@
 \name{GoodnessOfFitTest}
 \alias{GoodnessOfFitTest}
-\alias{GoodnessOfFitTest.default}
 \title{Chi-Square Goodness of Fit Test}
 \description{Chi-Square Goodness of Fit Test}
 \usage{

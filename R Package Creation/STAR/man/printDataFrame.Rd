@@ -1,6 +1,5 @@
 \name{printDataFrame}
 \alias{printDataFrame}
-\alias{printDataFrame.default}
 \title{Print Data Frames}
 \description{
   Print a data frame.
@@ -14,6 +13,6 @@
                 the variable name and the data will be displayed}
   \item{digits}{NULL}
 }
-\author{Alaine A. Gulles of International Rice Research Institute}
+\author{Alaine A. Gulles}
 \keyword{print}
 \keyword{data.frame}

@@ -53,6 +53,6 @@ vif(mod, ...)
   Fox, J. and Weisberg, S. (2011) 
   \emph{An R Companion to Applied Regression}, Second Edition, Sage.
 }
-\author{Henric Nilsson and John Fox \email{jfox@mcmaster.ca} from the car package}
+\author{Henric Nilsson and John Fox \email{jfox@mcmaster.ca} from the package car}
 
 \keyword{regression}

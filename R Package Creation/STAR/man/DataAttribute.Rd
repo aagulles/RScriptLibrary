@@ -1,6 +1,5 @@
 \name{DataAttribute}
 \alias{DataAttribute}
-\alias{DataAttribute.default}
 \title{Dataset Attribute}
 \description{
   Determines the variables in the data frame and the variable type.

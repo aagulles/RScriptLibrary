@@ -1,8 +1,8 @@
 \name{FactorList}
 \alias{FactorList}
 \alias{FactorList.default}
-\title{Factor List}
-\description{Factor List}
+\title{title1}
+\description{description1}
 \usage{
 FactorList(generate)
 }

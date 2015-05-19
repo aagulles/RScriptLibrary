@@ -6,9 +6,7 @@
 # Modified by: Alaine A. Gulles 05.02.2012
 # ----------------------------------------------------------------------------------------------------
 
-DataAttribute <- function(data) UseMethod("DataAttribute")
-
-DataAttribute.default <- function(data) {
+DataAttribute <- function(data) {
 	if(is.character(data)) { 
 		nameData <- data
 		if (!exists(nameData)) { stop(paste("The object '", nameData,"' does not exists.", sep = "")) }

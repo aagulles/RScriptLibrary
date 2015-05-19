@@ -1,8 +1,8 @@
 \name{LinearRegressionSelection}
 \alias{LinearRegressionSelection}
 \alias{LinearRegressionSelection.default}
-\title{Linear Regression Selection}
-\description{Linear Regression Selection}
+\title{LinearRegressionSelection}
+\description{LinearRegressionSelection}
 \usage{
 LinearRegressionSelection(data, depVar, indepVar, constant = TRUE, correlate = FALSE, 
                                      selection = "none", selectionStat = NULL,

@@ -36,10 +36,9 @@ Discriminant.default <- function(data, outputPath, vars, grpVar, descriptive = F
   
   # -- PRINTING CLASS LEVEL INFORMATION -- #
   ClassInformation(tempData[, c(grpVar, vars)], respvar = c(grpVar, vars))
-  cat("\n")
+  cat("\n\n")
   
   data <- na.omit(data[,c(vars,grpVar)])
-  if (nrow(data) == 0) { stop("Data does not contain any observations.") }
   
   #converts to factor the grouping variable
   data[,grpVar] <- factor(data[,grpVar]) 
@@ -50,14 +49,13 @@ Discriminant.default <- function(data, outputPath, vars, grpVar, descriptive = F
   #DESCRIPTIVE     
   if (descriptive) { 
     DescriptiveStatistics(data, var = vars, grp = NULL, statistics = c("n", "mean", "sd", "min", "max"))
-    #cat("\n")
+    cat("\n")
   }
   
   if (doNormalTest) {
     normTestOut <- mshapiro.test(t(data[,vars]))
-    #cat("MULTIVARIATE NORMALITY TEST\n")
-    #cat("---------------------------\n")
-    printTitle("MULTIVARIATE NORMALITY TEST")
+    cat("MULTIVARIATE NORMALITY TEST\n")
+    cat("---------------------------\n")
     normTestTable <- as.table(cbind("Wilk-Shapiro", formatC(normTestOut$statistic[[1]],digits = 4, format="f"), formatC(normTestOut$p[[1]], digits = 4, format="f")))
     rownames(normTestTable) <- ""
     colnames(normTestTable) <- c("Statistic", "Value", "Prob")
@@ -66,9 +64,8 @@ Discriminant.default <- function(data, outputPath, vars, grpVar, descriptive = F
   
   if (doBoxM) {
     boxMTestOut <- BoxsMTest(data, vars, grpVar, alpha = 0.05)
-    #cat("\nBOX'S M TEST FOR HOMOGENEITY OF COVARIANCE MATRICES\n")
-    #cat("---------------------------------------------------\n")
-    printTitle("BOX'S M TEST FOR HOMOGENEITY OF COVARIANCE MATRICES")
+    cat("\nBOX'S M TEST FOR HOMOGENEITY OF COVARIANCE MATRICES\n")
+    cat("---------------------------------------------------\n")
     
     if (!(is.nan(as.matrix(boxMTestOut$MBox)))) {
       if (length(boxMTestOut) == 4) {

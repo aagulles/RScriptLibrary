@@ -1,13 +1,4 @@
-# -------------------------------------------------------------------------------------
-# R-SCRIPT FOR STAR:
-# GoodnessOfFitTest: Perform Chi-Square Goodness of Fit test
-# Created by: Alaine A. Gulles for International Rice Research Institute
-# Modified by: Alaine A. Gulles 
-# -------------------------------------------------------------------------------------
-
-GoodnessOfFitTest <- function(data, var, colFreq = NULL, expected = NULL) UseMethod("GoodnessOfFitTest")
-     
-GoodnessOfFitTest.default <- function(data, var, colFreq = NULL, expected = NULL) {
+GoodnessOfFitTest <- function(data, var, colFreq = NULL, expected = NULL) {
 
 	if (is.character(data)) { data <- eval(parse(text = data)) } 
 	if (is.null(colFreq)) { tempObs <- table(data[,var]) 

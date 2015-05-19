@@ -1,8 +1,8 @@
 \name{printAOVTable}
 \alias{printAOVTable}
 \alias{printAOVTable.default}
-\title{Print the ANOVA Table}
-\description{Print the ANOVA Table}
+\title{title1}
+\description{desription1}
 \usage{
 printAOVTable(aovtable)
 }

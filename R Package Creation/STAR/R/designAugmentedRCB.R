@@ -1,170 +1,179 @@
 # -------------------------------------------------------------------------------------
 # designAugmentedRCB: Generate randomization for augmented design in RCBD.
 # Created by: Alaine A. Gulles 09.21.2010 for International Rice Research Institute
-# Modified by: Alaine A. Gulles 11.27.2014
-# Notes: Revised the old version. 
-# Features: Equal number of rows per block
-#           Block layout can be determine by the user
+# Modified by: Alaine A. Gulles 04.10.2013
 # -------------------------------------------------------------------------------------
 
-designAugmentedRCB <- function(numCheck, numNew, trmtName = NULL, r = 2, trial = 1, 
-                               rowPerBlk, numFieldRow, serpentine = FALSE, 
-                               trmtLabel = NULL, checkTrmt = NULL, newTrmt = NULL, 
-                               file = NULL) UseMethod("designAugmentedRCB")
+designAugmentedRCB <- function(checkTrmt, newTrmt, r = 2, trial = 1, numFieldRow = 2, serpentine = FALSE, factorName = NULL, 
+                               display = TRUE, file = NULL) UseMethod("designAugmentedRCB")
 
-designAugmentedRCB.default <- function(numCheck, numNew, trmtName = NULL, r = 2, trial = 1, 
-                                       rowPerBlk, numFieldRow, serpentine = FALSE, 
-                                       trmtLabel = NULL, checkTrmt = NULL, newTrmt = NULL, 
-                                       file = NULL) {
+designAugmentedRCB.default <- function(checkTrmt, newTrmt, r = 2, trial = 1, numFieldRow = 2, serpentine = FALSE, factorName = NULL, 
+                                       display = TRUE, file = NULL) {
      
-     # check user input
-     # -- check the number of replicates
-     if (r < 2) { stop("The number of replicates should be greater than or equal to 2.") }
+     if (length(checkTrmt) == 1) { checkTrmt <- paste("check",1:checkTrmt, sep = "") }
+     if (length(newTrmt) == 1)   { newTrmt <- paste("new",1:newTrmt, sep = "") }
      
-     # -- determine if the number of elements in checkTrmt/newTrmt is equal to numCheck/numNew
-     withCheckTrmtEntry <- FALSE
-     withNewTrmtEntry <- FALSE
-     if (is.null(checkTrmt)) { checkTrmt <- paste("check",1:numCheck, sep = "")
+     # CHECK
+     if (r > numFieldRow) { stop("Too few rows for blocking.") }
+     totalNumPlots <- (r * length(checkTrmt)) + length(newTrmt)
+     if (totalNumPlots%%numFieldRow != 0) { stop("Number of field rows must divide number of plots.") }
+     errorDf <- (r - 1)*(length(checkTrmt) - 1)
+     
+     numPlotsWithinBlk <- totalNumPlots/r
+     numRowsWithinBlk <- floor(numFieldRow/r)
+     numPlotsWithinRow <- totalNumPlots/numFieldRow
+     blkWithAddlRow <- numFieldRow - (r * numRowsWithinBlk)
+     
+     if ((numRowsWithinBlk * numPlotsWithinRow) < length(checkTrmt)) { stop("One or more blocks cannot accommodate the number of replicated treatments.") } 
+     
+     plan <- list()
+     plotNum <- list()
+     
+     randomize <- NULL
+     if (r == numFieldRow || blkWithAddlRow == 0) {
+          tempTrmt <- c(checkTrmt, newTrmt[1:(numPlotsWithinBlk - length(checkTrmt))])
+          capture.output(randomize <- designRCBD(list(temp = tempTrmt), r, trial, numFieldRow = r, rowPerBlk = 1, display = FALSE)$fieldbook)
+          
+          randomNewTrmt <- NULL
+          for (i in (1:trial)) { randomNewTrmt <- c(randomNewTrmt, sample(newTrmt, length(newTrmt), replace = FALSE)) }
+          randomize[,"temp"] <- as.character(randomize[,"temp"])
+          randomize[randomize[,"temp"]%in%as.character(newTrmt), "temp"] <- randomNewTrmt
+          randomize[,"temp"] <- factor(randomize[,"temp"])
+          randomize[,"FieldRow"] <- rep((1:numFieldRow), each = numPlotsWithinRow)
+          randomize[,"FieldCol"] <- 1:numPlotsWithinRow
      } else {
-          withCheckTrmtEntry <- TRUE
-          if (length(checkTrmt) != numCheck) { stop("Error: The number of elements of the arg 'checkTrmt' is not equal to numCheck.") } 
-          #checkTrmt <- as.character(sample(as.character(checkTrmt), numCheck))
+          tempTrmt <- c(checkTrmt, newTrmt[1:(((numRowsWithinBlk + 1) * numPlotsWithinRow) - length(checkTrmt))])
+          if (blkWithAddlRow >= 2) { capture.output(randomize <- designRCBD(list(temp = tempTrmt), blkWithAddlRow, trial, numFieldRow = blkWithAddlRow, rowPerBlk = 1, display = FALSE)$fieldbook)
+          } else {
+               capture.output(randomize <- designRCBD(list(temp = tempTrmt), r = 2, trial, numFieldRow = 2, rowPerBlk = 1, display = FALSE)$fieldbook)
+               randomize <- randomize[randomize[,"Block"] == 1,]
+          }
+          randomize[,"FieldRow"] <- rep(1:((numRowsWithinBlk+1)*blkWithAddlRow), each = numPlotsWithinRow)
+          randomize[,"FieldCol"] <- 1:numPlotsWithinRow
+          
+          if ((numRowsWithinBlk * numPlotsWithinRow) == length(checkTrmt)) { tempTrmt <- checkTrmt
+          } else { tempTrmt <- c(checkTrmt, newTrmt[1:((numRowsWithinBlk * numPlotsWithinRow) - length(checkTrmt))]) }
+          #tempTrmt <- c(checkTrmt, newTrmt[1:((numRowsWithinBlk * numPlotsWithinRow) - length(checkTrmt))])
+          if ((r - blkWithAddlRow) >= 2) { capture.output(tempDesign <- designRCBD(list(temp = tempTrmt), (r-blkWithAddlRow), trial, numFieldRow = (r-blkWithAddlRow), rowPerBlk = 1, display = FALSE)$fieldbook)
+          } else {
+               capture.output(tempDesign <- designRCBD(list(temp = tempTrmt), r = 2, trial, numFieldRow = 2, rowPerBlk = 1, display = FALSE)$fieldbook)
+               tempDesign <- tempDesign[tempDesign[,"Block"] == 1,]
+          }
+          tempDesign[,2] <- factor(as.numeric(tempDesign[,2]) + blkWithAddlRow)
+          tempDesign[,"FieldRow"] <- rep(((numRowsWithinBlk+1)*blkWithAddlRow+1):numFieldRow, each = numPlotsWithinRow)
+          tempDesign[,"FieldCol"] <- 1:numPlotsWithinRow
+          tempDesign[,"PlotNum"] <- as.numeric(paste(tempDesign$Block, paste(c(rep(0, max(nchar(1:length(tempTrmt))))), collapse = ""), sep = ""))+1:length(tempTrmt)          
+          randomize <- rbind(randomize, tempDesign)
+          
+          randomize <- randomize[order(randomize$Trial, randomize$Block),]
+          rownames(randomize) <- 1:nrow(randomize)
+          
+          randomNewTrmt <- NULL
+          for (i in (1:trial)) { randomNewTrmt <- c(randomNewTrmt, sample(newTrmt, length(newTrmt), replace = FALSE)) }
+          
+          randomize[,"temp"] <- as.character(randomize[,"temp"])
+          randomize[randomize[,"temp"]%in%as.character(newTrmt), "temp"] <- randomNewTrmt
+          randomize[,"temp"] <- factor(randomize[,"temp"])
      }
      
-     if (is.null(newTrmt)) { newTrmt <- paste("new",1:numNew, sep = "")
-     } else {
-          withNewTrmtEntry <- TRUE
-          if (length(newTrmt) != numNew) { stop("Error: The number of elements of the arg 'newTrmt' is not equal to numNew.") }          
-          #newTrmt <- as.character(sample(as.character(newTrmt), numNew))
+     tempPlan <- NULL
+     for (i in (1:trial)) {
+          plan[[i]] <- matrix(randomize[randomize[,1] == i,3], nrow = numFieldRow, ncol = numPlotsWithinRow, byrow = TRUE)
+          plotNum[[i]] <- matrix(randomize[randomize[,1] == i,"PlotNum"], nrow = numFieldRow, ncol = numPlotsWithinRow, byrow = TRUE)
+          
+          if (serpentine && r != numFieldRow) {
+               tempPlotNum <- plotNum[[i]]
+               if (r == numFieldRow || blkWithAddlRow == 0) {
+                    for (j in seq(1, numFieldRow, numRowsWithinBlk)) {
+                         indexUp <- j + numRowsWithinBlk - 1
+                         for (k in seq(j+1, indexUp, 2)) { 
+                              #plan[[i]][k, ] <- plan[[i]][k,] <- rev(plan[[i]][k,]) 
+                              plotNum[[i]][k,] <- rev(plotNum[[i]][k,]) 
+                         }
+                    }
+                    
+               } else {
+                    for (j in seq(1, ((numRowsWithinBlk+1)*blkWithAddlRow), numRowsWithinBlk+1)) {
+                         indexUp <- j + numRowsWithinBlk
+                         for (k in seq(j+1, indexUp, 2)) { 
+                              #plan[[i]][k, ] <- plan[[i]][k,] <- rev(plan[[i]][k,]) 
+                              plotNum[[i]][k,] <- rev(plotNum[[i]][k,]) 
+                         }
+                    } 
+                    if (numRowsWithinBlk > 1) {
+                         for (j in seq(((numRowsWithinBlk+1)*blkWithAddlRow)+1, numFieldRow, numRowsWithinBlk)) {
+                              if (numRowsWithinBlk%%2 == 0) { indexUp <- j + numRowsWithinBlk
+                              } else { indexUp <- j + numRowsWithinBlk - 1 }
+                              for (k in seq(j+1, indexUp, 2)) { 
+                                   #plan[[i]][k, ] <- plan[[i]][k,] <- rev(plan[[i]][k,])
+                                   plotNum[[i]][k,] <- rev(plotNum[[i]][k,]) 
+                              }
+                         } 
+                    }
+               }
+               tempPlan <- rbind(tempPlan, cbind(Trial = i, 
+                                                 merge(merge(as.data.frame.table(plan[[i]]), 
+                                                             as.data.frame.table(plotNum[[i]]), by.x = c("Var1", "Var2"), by.y = c("Var1", "Var2")),
+                                                       as.data.frame.table(tempPlotNum), by.x = c("Var1", "Var2"), by.y = c("Var1", "Var2"))))
+          } ## end if-else stmt (if (serpentine && r != numFieldRow))
+          dimnames(plan[[i]]) <- list(paste("FieldRow", 1:numFieldRow, sep =""), paste("FieldCol", 1:numPlotsWithinRow, sep = ""))
+          dimnames(plotNum[[i]]) <- dimnames(plan[[i]])
+     } ## end for stmt
+     
+     if (serpentine && r != numFieldRow && !is.null(tempPlan)) {
+          tempPlan[,"Var1"] <- as.numeric(tempPlan[,"Var1"])
+          tempPlan[,"Var2"] <- as.numeric(tempPlan[,"Var2"])
+          randomize <- merge(randomize, tempPlan, by.x = c("Trial", "PlotNum", "FieldRow", "FieldCol", "temp"), by.y = c("Trial","Freq", "Var1", "Var2", "Freq.x"))
+          randomize <- randomize[, c("Trial", "Block", "temp", "Freq.y", "FieldRow", "FieldCol")]
      }
      
-     # --- randomize the checkTrmt and newTrmt
-     #checkTrmt <- sample(checkTrmt, numCheck, replace = FALSE)
-     #newTrmt <- sample(newTrmt, numNew, replace = FALSE)
+     if (!is.null(factorName) && is.valid.name(trimStrings(factorName[1]))) {
+          colnames(randomize) <- c("Trial", "Block", factorName, "PlotNum", "FieldRow", "FieldCol")     
+     } else { colnames(randomize) <- c("Trial", "Block", "Treatment", "PlotNum", "FieldRow", "FieldCol") }
+     names(plan) <- paste("Trial", 1:trial, sep = "")
+     names(plotNum) <- paste("Trial", 1:trial, sep = "")
      
-     numTrmt <- numCheck + numNew            # -- determine the total number of treatment in the experiment
-     numNewPerBlk <- numNew/r                # -- determine the number of newTrmt per blk
-     numPlots <- (numCheck * r) + numNew     # -- determine the total number of experimental units 
-     errorDF <- (r - 1) * (length(checkTrmt) - 1)
-
-     #if (numPlots %% numFieldRow != 0)
-     numFieldCol <- numPlots/numFieldRow     # -- determine the number of columns in the design
+     if (display) {
+          cat(toupper("Design Properties:"),"\n",sep = "")
+          cat("\t","Augmented Randomized Complete Block Design (Augmented RCBD)","\n\n",sep = "") 
+          cat(toupper("Design Parameters:"),"\n",sep = "")
+          cat("\t","Number of Trials = ", trial, "\n",sep = "")
+          cat("\t","Number of Replicated Treatments = ", length(checkTrmt), "\n",sep = "")
+          cat("\t","Levels of Replicated Treatments = ", sep = "")
+          if (length(checkTrmt) <= 5) { cat(paste(checkTrmt, collapse = ", ", sep = ""), "\n", sep = "")
+          } else {
+               cat(paste(checkTrmt[1:3],collapse = ", ", sep = ""), sep = "")
+               cat(", ..., ",checkTrmt[length(checkTrmt)], "\n",sep = "")
+          }
+          cat("\t","Number of Blocks = ", r, "\n",sep = "")
+          cat("\t","Number of Unreplicated Treatments = ", length(newTrmt), "\n",sep = "")
+          cat("\t","Levels of UnReplicated Treatments = ", sep = "")
+          
+          if (length(newTrmt) <= 5) { cat(paste(newTrmt, collapse = ", ", sep = ""), "\n", sep = "")
+          } else {
+               cat(paste(newTrmt[1:3],collapse = ", ", sep = ""), sep = "")
+               cat(", ..., ",newTrmt[length(newTrmt)], "\n",sep = "")
+          }
+               
+          cat("\t","Number of Field Rows = ", numFieldRow,"\n\n", sep = "")
+          if (errorDf < 12) {
+               cat("WARNING: Too few error df.","\n\n")
+          }
+          #cat("Results of Randomization:\n")
+          #printDataFrame(randomize)
+     }
      
-     #if (numPlots %% r != 0)
-     numPlotPerBlk <- numPlots/r            # -- assume equal number of plots per block
-     colPerBlk <- numPlotPerBlk/rowPerBlk   # -- determine the number of columns per block
-     
-     # -- determine the orientation of blocks
-     
-     numBlkRow <- numFieldRow/rowPerBlk
-     numBlkCol <- numFieldCol/colPerBlk
-     if (numBlkRow * numBlkCol != r) { stop("?Number of field rows not divisible by the number of rows per block.") }
-     
-     if (!is.null(file)) { 
+     if (!is.null(file)) {
           tempFile <- strsplit(file, split = "\\.")[[1]]
           tempExt <- tolower(tempFile[length(tempFile)])
           if (tempExt != "csv"){ if(tempExt != "rda") tempExt <- "csv" } 
           newFile <- paste(tempFile[1:length(tempFile)-1], collapse = ".", sep = "")
-     }
-     
-     # generate randomization and fieldbook
-     capture.output(result <- designRCBD(generate = list(EntryNo = 1:numPlotPerBlk), r, trial, numFieldRow, rowPerBlk, serpentine, display = FALSE))
-     
-     fbook <- result$fieldbook
-     if (is.factor(fbook[,"EntryNo"])) { fbook[,"EntryNo"] <- as.numeric(fbook[,"EntryNo"]) }
-     #fbook[,"ID"] <- as.character(fbook[,"EntryNo"])
-     fbook[,"ID"] <- NA
-     
-     #-- recoding the entry number for augmented design in RCB
-     checkEntryNoOld <- (numPlotPerBlk-numCheck+1):numPlotPerBlk
-     checkEntryNoNew <- sample((numTrmt-numCheck+1):numTrmt, numCheck)
-     for (i in (1:length(checkEntryNoOld))) { 
-          fbook[fbook[,"EntryNo"] == checkEntryNoOld[i], "ID"] <- checkTrmt[i]
-          fbook[fbook[,"EntryNo"] == checkEntryNoOld[i], "EntryNo"] <- checkEntryNoNew[i] 
-     }
-     newEntryNoOld <- 1:numNewPerBlk
-     if (withNewTrmtEntry) { newEntryNoNew <- sample(1:numNew, numNew)        
-     } else { newEntryNoNew <- 1:numNew }
-     #newEntryNoNew <- sample(1:numNew, numNew)
-     if (trial > 1) { for (i in (2:trial)) { 
-          newEntryNoNew <- c(newEntryNoNew, newEntryNoNew) 
-          newTrmt <- c(newTrmt, newTrmt)
-     }}
-     fbook <- fbook[order(fbook$Trial, fbook$EntryNo),]
-     fbook[fbook[,"EntryNo"] %in% newEntryNoOld, "ID"] <- newTrmt
-     fbook[fbook[,"EntryNo"] %in% newEntryNoOld, "EntryNo"] <- newEntryNoNew
-     fbook[,"EntryNo"] <- as.factor(fbook[,"EntryNo"]) 
-     fbook[,"ID"] <- as.factor(fbook[,"ID"])
-     
-     #-- construct the new layout for the augmented design in RCB
-     fbook <- fbook[order(fbook$Trial, fbook$FieldRow, fbook$FieldCol),]
-     result$layout1 <- list()
-     for (i in (1:trial)) {
-          result$layout[[i]] <- matrix(fbook[fbook[,"Trial"] == i,"EntryNo"],
-                                       nrow = nrow(result$plotNum), 
-                                       ncol = ncol(result$plotNum), 
-                                       byrow = TRUE,
-                                       dimnames = dimnames(result$plotNum))
-
-          result$layout1[[i]] <- matrix(fbook[fbook[,"Trial"] == i,"ID"],
-                                       nrow = nrow(result$plotNum), 
-                                       ncol = ncol(result$plotNum), 
-                                       byrow = TRUE,
-                                       dimnames = dimnames(result$plotNum))
-          
-          
-     }
-     fbook <- fbook[,c("Trial", "Rep", "ID", "EntryNo", "PlotNum", "FieldRow", "FieldCol")]
-     
-     # rename the fbook if user supply a trmtName and trmtLabel
-     if (!is.null(trmtName))  { names(fbook)[match("EntryNo", names(fbook))] <- trmtName  }
-     if (!is.null(trmtLabel)) { names(fbook)[match("ID", names(fbook))] <- trmtLabel  }
-     
-     result$fieldbook <- fbook[order(fbook$Trial, fbook$PlotNum),]
-     
-     # printing of the layout
-     for (i in (1:trial)) {
-          if (!is.null(file)) { png(filename = paste(newFile, "Layout_Trial",i,".png",sep = ""))  }
-          des.plot(result$layout[[i]], seq(numNew), col = 8, new = TRUE, label = TRUE, chtdiv = 3,
-                   bwd = 4, bcol = 4, cstr = paste("Layout for Trial ",i,":\n\nFieldCol", sep = ""), rstr = "FieldRow")
-          des.plot(result$layout[[i]], seq(numCheck)+numNew, col = 7, new = FALSE, label = TRUE, chtdiv = 3,
-                   bdef = cbind(rowPerBlk, colPerBlk), bwd = 4)
-          #des.plot(result$layout[[i]], seq(numCheck)+numNew, col = 7, new = FALSE, label = TRUE, chtdiv = 3)
-          #des.plot(result$layout[[i]], bdef = cbind(rowPerBlk, colPerBlk), col = 7, bwd = 4, new = FALSE, chtdiv = 3)
-          if (!is.null(file)) { dev.off() }  
-     }
-     
-     cat(toupper("Design Properties:"), "\n", sep = "")
-     cat("\t", "Augmented Randomized Complete Block Design (Augmented RCBD)", "\n\n", sep = "")
-     cat(toupper("Design Parameters"), "\n", sep = "")
-     cat("\t", "Number of Trials = ", trial, "\n", sep = "")
-     cat("\t", "Number of Replicated Treatments = ", numCheck, "\n", sep = "")
-     cat("\t", "Levels of Replicated Treatments = ", sep = "")
-     if (numCheck <= 5) { cat(paste(checkTrmt, collapse = ", ", sep = ""), "\n", sep = "") 
+          newFile <- paste(newFile, tempExt, sep = ".")
+          if (tempExt == "csv") { write.csv(randomize, file = newFile, row.names = FALSE)
+          } else { save(randomize, file = newFile) }
      } else {
-          cat(paste(checkTrmt[1:3], collapse = ", ", sep = ""), sep = "") 
-          cat(", ..., ", checkTrmt[numCheck], "\n", sep = "") 
+          cat("Results of Randomization:\n")
+          printDataFrame(randomize)
      }
-     cat("\t", "Number of Replicates = ", r, "\n", sep = "")
-     cat("\t", "Number of UnReplicated Treatments = ", numNew, "\n", sep = "")
-     cat("\t", "Levels of UnReplicated Treatments = ", sep = "")
-     if (numNew <= 5) { cat(paste(newTrmt, collapse = ", ", sep = ""), "\n", sep = "") 
-     } else {
-          cat(paste(newTrmt[1:3], collapse = ", ", sep = ""), sep = "") 
-          cat(", ..., ", newTrmt[numNew], "\n\n", sep = "") 
-     }
-     cat("\t", "Number of Field Rows = ", numFieldRow,"\n", sep = "")
-     cat("\t", "Number of Field Columns = ", numFieldCol, "\n\n", sep = "")
-     if (errorDF < 12) { cat("WARNING: Too few error df.","\n\n") }
-     
-     # saving the fieldbook to a file
-     if (!is.null(file)) {
-          if (tempExt == "csv") { write.csv(result$fieldbook, file = paste(newFile, tempExt, sep = "."), row.names = FALSE)
-          } else { save(result$fieldbook, file = paste(newFile, tempExt, sep = ".")) }
-     } else {
-          cat("Results of Randomization: \n")
-          printDataFrame(result$fieldbook)
-     }
-   
-     return(result)
+     return(invisible(list(fieldbook = randomize, layout = plan, plotNum = plotNum)))
 }

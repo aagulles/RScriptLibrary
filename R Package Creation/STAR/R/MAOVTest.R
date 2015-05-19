@@ -38,10 +38,7 @@ MAOVTest.default <- function(data, outputPath, yVars, factorVar, repVar = NULL, 
   ClassInformation(tempData[, c(factorVar, repVar, yVars)], respvar = c(factorVar, repVar, yVars))
   cat("\n\n")
   
-  data <- na.omit(data[,c(yVars,factorVar,repVar)]) 
-  
-  #check if data is not empty
-  if (nrow(data) == 0) { stop("Data set does not have any observation.") }
+  data <- na.omit(data[,c(yVars,factorVar,repVar)])  
   
   #converts to factor the grouping variable(s)
   if (!is.null(factorVar)) { data[,factorVar] <- factor(data[,factorVar]) }  
@@ -69,9 +66,8 @@ MAOVTest.default <- function(data, outputPath, yVars, factorVar, repVar = NULL, 
   
   if (doNormalTest) {
     normTestOut <- mshapiro.test(t(data[,yVars]))
-    #cat("MULTIVARIATE NORMALITY TEST\n") # hide by AAGulles 05.06.2015
-    #cat("---------------------------\n") # hide by AAGulles 05.06.2015
-    printTitle("MULTIVARIATE NORMALITY TEST") # added by AAGulles 05.06.2015
+    cat("MULTIVARIATE NORMALITY TEST\n")
+    cat("---------------------------\n")
     normTestTable <- as.table(cbind("Wilk-Shapiro", formatC(normTestOut$statistic[[1]],digits = 4, format="f"), formatC(normTestOut$p[[1]], digits = 4, format="f")))
     rownames(normTestTable) <- ""
     colnames(normTestTable) <- c("Statistic", "Value", "Prob")
@@ -80,9 +76,8 @@ MAOVTest.default <- function(data, outputPath, yVars, factorVar, repVar = NULL, 
   
   if (doBoxM) {
     boxMTestOut <- BoxsMTest(data, yVars, factorVar, alpha = 0.05)
-    #cat("\n\nBOX'S M TEST FOR HOMOGENEITY OF COVARIANCE MATRICES\n") # hide by AAGulles 05.06.2015
-    #cat("---------------------------------------------------\n") # hide by AAGulles 05.06.2015
-    printTitle("BOX'S M TEST FOR HOMOGENEITY OF COVARIANCE MATRICES") # added by AAGulles 05.06.2015
+    cat("\n\nBOX'S M TEST FOR HOMOGENEITY OF COVARIANCE MATRICES\n")
+    cat("---------------------------------------------------\n")
     
     if (!(is.nan(as.matrix(boxMTestOut$MBox)))) {
       if (length(boxMTestOut) == 4) {
@@ -108,9 +103,8 @@ MAOVTest.default <- function(data, outputPath, yVars, factorVar, repVar = NULL, 
     chiSqDf <- p*(p-1)/2
     pValue = pchisq(chiSqVal, chiSqDf, lower.tail = F)
     
-    #cat("\n\nBARTLETT'S SPHERICITY TEST\n") # hide by AAGulles 05.06.2015
-    #cat("--------------------------\n") # hide by AAGulles 05.06.2015
-    printTitle("BARTLETT'S SPHERICITY TEST") # added by AAGulles 05.06.2015
+    cat("\n\nBARTLETT'S SPHERICITY TEST\n")
+    cat("--------------------------\n")
     sphereTestTable <- as.table(cbind("Chi-Square", formatC(chiSqVal, digits = 4, format="f"), formatC(chiSqDf, digits = 0, format="f"), formatC(pValue, digits = 4, format="f")))
     rownames(sphereTestTable) <- ""
     colnames(sphereTestTable) <- c("Statistic", "Value", "Df", "Prob")
@@ -126,9 +120,8 @@ MAOVTest.default <- function(data, outputPath, yVars, factorVar, repVar = NULL, 
 
   maov  <- manova(linmodel, data = data)
 
-  #cat("\n\nSUM OF SQUARES AND CROSS PRODUCTS FOR THE HYPOTHESIS \n") # hide by AAGulles 05.06.2015
-  #cat("----------------------------------------------\n") # hide by AAGulles 05.06.2015
-  printTitle("SUM OF SQUARES AND CROSS PRODUCTS FOR THE HYPOTHESIS") # added by AAGulles 05.06.2015
+  cat("\n\nSUM OF SQUARES AND CROSS PRODUCTS FOR THE HYPOTHESIS \n")
+  cat("----------------------------------------------\n")
 
   cat(paste("\nTERM:", factorVar, "\n\n"))
   trtSS = summary(maov)$SS[[factorVar]]
@@ -143,9 +136,8 @@ MAOVTest.default <- function(data, outputPath, yVars, factorVar, repVar = NULL, 
       write.csv(repSS, paste(outputPath,"/", repVar, "SS.csv", sep = ""))
   }  
   
-  #cat("\n\nSUM OF SQUARES AND CROSS PRODUCTS FOR ERROR\n") # hide by AAGulles 05.06.2015
-  #cat("-------------------------------------\n") # hide by AAGulles 05.06.2015
-  printTitle("SUM OF SQUARES AND CROSS PRODUCTS FOR ERROR") # added by AAGulles 05.06.2015
+  cat("\n\nSUM OF SQUARES AND CROSS PRODUCTS FOR ERROR\n")
+  cat("-------------------------------------\n")
   
   errSS = summary(maov)$SS$Residuals
   print(errSS)
@@ -155,9 +147,8 @@ MAOVTest.default <- function(data, outputPath, yVars, factorVar, repVar = NULL, 
   if (is.null(repVar)) { design = "CRD"
   } else design = "RCBD"
   
-  #cat(paste("\n\nMULTIVARIATE ANALYSIS OF VARIANCE IN ", design, "\n", sep = "")) # hide by AAGulles 05.06.2015
-  #cat("-----------------------------------------\n") # hide by AAGulles 05.06.2015
-  printTitle(paste("MULTIVARIATE ANALYSIS OF VARIANCE IN ", design, sep = "")) # added by AAGulles 05.06.2015
+  cat(paste("\n\nMULTIVARIATE ANALYSIS OF VARIANCE IN ", design, "\n", sep = ""))
+  cat("-----------------------------------------\n")
 
   print(summary(maov, test = testStat))
                       

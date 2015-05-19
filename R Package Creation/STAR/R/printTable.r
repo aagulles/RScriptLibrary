@@ -1,10 +1,4 @@
-# --------------------------------------------------------------
-# Created by AAGulles for International Rice Research Institute
-# --------------------------------------------------------------
-
-printTable <- function(table) UseMethod("printTable")
-
-printTable.default <- function(table) {
+printTable <- function(table) {
 	if(!is.table(table)) { stop("The argument 'table' should be a class of table.") }
 	#if (length(dimnames(table)) != 2)) { stop("The function works only for n X r") }
 

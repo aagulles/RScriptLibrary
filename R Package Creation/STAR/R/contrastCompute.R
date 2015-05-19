@@ -11,9 +11,7 @@
 #contrastOption <- list(factor = c("das","depth"), type = c("control","control"), level = c("14","5"))
 #contrastOption <- list(factor = c("das","depth"), type = c("control","control"), level = c("14","5"))
 
-ContrastCompute <- function(data, aovTable, mymodel, mymodel2, contrast.option) UseMethod("ConstrastCompute")
-
-ContrastCompute.default <- function(data, aovTable, mymodel, mymodel2, contrast.option) {
+ContrastCompute <- function(data, aovTable, mymodel, mymodel2, contrast.option) {
 	
 	cm <- list()
 	cm.label1 <- NULL

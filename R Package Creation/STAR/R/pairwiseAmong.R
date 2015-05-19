@@ -1,12 +1,4 @@
-# ----------------------------------------------------------------------
-# pairwiseAmong: Function for displaying the mean comparison
-# Created by: Alaine A. Gulles for International Rice Research Institute
-# Modified by: Alaine A. Gulles 
-# ----------------------------------------------------------------------
-
-pairwiseAmong <- function(data, respvar, typeTest, trmt, dfError, MSError, siglevel) UseMethod("pairwiseAmong")
-
-pairwiseAmong.default <- function(data, respvar, typeTest, trmt, dfError, MSError, siglevel) {
+pairwiseAmong <- function(data, respvar, typeTest, trmt, dfError, MSError, siglevel) {
      options(width = 5000)
      if (nlevels(data[,trmt]) > 26) {
           command <- paste(typeTest, ".test(data['",respvar,"'], data['",trmt,"'], dfError, MSError, alpha = ", siglevel,", group = FALSE, pwOrder = 'trmt')", sep = "")

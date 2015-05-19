@@ -1,8 +1,8 @@
 \name{ToLong}
 \alias{ToLong}
 \alias{ToLong.default}
-\title{Reshape to Long format}
-\description{Reshape from wide to long format}
+\title{title1}
+\description{description1}
 \usage{
 ToLong(data, varying, timevar, vnames, idvar, label = NULL)
 }

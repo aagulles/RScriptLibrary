@@ -1,8 +1,8 @@
 \name{designLSD}
 \alias{designLSD}
 \alias{designLSD.default}
-\title{Randomization for Latin Square Design}
-\description{Randomization for Latin Square Design}
+\title{title1}
+\description{description1}
 \usage{
 designLSD(generate, trial = 1, serpentine = FALSE, display = TRUE, file = NULL)
 }

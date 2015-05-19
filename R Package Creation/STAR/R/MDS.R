@@ -129,11 +129,11 @@ MDS.default <- function(data, outputPath, inputType = c("raw", "distMat"), vars 
         if (tolower(distNonmet) == "bray") {
           d <- vegdist(tempData[,vars], method = "bray")
         } else d <- dist(tempData[,vars], method = tolower(distNonmet))
-  	    capture.output(fit <- monoMDS(dist = d, k=as.numeric(dimnum)))
+  	    capture.output(fit <- monoMDS(d, k=as.numeric(dimnum)))
 #       capture.output(fit <- metaMDS(tempData[, vars], distance = tolower(distNonmet), k=as.numeric(dimnum), model="global"))
   	  } else {
           d <- as.dist(tempData[,-1])
-  	      capture.output(fit <- monoMDS(dist = d, k=as.numeric(dimnum)))
+  	      capture.output(fit <- monoMDS(d=d, k=as.numeric(dimnum)))
 ##        capture.output(fit <- metaMDS(tempData[,-1], distance = NULL, k=as.numeric(dimnum), model="global", autotransform = FALSE, wascores = FALSE, noshare = FALSE))
 #       capture.output(fit <- metaMDS(tempData2, distance = distNonmetric, k=as.numeric(dimnum), model="global"))
   	  }

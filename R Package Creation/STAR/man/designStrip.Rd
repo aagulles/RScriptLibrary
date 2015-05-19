@@ -1,8 +1,8 @@
 \name{designStrip}
 \alias{designStrip}
 \alias{designStrip.default}
-\title{Randomization for Strip Plot design}
-\description{Randomization for Strip Plot design}
+\title{title1}
+\description{description1}
 \usage{
 designStrip(vertical, horizontal, sub = NULL, ssub = NULL, r = 2, trial = 1, numFieldRow, 
                         rowPerMain, rowPerSub, serpentine, display = TRUE, file = NULL)

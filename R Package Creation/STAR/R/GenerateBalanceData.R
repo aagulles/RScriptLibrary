@@ -6,9 +6,7 @@
 # Modified by: Alaine A. Gulles 07.19.2012
 # -------------------------------------------------------------------------------
 
-GenerateBalanceData <- function(data, respvar, factor, blk, design) UseMethod("GenerateBalanceData")
-
-GenerateBalanceData.default <- function(data, respvar, factor, blk, design) {
+GenerateBalanceData <- function(data, respvar, factor, blk, design) {
 	if (is.character(data)) { data <- eval(parse(text = data)) } 
 	if (!is.data.frame(data)) { stop("The object must be a data frame.") }
 

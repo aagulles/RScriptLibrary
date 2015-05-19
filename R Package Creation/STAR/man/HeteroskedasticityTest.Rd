@@ -1,8 +1,10 @@
 \name{HeteroskedasticityTest}
 \alias{HeteroskedasticityTest}
 \alias{HeteroskedasticityTest.default}
-\title{Heteroskedasticity Test}
-\description{Perform equality of variances using bartlett's and levene's test}
+\title{title1}
+\description{
+  description1
+}
 \usage{
   HeteroskedasticityTest(data, var, grp, method = c("bartlett"))
 }

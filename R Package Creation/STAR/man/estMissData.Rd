@@ -1,8 +1,7 @@
 \name{estMissData}
 \alias{estMissData}
-\alias{estMissData.default}
-\title{Estimate Missing Data}
-\description{Estimate Missing Data}
+\title{SAMPLE TITLE}
+\description{SAMPLE DESCRIPTION}
 \usage{
 estMissData(design, data, respvar, factor1, factor2, factor3, factor4, rep1, rep2)
 }

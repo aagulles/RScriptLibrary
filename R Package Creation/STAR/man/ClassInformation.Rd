@@ -2,7 +2,7 @@
 \alias{ClassInformation}
 \alias{ClassInformation.default}
 \title{Class Information}
-\description{Class Information}
+\description{description1}
 \usage{
 ClassInformation(data, respvar = NULL)
 }
