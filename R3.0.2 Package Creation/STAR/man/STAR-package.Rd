@@ -12,8 +12,8 @@
 Package: \tab STAR\cr
 Type: \tab Package\cr
 Version: \tab 2.0.2\cr
-Date: \tab 2014-09-03\cr
-Depends: \tab R (>= 3.0.2) \cr
+Date: \tab 2015-04-27\cr
+Depends: \tab R (>= 3.0.2), leaps, DiGGer, cluster, ade4, vegan, fitdistrplus \cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

@@ -1,8 +1,8 @@
 \name{GenerateFactor}
 \alias{GenerateFactor}
 \alias{GenerateFactor.default}
-\title{title1}
-\description{description}
+\title{GenerateFactor}
+\description{GenerateFactor}
 \usage{
 GenerateFactor(generate, times = 1)
 }
