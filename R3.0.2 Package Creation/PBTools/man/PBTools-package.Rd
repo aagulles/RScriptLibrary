@@ -9,7 +9,7 @@
 Package: \tab PBTools\cr
 Type: \tab Package\cr
 Version: \tab 1.5\cr
-Date: \tab 2015-03-10\cr
+Date: \tab 2015-04-23\cr
 Depends: \tab R (>= 3.0.2), lme4, nlme, multcomp, stringr, doBy, splines, MASS, Matrix, lattice, leaps, plotrix, DiGGer, qtl, qtlbim, ape, gdata\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr

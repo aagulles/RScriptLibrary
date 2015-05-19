@@ -63,8 +63,6 @@ compareControlContrast.default <- function(model, control, alpha = 0.05) {
      numLevels <- length(trmtLevels)
      
      contrast1 <- contrMat(tempLevels, type = "Dunnett", base = as.numeric(match(control, names(tempLevels))))     
-     #write.csv(contrast1, file = "contrasttry.csv")
-     #cat("\n")
      result <- contrastCompute(model, contrast1, alpha)
      return(result)
 }

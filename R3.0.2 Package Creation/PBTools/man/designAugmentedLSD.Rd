@@ -6,16 +6,18 @@
  Randomization for augmented design in Latin Square
 }
 \usage{
-designAugmentedLSD(checkTrmt, newTrmt, trial = 1, numFieldRow, serpentine = FALSE, factorName = NULL, display = TRUE, file = NULL)
+designAugmentedLSD(numCheck, numNew, trmtName = NULL, trial = 1, numFieldRow, serpentine = FALSE, trmtLabel = NULL, checkTrmt = NULL, newTrmt = NULL, file = NULL)
 }
 \arguments{
-  \item{checkTrmt}{a}
-  \item{newTrmt}{a}
+  \item{numCheck}{a}
+  \item{numNew}{a}
+  \item{trmtName}{a}
   \item{trial}{a}
   \item{numFieldRow}{a}
   \item{serpentine}{a}
-  \item{factorName}{a}
-  \item{display}{a}
+  \item{trmtLabel}{a}
+  \item{checkTrmt}{a}
+  \item{newTrmt}{a}
   \item{file}{a}
 }
 \author{
