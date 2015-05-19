@@ -1,5 +1,6 @@
 \name{printLayout}
 \alias{printLayout}
+\alias{printLayout.default}
 \title{print layout}
 \description{print layout}
 \usage{

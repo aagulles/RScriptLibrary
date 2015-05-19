@@ -1,8 +1,8 @@
 \name{LinearRegressionAnalysis}
 \alias{LinearRegressionAnalysis}
 \alias{LinearRegressionAnalysis.default}
-\title{title1}
-\description{description1}
+\title{Linear Regression Analysis}
+\description{Linear Regression Analysis}
 \usage{
 LinearRegressionAnalysis(data, depVar, indepVar, constant = TRUE, statistics = TRUE, confInt = FALSE, confLevel = 0.95, covMatrix = FALSE, normality = NULL, heteroskedasticity = NULL, autoCorr = FALSE, VIF = FALSE, COOKS = FALSE, leverage = FALSE)
 }

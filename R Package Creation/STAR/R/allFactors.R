@@ -1,6 +1,8 @@
 # ------------------------------------------------------------------------------------------
 # Description: These functions return all factors of an integer
 # Source: http://stackoverflow.com/questions/6424856/r-function-for-returning-all-factors
+#
+# Researched by: Alaine Gulles
 # ------------------------------------------------------------------------------------------
 
 allFactors <- function(x) UseMethod("allFactors")

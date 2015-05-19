@@ -92,8 +92,10 @@ designLatinizedRowCol.default <- function(generate, r = 2, trial = 1, rowPerRep,
      
      dimnames(plotNum) <- dimnames(plan[[1]])
      names(plan) <- paste("Trial", 1:trial, sep = "")
-     randomize <- randomize[,c("Trial", "REP", "ID", "PlotNum", "ROW", "RANGE")]
-     names(randomize) <- c("Trial", "Rep", names(tempComb)[1], "PlotNum", "FieldRow", "FieldCol")
+     randomize$RowBlk <- randomize$ROW
+     randomize$ColBlk <- randomize$RANGE
+     randomize <- randomize[,c("Trial", "REP", "RowBlk", "ColBlk", "ID", "PlotNum", "ROW", "RANGE")]
+     names(randomize) <- c("Trial", "Rep", "RowBlk", "ColBlk", names(tempComb)[1], "PlotNum", "FieldRow", "FieldCol")
      randomize <- randomize[order(randomize$Trial, randomize$PlotNum),]
      randomize[,"Trial"] <- factor(randomize[,"Trial"])
      randomize[,"Rep"] <- factor(randomize[,"Rep"])

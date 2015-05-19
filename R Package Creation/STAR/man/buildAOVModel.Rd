@@ -1,7 +1,8 @@
 \name{buildAOVModel}
 \alias{buildAOVModel}
-\title{buildAOVModel}
-\description{buildAOVModel}
+\alias{buildAOVModel.default}
+\title{Build AOV Model}
+\description{Model building}
 \usage{
 buildAOVModel(design, respvar, factor1, factor2 = NULL, factor3 = NULL, factor4 = NULL, rep1 = NULL, rep2 = NULL, set = NULL)
 }

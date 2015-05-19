@@ -1,6 +1,8 @@
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 #	CLUSTER ANALYSIS FUNCTION (AGGLOMERATIVE) 09.25.2012 Modified: 11.08.13                      								     			     			                                                                                       
-#	ClusterAgglo <- function( data,var,idVar,sbinVar,abinVar,ofactorVar,factorVar,stand= TRUE,distance ,clusmethod,distMatrix,clusterMem,descriptiveStatRaw,corMatx,scatterMatx,descriptiveStat,dendrogram,clusterBox,clusterNum,saveMem,outputPath)
+#	ClusterAgglo <- function( data,var,idVar,sbinVar,abinVar,ofactorVar,factorVar,stand= TRUE,distance ,clusmethod,distMatrix,
+#                              clusterMem,descriptiveStatRaw,corMatx,scatterMatx,descriptiveStat,dendrogram,clusterBox,clusterNum,
+#                              saveMem,outputPath)
 #		       
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
@@ -13,16 +15,12 @@ ClusterAgglo <- function(data, var = NULL, idVar = NULL, sbinVar = NULL, abinVar
 ClusterAgglo.default <- function(data, var = NULL, idVar = NULL, sbinVar = NULL, abinVar = NULL, ofactorVar = NULL,factorVar = NULL, stand= TRUE, 
                                  distance = c("Euclidean", "Maximum", "Manhattan", "Minkowski", "Canberra", "Binary", "Simple Matching","Sokal & Sneath", "Hamann coefficient","Jaccard", "Dice", "Gower"), 
                                  clusmethod = c("Single", "Complete", "Average", "Ward", "Centroid"),distMatrix = FALSE,copDistance = FALSE, clusterMem = TRUE, 
-                                 descriptiveStatRaw = TRUE, corMatx = TRUE, scatterMatx = TRUE, descriptiveStat = TRUE, dendrogram = TRUE, clusterBox = TRUE, clusterNum=2, saveMem = TRUE, outputPath = NULL) 
-  
-{
-  
-  
+                                 descriptiveStatRaw = TRUE, corMatx = TRUE, scatterMatx = TRUE, descriptiveStat = TRUE, dendrogram = TRUE, clusterBox = TRUE, clusterNum=2, saveMem = TRUE, outputPath = NULL) {
   if (is.character(data)) { 
     nameData <- data
     if (!exists(nameData)) { stop(paste("The object '", nameData,"' does not exists.", sep = "")) }
     tempData <- eval(parse(text = data)) 
-  }else{
+  } else {
     if (is.data.frame(data)) { 
       nameData <- paste(deparse(substitute(data)))  
       tempData <- data  
@@ -93,7 +91,7 @@ ClusterAgglo.default <- function(data, var = NULL, idVar = NULL, sbinVar = NULL,
     a <- data.Normalization(x, type = "n1")
     if(stand){
       adist <- dist(a, method = tolower(distance))
-    }else adist <- dist(x, method = tolower(distance))
+    } else adist <- dist(x, method = tolower(distance))
   }
   
   #---------------------------------------------------------------------  
@@ -146,8 +144,8 @@ ClusterAgglo.default <- function(data, var = NULL, idVar = NULL, sbinVar = NULL,
       #     adist <- daisy(x, type = list(symm = names(tempData[sbinVar])))
       #       adist <- daisy(x,type = list(symm = tempData[,sbinVar]))
       adist <- daisy(x, type = list(symm = sbinVar))
-    
-  } 
+  }
+  
   if((!is.null(var) & !is.null(abinVar)) &  is.null(sbinVar)& is.null(factorVar) & is.null(ofactorVar)){
     x<- tempData[c(var,abinVar)]
     z<- c(var,abinVar)

@@ -6,7 +6,9 @@
 # Modified by: Alaine A. Gulles 07.27.2012
 # -------------------------------------------------------------------------------
 
-estMissData <- function(design, data, respvar, factor1, factor2, factor3, factor4, rep1, rep2) {
+estMissData <- function(design, data, respvar, factor1, factor2, factor3, factor4, rep1, rep2) UseMethod("estMissData")
+
+estMissData.default <- function(design, data, respvar, factor1, factor2, factor3, factor4, rep1, rep2) {
 	availableDesign <- c("CRD", "RCBD", "LSD", "SplitCRD", "SplitRCBD", "SplitLSD", "Strip", "Split2CRD", "Split2RCBD", "Split2LSD", "Strip-Split",	"Split3CRD", "Split3RCBD", "Split3LSD", "Strip-Split2")
 	design <- availableDesign[match(design, availableDesign)]
 	designChoice <- match(design, availableDesign)

@@ -1,5 +1,12 @@
+# -------------------------------------------------------------------------------
+# buildAOVModel: Functions for building model in ANOVA
+# Created by: Alaine A. Gulles for International Rice Research Institute
+# -------------------------------------------------------------------------------
 
 buildAOVModel <- function(design, respvar, factor1, factor2 = NULL, factor3 = NULL, 
+                          factor4 = NULL, rep1 = NULL, rep2 = NULL, set =  NULL) UseMethod("buildAOVModel")
+
+buildAOVModel.default <- function(design, respvar, factor1, factor2 = NULL, factor3 = NULL, 
                           factor4 = NULL, rep1 = NULL, rep2 = NULL, set =  NULL) {
      
      availableDesign <- c("CRD", "RCBD", "LSD", "SplitCRD", "SplitRCBD", "SplitLSD", "Strip", "Split2CRD", "Split2RCBD", "Split2LSD", "Strip-Split",     "Split3CRD", "Split3RCBD", "Split3LSD", "Strip-Split2")

@@ -1,4 +1,12 @@
-pairwiseWithin <- function(data, respvar, typeTest, nobs1, nobs2, dfError, MSError, f1, f2, f3 = NULL, siglevel) {
+# ----------------------------------------------------------------------
+# pairwiseWithin: Function for displaying the mean comparison
+# Created by: Alaine A. Gulles for International Rice Research Institute
+# Modified by: Alaine A. Gulles 
+# ----------------------------------------------------------------------
+
+pairwiseWithin <- function(data, respvar, typeTest, nobs1, nobs2, dfError, MSError, f1, f2, f3 = NULL, siglevel) UseMethod("pairwiseWithin")
+     
+pairwiseWithin.default <- function(data, respvar, typeTest, nobs1, nobs2, dfError, MSError, f1, f2, f3 = NULL, siglevel) {
       comparison <- NULL
 	if (nlevels(data[,f1]) > 26) {
 		for (j in (1:nobs2)) {

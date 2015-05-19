@@ -1,7 +1,8 @@
 \name{ContrastCompute}
 \alias{ContrastCompute}
+\alias{ContrastCompute.default}
 \title{Constrast Compute}
-\description{description1}
+\description{Constrast Compute}
 \usage{
 ContrastCompute(data, aovTable, mymodel, mymodel2, contrast.option)
 }

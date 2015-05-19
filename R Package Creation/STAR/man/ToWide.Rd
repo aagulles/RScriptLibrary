@@ -1,8 +1,8 @@
 \name{ToWide}
 \alias{ToWide}
 \alias{ToWide.default}
-\title{title1}
-\description{description1}
+\title{Reshape to Wide format}
+\description{Reshape dataset from long to wide format}
 \usage{
 ToWide(data, vnames, timevar, idvar)
 }

@@ -54,7 +54,7 @@ p-values are available only from the \code{lm} method.
   \emph{Applied Regression Analysis and Generalized Linear Models}, Second Edition. Sage.
 }
 
-\author{John Fox \email{jfox@mcmaster.ca} from package car}
+\author{John Fox \email{jfox@mcmaster.ca} from car package}
 
 \keyword{regression}
 \keyword{ts}

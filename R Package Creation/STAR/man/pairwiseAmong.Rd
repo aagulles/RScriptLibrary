@@ -1,7 +1,8 @@
 \name{pairwiseAmong}
 \alias{pairwiseAmong}
-\title{t}
-\description{a}
+\alias{pairwiseAmong.default}
+\title{Pairwise Among}
+\description{Pairwise Among}
 \usage{
 pairwiseAmong(data, respvar, typeTest, trmt, dfError, MSError, siglevel)
 }

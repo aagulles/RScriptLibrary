@@ -1,3 +1,10 @@
+# -------------------------------------------------------------------------------------
+# R-SCRIPT FOR STAR:
+# CompareProportion: Compare proportion for one and two population.
+# Created by: Alaine A. Gulles for International Rice Research Institute
+# Modified by: Alaine A. Gulles 
+# -------------------------------------------------------------------------------------
+
 CompareProportion <- function(data, varX, varY = NULL, 
 	grp = NULL, testVal = NULL, procedure = c("one", "paired", "independent"),
 	alternative = c("two.sided", "greater", "less"),

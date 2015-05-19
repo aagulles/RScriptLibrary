@@ -1,3 +1,11 @@
+# -------------------------------------------------------------------------------
+# STAR
+# -------------------------------------------------------------------------------
+# PredictedValues
+# Created by: Alaine A. Gulles for International Rice Research Institute
+# -------------------------------------------------------------------------------
+
+
 PredictedValues <- function(object, errorTerm = NULL) UseMethod("PredictedValues")
 
 PredictedValues.default <- function(object, errorTerm = NULL) {

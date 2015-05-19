@@ -4,7 +4,9 @@
 # Modified by: Alaine A. Gulles 
 # ----------------------------------------------------------------------
 
-pairwiseComparison <- function(aovTable, design, effect, data, respvar, pwTest = NULL, siglevel = 0.05) {
+pairwiseComparison <- function(aovTable, design, effect, data, respvar, pwTest = NULL, siglevel = 0.05) UseMethod("pairwiseComparison")
+
+pairwiseComparison.default <- function(aovTable, design, effect, data, respvar, pwTest = NULL, siglevel = 0.05) {
   	pwTestAvailable <- c("LSD", "duncan", "HSD", "SNK", "scheffe")
      	#pwLabel <- c("Least Significant Difference (LSD) Test", "Duncan Multiple Range Test (DMRT)", "Tukey's Honest Significant Difference (HSD) Test", "Student-Newmann-Keul's (SNK) Test",  "Scheffe's Test")
      	availableDesign <- c("CRD", "RCBD", "LSD", "SplitCRD", "SplitRCBD", "SplitLSD", "Strip", "Split2CRD", "Split2RCBD", "Split2LSD", "Strip-Split",	"Split3CRD", "Split3RCBD", "Split3LSD", "Strip-Split2")

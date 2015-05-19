@@ -1,7 +1,8 @@
 \name{GenerateBalanceData}
 \alias{GenerateBalanceData}
-\title{title1}
-\description{description1}
+\alias{GenerateBalanceData.default}
+\title{Generate Balance Data}
+\description{Generate Balance Data}
 \usage{
 GenerateBalanceData(data, respvar, factor, blk, design)
 }

@@ -1,8 +1,8 @@
 \name{pairwiseComparison}
 \alias{pairwiseComparison}
 \alias{pairwiseComparison.default}
-\title{pwtitle}
-\description{pwdescription1}
+\title{Pairwise Comparison}
+\description{Pairwise Comparison}
 \usage{
 pairwiseComparison(aovTable, design, effect, data, respvar, pwTest = NULL, siglevel = 0.05)
 }

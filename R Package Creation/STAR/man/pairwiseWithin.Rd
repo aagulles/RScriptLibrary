@@ -1,7 +1,8 @@
 \name{pairwiseWithin}
 \alias{pairwiseWithin}
-\title{a}
-\description{a}
+\alias{pairwiseWithin.default}
+\title{Pairwise Within}
+\description{Pairwise Within}
 \usage{
 pairwiseWithin(data, respvar, typeTest, nobs1, nobs2, dfError, MSError, f1, f2, f3 = NULL, siglevel)
 }
